@@ -3,15 +3,20 @@ import path from 'node:path'
 import commonjs from '@rollup/plugin-commonjs'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
-import { glob } from 'glob'
+import json from '@rollup/plugin-json'
+import vue from 'rollup-plugin-vue'
+import pkg_glob from 'glob'
+const { glob } = pkg_glob
 import dts from 'rollup-plugin-dts'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 
 const external = [
   ...Object.keys(pkg.peerDependencies || {}),
-  ...Object.keys(pkg.dependencies || {}),
   'vue',
+  '@vue/reactivity',
+  '@vue/runtime-core',
+  '@vue/compiler-sfc',
   'pinia',
 ]
 
@@ -23,7 +28,7 @@ const banner = `/*!
 
 // 获取所有入口文件
 const entryFiles = glob.sync('src/**/*.ts', {
-  ignore: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
+  ignore: ['src/**/*.test.ts', 'src/**/*.spec.ts', 'src/**/*.vue'],
 })
 
 // 创建入口对象
@@ -52,13 +57,20 @@ export default [
     plugins: [
       nodeResolve({
         preferBuiltins: false,
+        browser: true,
       }),
       commonjs(),
+      json(),
+      vue({
+        target: 'browser',
+        css: false,
+        compileTemplate: true
+      }),
       typescript({
         tsconfig: './tsconfig.json',
         declaration: false,
         declarationMap: false,
-        outDir: 'es',
+        outDir: 'es'
       }),
     ],
   },
@@ -79,13 +91,20 @@ export default [
     plugins: [
       nodeResolve({
         preferBuiltins: false,
+        browser: true,
       }),
       commonjs(),
+      json(),
+      vue({
+        target: 'browser',
+        css: false,
+        compileTemplate: true
+      }),
       typescript({
         tsconfig: './tsconfig.json',
         declaration: false,
         declarationMap: false,
-        outDir: 'lib',
+        outDir: 'lib'
       }),
     ],
   },
@@ -110,12 +129,19 @@ export default [
     plugins: [
       nodeResolve({
         preferBuiltins: false,
+        browser: true,
       }),
       commonjs(),
+      json(),
+      vue({
+        target: 'browser',
+        css: false,
+        compileTemplate: true
+      }),
       typescript({
         tsconfig: './tsconfig.json',
         declaration: false,
-        declarationMap: false,
+        declarationMap: false
       }),
     ],
   },
