@@ -5,168 +5,209 @@
 ::: code-group
 
 ```bash [pnpm]
-pnpm add @ldesign/store pinia vue
+pnpm add @ldesign/template vue
 ```
 
 ```bash [npm]
-npm install @ldesign/store pinia vue
+npm install @ldesign/template vue
 ```
 
 ```bash [yarn]
-yarn add @ldesign/store pinia vue
+yarn add @ldesign/template vue
 ```
 
 :::
 
 ## 设置
 
-### 1. 安装 Pinia
+### 1. 初始化模板系统
 
-首先在你的 Vue 应用中设置 Pinia：
+在你的 Vue 应用中初始化模板管理系统：
 
 ```typescript
 // main.ts
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import { initTemplateSystem } from '@ldesign/template'
 import App from './App.vue'
 
 const app = createApp(App)
-const pinia = createPinia()
 
-app.use(pinia)
+// 初始化模板系统
+initTemplateSystem({
+  autoScan: true,
+  enableDeviceDetection: true,
+  enableCache: true,
+  scanDirectories: ['./src/templates']
+}).then(() => {
+  console.log('模板系统初始化完成')
+})
+
 app.mount('#app')
 ```
 
-### 2. 创建你的第一个 Store
+### 2. 使用 Vue 插件方式（推荐）
 
 ```typescript
-// stores/counter.ts
-import { Action, BaseStore, Getter, State, Store, createStoreClass } from '@ldesign/store'
+// main.ts
+import { createApp } from 'vue'
+import LDesignTemplate from '@ldesign/template'
+import App from './App.vue'
 
-@Store({ id: 'counter' })
-class CounterStore extends BaseStore {
-  @State({ default: 0 })
-  count!: number
+const app = createApp(App)
 
-  @Action()
-  increment() {
-    this.count++
-  }
+// 使用插件
+app.use(LDesignTemplate, {
+  autoScan: true,
+  enableDeviceDetection: true,
+  enableCache: true
+})
 
-  @Action()
-  decrement() {
-    this.count--
-  }
-
-  @Getter()
-  get doubleCount() {
-    return this.count * 2
-  }
-
-  @Getter()
-  get isEven() {
-    return this.count % 2 === 0
-  }
-}
-
-export const useCounterStore = createStoreClass(CounterStore)
+app.mount('#app')
 ```
 
-### 3. 在组件中使用
+### 3. 在组件中使用模板
 
 ```vue
 <template>
-  <div class="counter">
-    <h2>计数器: {{ store.count }}</h2>
-    <p>双倍值: {{ store.doubleCount }}</p>
-    <p>是否为偶数: {{ store.isEven ? '是' : '否' }}</p>
+  <div class="app">
+    <!-- 使用模板渲染器 -->
+    <TemplateRenderer
+      :template="currentTemplate"
+      :props="templateProps"
+      @login="handleLogin"
+    >
+      <template #header>
+        <img src="/logo.png" alt="Logo" />
+        <h1>{{ appTitle }}</h1>
+      </template>
+    </TemplateRenderer>
 
-    <div class="buttons">
-      <button @click="store.increment()">+1</button>
-      <button @click="store.decrement()">-1</button>
-    </div>
+    <!-- 模板选择器（开发时使用） -->
+    <TemplateSelector
+      v-if="isDev"
+      category="login"
+      :current="currentTemplate?.id"
+      @change="switchTemplate"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useCounterStore } from '@/stores/counter'
+import { ref } from 'vue'
+import { useTemplate } from '@ldesign/template'
+import TemplateRenderer from '@ldesign/template/src/components/TemplateRenderer.vue'
+import TemplateSelector from '@ldesign/template/src/components/TemplateSelector.vue'
 
-const store = useCounterStore()
+// 使用模板组合式函数
+const { currentTemplate, switchTemplate, isLoading } = useTemplate({
+  category: 'login',
+  autoDetectDevice: true,
+  fallback: 'default'
+})
+
+const appTitle = ref('欢迎使用我们的应用')
+const isDev = import.meta.env.DEV
+
+// 模板属性
+const templateProps = ref({
+  title: '用户登录',
+  logo: '/logo.png',
+  showRememberMe: true,
+  showForgotPassword: true
+})
+
+// 处理登录事件
+const handleLogin = (loginData: any) => {
+  console.log('登录数据:', loginData)
+  // 处理登录逻辑
+}
 </script>
 ```
 
-## 核心装饰器
+## 核心概念
 
-### @Store 装饰器
+### 模板管理器
 
-`@Store` 装饰器用于定义 Store 类：
+模板管理器是整个系统的核心，负责模板的加载、缓存和管理：
 
 ```typescript
-@Store({
-  id: 'user',
-  persist: true, // 启用持久化
-  cache: { ttl: 5000 } // 启用缓存
+import { createTemplateManager } from '@ldesign/template'
+
+const templateManager = createTemplateManager({
+  autoScan: true,              // 自动扫描模板
+  scanDirectories: ['./templates'], // 扫描目录
+  enableCache: true,           // 启用缓存
+  cacheExpiry: 3600000,       // 缓存过期时间（1小时）
+  enableDeviceDetection: true, // 启用设备检测
+  preloadDefault: true        // 预加载默认模板
 })
-class UserStore extends BaseStore {
-  // ...
+```
+
+### 设备检测
+
+系统会自动检测用户设备类型，并选择最适合的模板：
+
+```typescript
+import { useDeviceDetector } from '@ldesign/template'
+
+const { deviceType, isMobile, isTablet, isDesktop } = useDeviceDetector()
+
+console.log('当前设备类型:', deviceType) // 'mobile' | 'tablet' | 'desktop'
+```
+
+### 模板配置
+
+每个模板都有详细的配置信息：
+
+```typescript
+// templates/login/desktop/modern/index.ts
+export const config: TemplateConfig = {
+  id: 'login-desktop-modern',
+  name: '现代登录模板',
+  description: '现代化设计风格的桌面端登录模板',
+  category: 'login',
+  device: 'desktop',
+  templateName: 'modern',
+  props: {
+    title: { type: 'string', default: '用户登录' },
+    showLogo: { type: 'boolean', default: true }
+  },
+  events: {
+    login: { description: '登录事件' },
+    register: { description: '注册事件' }
+  }
 }
 ```
 
-### @State 装饰器
+### 组合式函数
 
-`@State` 装饰器用于定义响应式状态：
-
-```typescript
-@State({ default: 0 })
-count!: number
-
-@State({ default: [] })
-items!: Item[]
-
-@State({ default: { name: '', email: '' } })
-user!: User
-```
-
-### @Action 装饰器
-
-`@Action` 装饰器用于定义修改状态的方法：
+使用 `useTemplate` 组合式函数轻松管理模板：
 
 ```typescript
-@Action()
-increment() {
-  this.count++
-}
+import { useTemplate } from '@ldesign/template'
 
-@Action({ debounce: { delay: 300 } })
-search(query: string) {
-  // 防抖搜索
-  this.searchQuery = query
-}
-```
-
-### @Getter 装饰器
-
-`@Getter` 装饰器用于定义计算属性：
-
-```typescript
-@Getter()
-get fullName() {
-  return `${this.firstName} ${this.lastName}`
-}
-
-@Getter({ cache: true })
-get expensiveComputation() {
-  // 缓存计算结果
-  return this.items.reduce((sum, item) => sum + item.value, 0)
-}
+const {
+  currentTemplate,    // 当前模板
+  availableTemplates, // 可用模板列表
+  isLoading,         // 加载状态
+  error,             // 错误信息
+  loadTemplate,      // 加载模板
+  switchTemplate,    // 切换模板
+  refreshTemplates   // 刷新模板列表
+} = useTemplate({
+  category: 'login',
+  device: 'auto',    // 自动检测设备
+  fallback: 'default' // 降级模板
+})
 ```
 
 ## 下一步
 
 现在你已经了解了基础用法，可以继续学习：
 
-- [核心概念](/guide/concepts) - 深入了解 Store 的工作原理
-- [装饰器](/guide/decorators) - 学习所有可用的装饰器
-- [状态持久化](/guide/persistence) - 配置状态持久化
-- [性能优化](/guide/performance) - 优化应用性能
+- [核心概念](/guide/concepts) - 深入了解模板系统的工作原理
+- [模板开发](/guide/template-development) - 学习如何创建自定义模板
+- [设备适配](/guide/device-adaptation) - 了解多设备适配策略
+- [性能优化](/guide/performance) - 优化模板加载性能
+- [API 参考](/api/core) - 查看完整的 API 文档
 - [示例](/examples/basic) - 查看更多实际示例

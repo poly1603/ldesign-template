@@ -36,11 +36,12 @@ jobs:
 
       - name: Run full test suite
         run: |
-          pnpm typecheck
+          pnpm type-check
           pnpm lint
-          pnpm test:run
+          pnpm test
           pnpm build
           pnpm docs:build
+          pnpm demo:build
 
       - name: Verify package.json version matches tag
         run: |
@@ -82,10 +83,7 @@ jobs:
       - name: Verify build outputs
         run: |
           echo "Checking build outputs..."
-          ls -la es/
-          ls -la lib/
           ls -la dist/
-          ls -la types/
 
           echo "Checking package.json exports..."
           node -e "console.log(JSON.stringify(require('./package.json').exports, null, 2))"
@@ -104,10 +102,9 @@ jobs:
         with:
           name: release-build
           path: |
-            es/
-            lib/
             dist/
-            types/
+            docs/.vitepress/dist/
+            examples/demo-app/dist/
 
   # 发布到 NPM
   publish-npm:
@@ -263,8 +260,8 @@ jobs:
         if: ${{ needs.publish-npm.result == 'success' && needs.create-release.result == 'success' }}
         run: |
           echo "🎉 Release ${{ github.ref_name }} published successfully!"
-          echo "📦 NPM: https://www.npmjs.com/package/@ldesign/store"
-          echo "📖 Docs: https://ldesign-store.netlify.app"
+          echo "📦 NPM: https://www.npmjs.com/package/@ldesign/template"
+          echo "📖 Docs: https://ldesign-template.netlify.app"
           echo "🏷️ Release: https://github.com/${{ github.repository }}/releases/tag/${{ github.ref_name }}"
 
       - name: Notify failure

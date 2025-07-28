@@ -2,7 +2,7 @@
  * 模板管理系统工具函数
  */
 
-import { DeviceType, TemplateFilter, Template, TemplateSortOptions } from '../types'
+import type { DeviceType, TemplateConfig } from '../types'
 
 /**
  * 简单的事件发射器
@@ -44,7 +44,7 @@ export class EventEmitter {
  */
 export class DeviceDetector {
   private static instance: DeviceDetector
-  private currentDevice: DeviceType = DeviceType.DESKTOP
+  private currentDevice: DeviceType = 'desktop'
   private listeners: Array<(device: DeviceType) => void> = []
   private config = {
     mobileBreakpoint: 768,
@@ -83,11 +83,11 @@ export class DeviceDetector {
     let newDevice: DeviceType
 
     if (width < this.config.mobileBreakpoint) {
-      newDevice = DeviceType.MOBILE
+      newDevice = 'mobile'
     } else if (width < this.config.tabletBreakpoint) {
-      newDevice = DeviceType.TABLET
+      newDevice = 'tablet'
     } else {
-      newDevice = DeviceType.DESKTOP
+      newDevice = 'desktop'
     }
 
     if (newDevice !== this.currentDevice) {
@@ -175,7 +175,7 @@ export class StorageManager {
     try {
       const storage = this.getStorage()
       if (!storage) return false
-      
+
       storage.setItem(key, JSON.stringify(value))
       return true
     } catch (error) {
@@ -191,10 +191,10 @@ export class StorageManager {
     try {
       const storage = this.getStorage()
       if (!storage) return defaultValue || null
-      
+
       const item = storage.getItem(key)
       if (item === null) return defaultValue || null
-      
+
       return JSON.parse(item) as T
     } catch (error) {
       console.warn('Storage get failed:', error)
@@ -209,7 +209,7 @@ export class StorageManager {
     try {
       const storage = this.getStorage()
       if (!storage) return false
-      
+
       storage.removeItem(key)
       return true
     } catch (error) {
@@ -225,7 +225,7 @@ export class StorageManager {
     try {
       const storage = this.getStorage()
       if (!storage) return false
-      
+
       storage.clear()
       return true
     } catch (error) {
@@ -240,7 +240,7 @@ export class StorageManager {
   has(key: string): boolean {
     const storage = this.getStorage()
     if (!storage) return false
-    
+
     return storage.getItem(key) !== null
   }
 }
@@ -266,7 +266,7 @@ export class TemplatePathUtils {
   } | null {
     const normalizedPath = this.normalizePath(path)
     const parts = normalizedPath.split('/').filter(Boolean)
-    
+
     // 新的三层结构：/src/templates/category/device/templateName/index.ts
     // 需要至少6个部分：['src', 'templates', 'category', 'device', 'templateName', 'index.ts']
     if (parts.length < 6) {
@@ -283,7 +283,7 @@ export class TemplatePathUtils {
     const device = parts[templatesIndex + 2] as DeviceType
     const templateName = parts[templatesIndex + 3]
 
-    if (!Object.values(DeviceType).includes(device)) {
+    if (!['mobile', 'tablet', 'desktop'].includes(device)) {
       return null
     }
 
@@ -310,94 +310,17 @@ export class TemplatePathUtils {
  */
 export class TemplateFilterUtils {
   /**
-   * 过滤模板
-   */
-  static filterTemplates(templates: Template[], filter: TemplateFilter): Template[] {
-    return templates.filter(template => {
-      // 按名称过滤
-      if (filter.name && !template.info.name.toLowerCase().includes(filter.name.toLowerCase())) {
-        return false
-      }
-
-      // 按标签过滤
-      if (filter.tags && filter.tags.length > 0) {
-        const templateTags = template.info.tags || []
-        if (!filter.tags.some(tag => templateTags.includes(tag))) {
-          return false
-        }
-      }
-
-      // 按作者过滤
-      if (filter.author && template.info.author !== filter.author) {
-        return false
-      }
-
-      // 按状态过滤
-      if (filter.status && template.status !== filter.status) {
-        return false
-      }
-
-      // 只显示默认模板
-      if (filter.defaultOnly && !template.info.isDefault) {
-        return false
-      }
-
-      return true
-    })
-  }
-
-  /**
-   * 排序模板
-   */
-  static sortTemplates(templates: Template[], sortOptions: TemplateSortOptions): Template[] {
-    return [...templates].sort((a, b) => {
-      const { field, order } = sortOptions
-      let aValue: any
-      let bValue: any
-
-      switch (field) {
-        case 'name':
-          aValue = a.info.name
-          bValue = b.info.name
-          break
-        case 'createdAt':
-          aValue = a.info.createdAt || ''
-          bValue = b.info.createdAt || ''
-          break
-        case 'updatedAt':
-          aValue = a.info.updatedAt || ''
-          bValue = b.info.updatedAt || ''
-          break
-        case 'version':
-          aValue = a.info.version
-          bValue = b.info.version
-          break
-        default:
-          return 0
-      }
-
-      if (aValue < bValue) {
-        return order === 'asc' ? -1 : 1
-      }
-      if (aValue > bValue) {
-        return order === 'asc' ? 1 : -1
-      }
-      return 0
-    })
-  }
-
-  /**
    * 搜索模板
    */
-  static searchTemplates(templates: Template[], query: string): Template[] {
+  static searchTemplates(templates: TemplateConfig[], query: string): TemplateConfig[] {
     if (!query.trim()) {
       return templates
     }
 
     const lowerQuery = query.toLowerCase()
     return templates.filter(template => {
-      const { name, description, tags, author } = template.info
-      
+      const { name, description, tags, author } = template
+
       return (
         name.toLowerCase().includes(lowerQuery) ||
         (description && description.toLowerCase().includes(lowerQuery)) ||
@@ -405,6 +328,20 @@ export class TemplateFilterUtils {
         (author && author.toLowerCase().includes(lowerQuery))
       )
     })
+  }
+
+  /**
+   * 按设备类型过滤模板
+   */
+  static filterByDevice(templates: TemplateConfig[], device: DeviceType): TemplateConfig[] {
+    return templates.filter(template => template.device === device)
+  }
+
+  /**
+   * 按分类过滤模板
+   */
+  static filterByCategory(templates: TemplateConfig[], category: string): TemplateConfig[] {
+    return templates.filter(template => template.category === category)
   }
 }
 
@@ -578,11 +515,11 @@ export function generateId(): string {
  */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
-  
+
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 

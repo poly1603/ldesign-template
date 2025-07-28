@@ -1,13 +1,10 @@
-import { readFileSync } from 'node:fs'
-import path from 'node:path'
 import commonjs from '@rollup/plugin-commonjs'
+import json from '@rollup/plugin-json'
 import { nodeResolve } from '@rollup/plugin-node-resolve'
 import typescript from '@rollup/plugin-typescript'
-import json from '@rollup/plugin-json'
-import vue from 'rollup-plugin-vue'
-import pkg_glob from 'glob'
-const { glob } = pkg_glob
+import { readFileSync } from 'node:fs'
 import dts from 'rollup-plugin-dts'
+import vue from 'rollup-plugin-vue'
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'))
 
@@ -17,7 +14,6 @@ const external = [
   '@vue/reactivity',
   '@vue/runtime-core',
   '@vue/compiler-sfc',
-  'pinia',
 ]
 
 const banner = `/*!
@@ -26,32 +22,18 @@ const banner = `/*!
  * @license MIT
  */`
 
-// 获取所有入口文件
-const entryFiles = glob.sync('src/**/*.ts', {
-  ignore: ['src/**/*.test.ts', 'src/**/*.spec.ts', 'src/**/*.vue'],
-})
-
-// 创建入口对象
-function createEntries(files) {
-  const entries = {}
-  files.forEach((file) => {
-    const name = path.relative('src', file).replace(/\.ts$/, '')
-    entries[name] = file
-  })
-  return entries
-}
+// 单入口构建配置
 
 export default [
-  // ESM build - 多入口
+  // ESM build - 单入口
   {
-    input: createEntries(entryFiles),
+    input: 'src/index.ts',
     output: {
-      dir: 'es',
+      file: 'dist/index.js',
       format: 'es',
       banner,
       sourcemap: true,
-      preserveModules: true,
-      preserveModulesRoot: 'src',
+      inlineDynamicImports: true,
     },
     external,
     plugins: [
@@ -75,57 +57,18 @@ export default [
     ],
   },
 
-  // CommonJS build - 多入口
+  // CommonJS build - 单入口
   {
-    input: createEntries(entryFiles),
+    input: 'src/index.ts',
     output: {
-      dir: 'lib',
+      file: 'dist/index.cjs',
       format: 'cjs',
       banner,
       sourcemap: true,
       exports: 'named',
-      preserveModules: true,
-      preserveModulesRoot: 'src',
+      inlineDynamicImports: true,
     },
     external,
-    plugins: [
-      nodeResolve({
-        preferBuiltins: false,
-        browser: true,
-      }),
-      commonjs(),
-      json(),
-      vue({
-        target: 'browser',
-        css: false,
-        compileTemplate: true
-      }),
-      typescript({
-        tsconfig: './tsconfig.json',
-        declaration: false,
-        declarationMap: false,
-        outDir: 'lib'
-      }),
-    ],
-  },
-
-  // UMD build - 单入口
-  {
-    input: 'src/index.ts',
-    output: [
-      {
-        file: 'dist/index.js',
-        format: 'umd',
-        name: 'LDesignStore',
-        banner,
-        sourcemap: true,
-        globals: {
-          vue: 'Vue',
-          pinia: 'Pinia',
-        },
-      },
-    ],
-    external: ['vue', 'pinia'],
     plugins: [
       nodeResolve({
         preferBuiltins: false,
@@ -146,14 +89,14 @@ export default [
     ],
   },
 
-  // Type definitions - 多入口
+  // 暂时移除UMD构建以避免代码分割问题
+
+  // Type definitions - 单入口
   {
-    input: createEntries(entryFiles),
+    input: 'src/index.ts',
     output: {
-      dir: 'types',
+      file: 'dist/index.d.ts',
       format: 'es',
-      preserveModules: true,
-      preserveModulesRoot: 'src',
     },
     external,
     plugins: [

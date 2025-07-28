@@ -36,7 +36,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: TypeScript type check
-        run: pnpm typecheck
+        run: pnpm type-check
 
       - name: ESLint check
         run: pnpm lint
@@ -74,7 +74,11 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Run tests
-        run: pnpm test:run
+        run: pnpm test
+
+      - name: Generate coverage report
+        if: matrix.node-version == 20 && matrix.os == 'ubuntu-latest'
+        run: pnpm test:coverage
 
       - name: Upload coverage to Codecov
         if: matrix.node-version == 20 && matrix.os == 'ubuntu-latest'
@@ -112,22 +116,27 @@ jobs:
       - name: Build project
         run: pnpm build
 
+      - name: Build documentation
+        run: pnpm docs:build
+
+      - name: Build demo app
+        run: pnpm demo:build
+
       - name: Check build outputs
         run: |
-          ls -la es/ || echo "es/ not found"
-          ls -la lib/ || echo "lib/ not found"
           ls -la dist/ || echo "dist/ not found"
-          ls -la types/ || echo "types/ not found"
+          ls -la docs/.vitepress/dist/ || echo "docs build not found"
+          ls -la examples/demo-app/dist/ || echo "demo app build not found"
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v3
         with:
           name: build-artifacts
           path: |
-            es/
-            lib/
             dist/
-            types/
+            docs/.vitepress/dist/
+            examples/demo-app/dist/
+          retention-days: 7
 
   # 安全扫描
   security:
@@ -155,6 +164,51 @@ jobs:
 
       - name: Run npm audit
         run: pnpm audit --audit-level moderate || echo "Audit completed with warnings"
+
+  # E2E 测试
+  e2e:
+    name: E2E Tests
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      - name: Run E2E tests
+        run: pnpm test:e2e
+
+      - name: Upload E2E test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: e2e-test-results
+          path: |
+            test-results/
+            playwright-report/
+          retention-days: 7
 
   # 文档构建和部署
   docs:

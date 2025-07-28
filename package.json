@@ -1,51 +1,44 @@
 {
   "name": "@ldesign/template",
   "version": "1.0.0",
-  "description": "一个强大的模板库，支持多种模板类型、模板缓存和模板错误处理",
+  "description": "强大的 Vue3 模板管理系统 - 让你的应用界面千变万化",
   "type": "module",
-  "main": "./lib/index.js",
-  "module": "./es/index.js",
-  "types": "./types/index.d.ts",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "sideEffects": false,
   "exports": {
     ".": {
-      "import": "./es/index.js",
-      "require": "./lib/index.js",
-      "types": "./types/index.d.ts"
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
     },
-    "./decorators": {
-      "import": "./es/decorators.js",
-      "require": "./lib/decorators.js",
-      "types": "./types/decorators.d.ts"
+    "./composables": {
+      "import": "./dist/composables/index.js",
+      "require": "./dist/composables/index.cjs",
+      "types": "./dist/composables/index.d.ts"
     },
-    "./plugins/persist": {
-      "import": "./es/plugins/persist.js",
-      "require": "./lib/plugins/persist.js",
-      "types": "./types/plugins/persist.d.ts"
+    "./components": {
+      "import": "./dist/components/index.js",
+      "require": "./dist/components/index.cjs",
+      "types": "./dist/components/index.d.ts"
     },
-    "./plugins/cache": {
-      "import": "./es/plugins/cache.js",
-      "require": "./lib/plugins/cache.js",
-      "types": "./types/plugins/cache.d.ts"
-    },
-    "./store-class": {
-      "import": "./es/store-class.js",
-      "require": "./lib/store-class.js",
-      "types": "./types/store-class.d.ts"
+    "./utils": {
+      "import": "./dist/utils/index.js",
+      "require": "./dist/utils/index.cjs",
+      "types": "./dist/utils/index.d.ts"
     },
     "./types": {
-      "import": "./es/types.js",
-      "require": "./lib/types.js",
-      "types": "./types/types.d.ts"
+      "import": "./dist/types/index.js",
+      "require": "./dist/types/index.cjs",
+      "types": "./dist/types/index.d.ts"
     },
     "./package.json": "./package.json"
   },
   "files": [
     "README.md",
     "dist",
-    "es",
-    "lib",
-    "types"
+    "LICENSE"
   ],
   "scripts": {
     "dev": "rollup -c -w",
@@ -54,35 +47,53 @@
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:debug": "playwright test --debug",
+    "test:all": "pnpm test && pnpm test:e2e",
     "lint": "eslint src --ext .ts,.vue",
     "lint:fix": "eslint src --ext .ts,.vue --fix",
     "format": "prettier --write src/**/*.{ts,vue,json}",
     "format:check": "prettier --check src/**/*.{ts,vue,json}",
     "docs": "typedoc src/index.ts",
     "docs:serve": "typedoc src/index.ts --watch --serve",
+    "docs:dev": "vitepress dev docs",
+    "docs:build": "vitepress build docs",
+    "docs:preview": "vitepress preview docs",
+    "demo:dev": "cd examples/demo-app && pnpm dev",
+    "demo:build": "cd examples/demo-app && pnpm build",
+    "demo:preview": "cd examples/demo-app && pnpm preview",
+    "demo:install": "cd examples/demo-app && pnpm install",
     "prepare": "npm run build",
     "prepublishOnly": "npm run test && npm run lint && npm run build"
   },
   "keywords": [
     "vue",
     "vue3",
-    "pinia",
-    "state-management",
+    "template",
+    "template-management",
+    "ui-template",
+    "responsive",
     "typescript",
-    "reactive",
-    "store",
+    "device-detection",
+    "composition-api",
+    "frontend",
+    "template-engine",
+    "theme",
+    "layout",
     "ldesign"
   ],
   "author": "LDesign Team",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/poly1603/ldesign-store.git"
+    "url": "https://github.com/ldesign/template.git"
   },
   "bugs": {
-    "url": "https://github.com/poly1603/ldesign-store/issues"
+    "url": "https://github.com/ldesign/template/issues"
   },
-  "homepage": "https://github.com/poly1603/ldesign-store#readme",
+  "homepage": "https://github.com/ldesign/template#readme",
   "peerDependencies": {
     "vue": "^3.0.0"
   },
@@ -102,8 +113,10 @@
     "@vitest/coverage-v8": "^0.34.6",
     "@vitest/ui": "^0.34.6",
     "@vue/compiler-sfc": "^3.3.4",
+    "@vue/test-utils": "^2.4.6",
     "eslint": "^8.50.0",
     "eslint-plugin-vue": "^9.17.0",
+    "jsdom": "^24.1.0",
     "prettier": "^3.0.3",
     "rollup": "^3.29.0",
     "rollup-plugin-dts": "^6.2.1",
@@ -111,13 +124,17 @@
     "tslib": "^2.6.2",
     "typedoc": "^0.25.2",
     "typescript": "^5.2.2",
-    "vitest": "^0.34.6"
+    "vitest": "^0.34.6",
+    "@playwright/test": "^1.40.0",
+    "playwright": "^1.40.0",
+    "vitepress": "^1.0.0-rc.31",
+    "vite": "^5.0.0"
   },
   "husky": {
     "hooks": {
       "pre-commit": "lint-staged",
       "commit-msg": "pnpm tsx scripts/validate-commit-msg.ts",
-      "pre-push": "pnpm test:run"
+      "pre-push": "pnpm test"
     }
   },
   "lint-staged": {

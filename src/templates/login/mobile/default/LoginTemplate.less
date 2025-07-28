@@ -1,0 +1,502 @@
+// Mobile Default Login Template Styles
+.login-template-mobile-default {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --primary-color: #3b82f6;
+
+  // 状态栏占位
+  .status-bar-placeholder {
+    height: env(safe-area-inset-top, 20px);
+    background: transparent;
+  }
+
+  // 头部
+  .login-header {
+    padding: 2rem 1.5rem 1rem;
+    text-align: center;
+
+    .header-content {
+      .logo {
+        max-height: 60px;
+        margin-bottom: 1rem;
+      }
+
+      .title {
+        margin: 0;
+        font-size: 1.75rem;
+        font-weight: 600;
+        color: #1f2937;
+      }
+    }
+  }
+
+  // 主要内容
+  .login-main {
+    flex: 1;
+    padding: 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+
+    // 登录模式切换
+    .login-mode-tabs {
+      display: flex;
+      background: #f1f5f9;
+      border-radius: 12px;
+      padding: 4px;
+      margin-bottom: 2rem;
+
+      .mode-tab {
+        flex: 1;
+        padding: 0.75rem;
+        border: none;
+        background: transparent;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #64748b;
+        cursor: pointer;
+        transition: all 0.3s ease;
+
+        &.active {
+          background: white;
+          color: var(--primary-color);
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+      }
+    }
+
+    // 登录表单
+    .login-form {
+      .form-content {
+        .form-group {
+          margin-bottom: 1.5rem;
+
+          .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+
+            .input-icon {
+              position: absolute;
+              left: 1rem;
+              color: #9ca3af;
+              z-index: 1;
+            }
+
+            .form-input {
+              width: 100%;
+              padding: 1rem 1rem 1rem 3rem;
+              border: 2px solid #e5e7eb;
+              border-radius: 12px;
+              font-size: 1rem;
+              background: white;
+              transition: all 0.3s ease;
+
+              &:focus {
+                outline: none;
+                border-color: var(--primary-color);
+                box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+              }
+
+              &.has-error {
+                border-color: #ef4444;
+              }
+
+              &::placeholder {
+                color: #9ca3af;
+              }
+            }
+
+            .password-toggle {
+              position: absolute;
+              right: 1rem;
+              background: none;
+              border: none;
+              color: #9ca3af;
+              cursor: pointer;
+              padding: 0.5rem;
+              z-index: 1;
+
+              &:hover {
+                color: #6b7280;
+              }
+            }
+
+            // 短信验证码特殊样式
+            &.sms-wrapper {
+              .sms-input {
+                padding-right: 6rem;
+              }
+
+              .sms-button {
+                position: absolute;
+                right: 0.5rem;
+                padding: 0.5rem 0.75rem;
+                background: var(--primary-color);
+                color: white;
+                border: none;
+                border-radius: 8px;
+                font-size: 0.875rem;
+                cursor: pointer;
+                white-space: nowrap;
+                transition: all 0.3s ease;
+
+                &:disabled {
+                  background: #d1d5db;
+                  cursor: not-allowed;
+                }
+
+                &:hover:not(:disabled) {
+                  background: #2563eb;
+                }
+              }
+            }
+          }
+
+          .error-message {
+            display: block;
+            margin-top: 0.5rem;
+            color: #ef4444;
+            font-size: 0.875rem;
+            padding-left: 1rem;
+          }
+        }
+      }
+
+      .form-options {
+        margin-bottom: 1.5rem;
+
+        .checkbox-label {
+          display: flex;
+          align-items: center;
+          font-size: 0.9rem;
+          color: #374151;
+          cursor: pointer;
+
+          .checkbox-input {
+            display: none;
+
+            &:checked + .checkbox-custom {
+              background: var(--primary-color);
+              border-color: var(--primary-color);
+
+              &::after {
+                opacity: 1;
+                transform: scale(1);
+              }
+            }
+          }
+
+          .checkbox-custom {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #d1d5db;
+            border-radius: 4px;
+            margin-right: 0.75rem;
+            position: relative;
+            transition: all 0.2s ease;
+
+            &::after {
+              content: '✓';
+              position: absolute;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%) scale(0);
+              color: white;
+              font-size: 12px;
+              font-weight: bold;
+              opacity: 0;
+              transition: all 0.2s ease;
+            }
+          }
+        }
+      }
+
+      .login-button {
+        width: 100%;
+        padding: 1rem;
+        background: var(--primary-color);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+
+        &:hover:not(:disabled) {
+          background: #2563eb;
+          transform: translateY(-1px);
+        }
+
+        &:disabled {
+          background: #d1d5db;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        i {
+          font-size: 0.9rem;
+        }
+      }
+    }
+
+    // 生物识别登录
+    .biometric-login {
+      margin: 1.5rem 0;
+      text-align: center;
+
+      .biometric-button {
+        background: none;
+        border: 2px dashed #d1d5db;
+        border-radius: 12px;
+        padding: 1rem;
+        color: #6b7280;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        width: 100%;
+
+        &:hover {
+          border-color: var(--primary-color);
+          color: var(--primary-color);
+        }
+
+        i {
+          font-size: 1.2rem;
+        }
+      }
+    }
+
+    // 快速操作
+    .quick-actions {
+      text-align: center;
+      margin: 1rem 0;
+
+      .quick-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 0.9rem;
+        font-weight: 500;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    // 社交登录
+    .social-login {
+      margin: 2rem 0;
+
+      .divider {
+        text-align: center;
+        margin: 1.5rem 0;
+        position: relative;
+
+        &::before {
+          content: '';
+          position: absolute;
+          top: 50%;
+          left: 0;
+          right: 0;
+          height: 1px;
+          background: #e5e7eb;
+        }
+
+        span {
+          background: var(--bg-color, #f8fafc);
+          padding: 0 1rem;
+          color: #6b7280;
+          font-size: 0.875rem;
+        }
+      }
+
+      .social-buttons {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+
+        .social-button {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 0.75rem;
+          padding: 0.875rem;
+          border: 2px solid #e5e7eb;
+          border-radius: 12px;
+          background: white;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          font-weight: 500;
+
+          &:hover {
+            border-color: var(--social-color);
+            color: var(--social-color);
+            transform: translateY(-1px);
+          }
+
+          i {
+            font-size: 1.1rem;
+          }
+        }
+      }
+    }
+
+    // 注册区域
+    .register-section {
+      text-align: center;
+      margin: 2rem 0;
+      padding-top: 1.5rem;
+      border-top: 1px solid #e5e7eb;
+
+      p {
+        margin: 0;
+        color: #6b7280;
+        font-size: 0.9rem;
+      }
+
+      .register-link {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 600;
+
+        &:hover {
+          text-decoration: underline;
+        }
+      }
+    }
+
+    .extra-content {
+      margin-top: 1rem;
+    }
+  }
+
+  // 底部
+  .login-footer {
+    padding: 1rem 1.5rem;
+    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    text-align: center;
+
+    p {
+      margin: 0;
+      color: #9ca3af;
+      font-size: 0.8rem;
+    }
+  }
+}
+
+// 适配不同屏幕尺寸
+@media (max-width: 375px) {
+  .login-template-mobile-default {
+    .login-main {
+      padding: 0 1rem;
+    }
+
+    .login-header {
+      padding: 1.5rem 1rem 1rem;
+    }
+  }
+}
+
+// 适配横屏
+@media (orientation: landscape) and (max-height: 500px) {
+  .login-template-mobile-default {
+    .login-header {
+      padding: 1rem 1.5rem 0.5rem;
+
+      .header-content {
+        .logo {
+          max-height: 40px;
+          margin-bottom: 0.5rem;
+        }
+
+        .title {
+          font-size: 1.5rem;
+        }
+      }
+    }
+
+    .login-main {
+      .login-mode-tabs {
+        margin-bottom: 1rem;
+      }
+
+      .form-group {
+        margin-bottom: 1rem !important;
+      }
+
+      .social-login {
+        margin: 1rem 0;
+
+        .social-buttons {
+          flex-direction: row;
+        }
+      }
+    }
+  }
+}
+
+// 深色模式支持
+@media (prefers-color-scheme: dark) {
+  .login-template-mobile-default {
+    background-color: #111827;
+    color: #f9fafb;
+
+    .login-header {
+      .title {
+        color: #f9fafb;
+      }
+    }
+
+    .login-mode-tabs {
+      background: #374151;
+
+      .mode-tab {
+        color: #9ca3af;
+
+        &.active {
+          background: #4b5563;
+          color: var(--primary-color);
+        }
+      }
+    }
+
+    .form-input {
+      background: #374151;
+      border-color: #4b5563;
+      color: #f9fafb;
+
+      &::placeholder {
+        color: #9ca3af;
+      }
+
+      &:focus {
+        border-color: var(--primary-color);
+      }
+    }
+
+    .social-button {
+      background: #374151;
+      border-color: #4b5563;
+      color: #f9fafb;
+
+      &:hover {
+        background: #4b5563;
+      }
+    }
+
+    .divider span {
+      background: #111827;
+    }
+  }
+}

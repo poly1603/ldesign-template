@@ -2,12 +2,12 @@
 layout: home
 
 hero:
-  name: "@ldesign/store"
-  text: "现代化 Vue3 状态管理"
-  tagline: 基于 Pinia 的类装饰器状态管理库
+  name: "@ldesign/template"
+  text: "强大的 Vue3 模板管理系统"
+  tagline: 智能化、响应式的多设备模板解决方案
   image:
     src: /logo.svg
-    alt: LDesign Store
+    alt: LDesign Template
   actions:
     - theme: brand
       text: 快速开始
@@ -15,23 +15,26 @@ hero:
     - theme: alt
       text: 查看示例
       link: /examples/basic
+    - theme: alt
+      text: 模板预览
+      link: /playground
 
 features:
-  - icon: 🎯
-    title: 类装饰器模式
-    details: 使用装饰器定义状态、动作和计算属性，代码更简洁优雅
-  - icon: 🔄
-    title: 响应式状态
-    details: 基于 Vue 3 响应式系统，自动追踪依赖变化
-  - icon: 💾
-    title: 状态持久化
-    details: 支持 localStorage/sessionStorage 自动持久化
+  - icon: 📱
+    title: 多设备适配
+    details: 自动检测设备类型，为桌面、移动端、平板提供最佳模板体验
+  - icon: 🎨
+    title: 丰富的模板库
+    details: 内置多种精美模板，支持登录、注册、仪表板等常见场景
   - icon: ⚡
-    title: 性能优化
-    details: 内置缓存、防抖、节流等性能优化功能
+    title: 智能缓存
+    details: 内置模板缓存机制，提升加载性能和用户体验
+  - icon: 🔧
+    title: 高度可定制
+    details: 支持模板配置、插槽、事件等多种自定义方式
   - icon: 🔍
     title: TypeScript 支持
-    details: 完整的类型定义和智能提示
+    details: 完整的类型定义和智能提示，开发体验更佳
   - icon: 🧪
     title: 测试友好
     details: 易于测试的 API 设计，支持单元测试和集成测试
@@ -40,95 +43,121 @@ features:
 ## 快速预览
 
 ```typescript
-import { Action, BaseStore, Getter, State, Store, createStoreClass } from '@ldesign/store'
+import { createTemplateManager, useTemplate } from '@ldesign/template'
 
-@Store({ id: 'counter', persist: true })
-class CounterStore extends BaseStore {
-  @State({ default: 0 })
-  count!: number
+// 创建模板管理器
+const templateManager = createTemplateManager({
+  autoScan: true,
+  enableDeviceDetection: true,
+  enableCache: true
+})
 
-  @Action()
-  increment() {
-    this.count++
-  }
-
-  @Getter()
-  get doubleCount() {
-    return this.count * 2
-  }
-}
-
-export const useCounterStore = createStoreClass(CounterStore)
+// 在组合式函数中使用
+const { currentTemplate, loadTemplate, switchTemplate } = useTemplate({
+  category: 'login',
+  fallback: 'default'
+})
 ```
 
 ```vue
 <template>
-  <div>
-    <p>Count: {{ store.count }}</p>
-    <p>Double: {{ store.doubleCount }}</p>
-    <button @click="store.increment()">+</button>
+  <div class="template-container">
+    <!-- 使用模板渲染器 -->
+    <TemplateRenderer
+      :template="currentTemplate"
+      :props="templateProps"
+      @login="handleLogin"
+      @forgot-password="handleForgotPassword"
+    >
+      <template #header>
+        <h1>欢迎回来</h1>
+      </template>
+    </TemplateRenderer>
+
+    <!-- 模板选择器 -->
+    <TemplateSelector
+      category="login"
+      :current="currentTemplate?.id"
+      @change="switchTemplate"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
-import { useCounterStore } from './stores/counter'
+import { ref } from 'vue'
+import { useTemplate } from '@ldesign/template'
+import TemplateRenderer from '@ldesign/template/src/components/TemplateRenderer.vue'
+import TemplateSelector from '@ldesign/template/src/components/TemplateSelector.vue'
 
-const store = useCounterStore()
+const { currentTemplate, switchTemplate } = useTemplate({
+  category: 'login'
+})
+
+const templateProps = ref({
+  title: '用户登录',
+  logo: '/logo.png',
+  showRememberMe: true
+})
+
+const handleLogin = (data: any) => {
+  console.log('登录数据:', data)
+}
+
+const handleForgotPassword = () => {
+  console.log('忘记密码')
+}
 </script>
 ```
 
-## 为什么选择 @ldesign/store？
+## 为什么选择 @ldesign/template？
 
-### 🎨 优雅的 API 设计
+### 🎨 简单易用的 API
 
-传统的 Pinia 写法：
+传统的模板管理方式：
 
 ```typescript
-export const useCounterStore = defineStore('counter', () => {
-  const count = ref(0)
-  const doubleCount = computed(() => count.value * 2)
+// 手动管理模板
+const isMobile = window.innerWidth < 768
+const templateName = isMobile ? 'mobile-login' : 'desktop-login'
 
-  function increment() {
-    count.value++
-  }
+// 手动导入模板
+import DesktopLogin from './templates/desktop-login.vue'
+import MobileLogin from './templates/mobile-login.vue'
 
-  return { count, doubleCount, increment }
+const currentTemplate = isMobile ? MobileLogin : DesktopLogin
+```
+
+使用 @ldesign/template：
+
+```typescript
+// 自动设备检测和模板选择
+const { currentTemplate } = useTemplate({
+  category: 'login',
+  autoDetectDevice: true
 })
+
+// 模板会根据设备类型自动选择最佳模板
 ```
 
-使用 @ldesign/store：
+### 🚀 强大的功能特性
 
-```typescript
-@Store({ id: 'counter' })
-class CounterStore extends BaseStore {
-  @State({ default: 0 })
-  count!: number
-
-  @Getter()
-  get doubleCount() {
-    return this.count * 2
-  }
-
-  @Action()
-  increment() {
-    this.count++
-  }
-}
-
-export const useCounterStore = createStoreClass(CounterStore)
-```
-
-### 🚀 强大的功能
-
-- **自动加载状态管理** - 异步操作自动处理加载状态
-- **智能缓存** - 方法级别的缓存控制
-- **防抖节流** - 内置防抖和节流装饰器
-- **状态持久化** - 灵活的持久化配置
-- **错误处理** - 自动错误捕获和状态管理
+- **智能设备检测** - 自动识别桌面、移动端、平板设备
+- **模板缓存系统** - 提升加载性能，减少重复请求
+- **热插拔模板** - 运行时动态切换模板，无需重启应用
+- **模板预加载** - 智能预加载常用模板，提升用户体验
+- **错误降级** - 模板加载失败时自动降级到备用模板
 
 ### 📈 更好的开发体验
 
 - **完整的 TypeScript 支持** - 类型安全和智能提示
-- **装饰器语法** - 声明式的状态管理
-- **测试友好** - 易于模拟和测试
-- **开发工具集成** - 完整的 Pinia DevTools 支持
+- **Vue 3 组合式 API** - 现代化的开发体验
+- **丰富的模板库** - 开箱即用的精美模板
+- **可视化模板选择器** - 实时预览和切换模板
+- **详细的文档和示例** - 快速上手，轻松集成
+
+### 🎯 适用场景
+
+- **多端应用开发** - 一套代码，多端适配
+- **快速原型开发** - 丰富的模板库，快速搭建界面
+- **企业级应用** - 可定制、可扩展的模板系统
+- **设计系统** - 统一的视觉风格和交互体验

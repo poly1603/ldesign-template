@@ -3,20 +3,18 @@
  */
 
 import type {
+  DeviceType,
+  TemplateCategory,
   TemplateConfig,
   TemplateInstance,
-  TemplateCategory,
-  TemplateManagerConfig,
-  TemplateStatus,
-  DeviceType,
-  TemplateEvents
+  TemplateManagerConfig
 } from '../types'
 import { EventEmitter } from '../utils'
 
 /**
  * 模板管理器
  */
-export class TemplateManager extends EventEmitter<TemplateEvents> {
+export class TemplateManager extends EventEmitter {
   private config: Required<TemplateManagerConfig>
   private templates: Map<string, TemplateInstance> = new Map()
   private categories: Map<string, TemplateCategory> = new Map()
@@ -25,15 +23,17 @@ export class TemplateManager extends EventEmitter<TemplateEvents> {
 
   constructor(config: TemplateManagerConfig) {
     super()
-    
+
     this.config = {
-      templateRoot: config.templateRoot,
+      templateRoot: config.templateRoot || '/src/templates',
       enableCache: config.enableCache ?? true,
       cacheExpiry: config.cacheExpiry ?? 1000 * 60 * 30, // 30分钟
       autoScan: config.autoScan ?? true,
       scanInterval: config.scanInterval ?? 1000 * 60 * 5, // 5分钟
-      defaultDeviceType: config.defaultDeviceType ?? 'desktop'
-    }
+      defaultDeviceType: config.defaultDeviceType ?? 'desktop',
+      onError: config.onError,
+      onTemplateLoaded: config.onTemplateLoaded
+    } as Required<TemplateManagerConfig>
 
     if (this.config.autoScan) {
       this.startAutoScan()
@@ -56,21 +56,21 @@ export class TemplateManager extends EventEmitter<TemplateEvents> {
     }
 
     this.isScanning = true
-    
+
     try {
       // 使用 import.meta.glob 扫描模板文件
-      const templateModules = import.meta.glob(
+      const templateModules = (import.meta as any).glob(
         `${this.config.templateRoot}/**/index.ts`,
         { eager: false }
       )
 
       const categories = new Map<string, TemplateCategory>()
-      
+
       for (const [path, moduleLoader] of Object.entries(templateModules)) {
         try {
           const module = await moduleLoader() as any
           const templateConfig: TemplateConfig = module.default || module.config
-          
+
           if (this.validateTemplateConfig(templateConfig)) {
             this.processTemplateConfig(templateConfig, path, categories)
           }
@@ -97,7 +97,7 @@ export class TemplateManager extends EventEmitter<TemplateEvents> {
     categories: Map<string, TemplateCategory>
   ): void {
     const { category, deviceType } = config
-    
+
     // 计算组件和样式文件路径
     const basePath = configPath.replace('/index.ts', '')
     config.componentPath = `${basePath}/component.tsx`
@@ -191,7 +191,7 @@ export class TemplateManager extends EventEmitter<TemplateEvents> {
     } catch (error) {
       instance.status = 'error'
       instance.error = error as Error
-      
+
       this.emit('template:error', config, error as Error)
       throw error
     }
@@ -270,12 +270,12 @@ export class TemplateManager extends EventEmitter<TemplateEvents> {
    * 预加载模板
    */
   async preloadTemplates(templateIds: string[]): Promise<void> {
-    const loadPromises = templateIds.map(id => 
+    const loadPromises = templateIds.map(id =>
       this.loadTemplate(id).catch(error => {
         console.warn(`Failed to preload template ${id}:`, error)
       })
     )
-    
+
     await Promise.allSettled(loadPromises)
   }
 
@@ -362,11 +362,11 @@ export function setGlobalTemplateManager(manager: TemplateManager): void {
  */
 export function createTemplateManager(config: TemplateManagerConfig): TemplateManager {
   const manager = new TemplateManager(config)
-  
+
   // 如果没有全局实例，设置为全局实例
   if (!globalTemplateManager) {
     setGlobalTemplateManager(manager)
   }
-  
+
   return manager
 }

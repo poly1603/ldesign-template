@@ -2,7 +2,7 @@
  * 本地存储组合式函数
  */
 
-import { ref, watch, Ref } from 'vue'
+import { ref, Ref, watch } from 'vue'
 import type { UseStorageReturn } from '../types'
 import { StorageManager } from '../utils'
 
@@ -15,7 +15,7 @@ export function useStorage<T>(
   storageType: 'localStorage' | 'sessionStorage' = 'localStorage'
 ): UseStorageReturn<T> {
   const storage = new StorageManager(storageType)
-  
+
   // 从存储中读取初始值
   const storedValue = storage.get<T>(key, defaultValue)
   const value = ref<T>(storedValue) as Ref<T>
@@ -49,11 +49,40 @@ export function useStorage<T>(
     value.value = defaultValue
   }
 
+  // 检查存储支持
+  const isSupported = ref(storage.isSupported())
+
+  // 移除值
+  const remove = () => {
+    storage.remove(key)
+    value.value = defaultValue
+  }
+
+  // 清空存储
+  const clear = () => {
+    storage.clear()
+    value.value = defaultValue
+  }
+
+  // 刷新值
+  const refresh = () => {
+    const storedValue = storage.get(key)
+    value.value = storedValue !== null ? storedValue : defaultValue
+  }
+
+  // 获取存储大小
+  const getSize = () => {
+    return storage.size()
+  }
+
   return {
     value,
+    isSupported,
     setValue,
-    removeValue,
-    resetValue
+    remove,
+    clear,
+    refresh,
+    getSize
   }
 }
 
@@ -114,10 +143,39 @@ export function useReactiveStorage<T>(
     value.value = defaultValue
   }
 
+  // 检查存储支持
+  const isSupported = ref(storage.isSupported())
+
+  // 移除值
+  const remove = () => {
+    storage.remove(key)
+    value.value = defaultValue
+  }
+
+  // 清空存储
+  const clear = () => {
+    storage.clear()
+    value.value = defaultValue
+  }
+
+  // 刷新值
+  const refresh = () => {
+    const storedValue = storage.get(key)
+    value.value = storedValue !== null ? storedValue : defaultValue
+  }
+
+  // 获取存储大小
+  const getSize = () => {
+    return storage.size()
+  }
+
   return {
     value,
+    isSupported,
     setValue,
-    removeValue,
-    resetValue
+    remove,
+    clear,
+    refresh,
+    getSize
   }
 }

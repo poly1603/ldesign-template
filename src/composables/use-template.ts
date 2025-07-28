@@ -2,16 +2,13 @@
  * 模板管理 Vue 组合式函数
  */
 
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
-import type {
-  UseTemplateReturn,
-  UseTemplateConfig,
-  TemplateInstance,
-  TemplateConfig,
-  DeviceType,
-  TemplateSelectorConfig
-} from '../types'
+import { computed, onMounted, ref, watch } from 'vue'
 import { getGlobalTemplateManager } from '../core/template-manager'
+import type {
+  DeviceType,
+  TemplateInstance,
+  UseTemplateReturn
+} from '../types'
 import { useDeviceDetector } from './use-device-detector'
 import { useStorage } from './use-storage'
 
@@ -20,7 +17,7 @@ import { useStorage } from './use-storage'
  */
 export function useTemplate(
   category: string,
-  config: UseTemplateConfig = {}
+  config: UseTemplateOptions = {}
 ): UseTemplateReturn {
   const templateManager = getGlobalTemplateManager()
   if (!templateManager) {
@@ -53,7 +50,7 @@ export function useTemplate(
     if (config.defaultTemplates?.[device]) {
       return config.defaultTemplates[device]!
     }
-    
+
     // 使用系统默认模板
     const defaultTemplate = templateManager.getDefaultTemplate(category, device)
     return defaultTemplate?.id || null
@@ -71,7 +68,7 @@ export function useTemplate(
     try {
       const template = await templateManager.loadTemplate(templateId)
       currentTemplate.value = template
-      
+
       // 保存用户选择
       setUserPreference({
         templateId,
@@ -86,18 +83,19 @@ export function useTemplate(
   }
 
   // 切换模板
-  const switchTemplate = async (templateId: string): Promise<void> => {
+  const switchTemplate = async (templateId: string): Promise<boolean> => {
     const templateConfig = templateManager.getTemplateConfig(templateId)
     if (!templateConfig) {
       throw new Error(`Template not found: ${templateId}`)
     }
 
     // 检查模板是否属于当前分类和设备类型
-    if (templateConfig.category !== category || templateConfig.deviceType !== currentDevice.value) {
+    if (templateConfig.category !== category || templateConfig.device !== currentDevice.value) {
       throw new Error(`Template ${templateId} is not compatible with current category/device`)
     }
 
     await loadTemplate(templateId)
+    return true
   }
 
   // 显示模板选择器
@@ -167,8 +165,8 @@ export function useTemplate(
   // 监听可用模板变化
   watch(availableTemplates, async (newTemplates) => {
     // 如果当前没有模板或当前模板不在新的模板列表中，重新初始化
-    if (!currentTemplate.value || 
-        !newTemplates.find(t => t.id === currentTemplate.value!.config.id)) {
+    if (!currentTemplate.value ||
+      !newTemplates.find(t => t.id === currentTemplate.value!.config.id)) {
       await initializeTemplate()
     }
   })
@@ -176,7 +174,7 @@ export function useTemplate(
   // 组件挂载时初始化
   onMounted(async () => {
     await initializeTemplate()
-    
+
     // 预加载（如果启用）
     if (config.preload) {
       const templateIds = availableTemplates.value.map(t => t.id)
@@ -186,16 +184,22 @@ export function useTemplate(
     }
   })
 
+  // 计算当前模板配置
+  const currentTemplateConfig = computed(() =>
+    currentTemplate.value ? currentTemplate.value.config : null
+  )
+
   return {
-    currentTemplate,
+    currentTemplate: currentTemplateConfig,
     availableTemplates,
-    currentDevice,
     isLoading,
     error,
     switchTemplate,
-    showSelector,
-    refresh,
-    preload,
-    getTemplateComponent
+    refreshTemplates: refresh,
+    preloadTemplates: preload,
+    clearError: () => { error.value = null },
+    getTemplateById: (id: string) => templateManager.getTemplateConfig(id),
+    getTemplatesByDevice: (device: DeviceType) => templateManager.getTemplatesByDevice(device),
+    searchTemplates: (query: string) => templateManager.searchTemplates(query)
   }
 }

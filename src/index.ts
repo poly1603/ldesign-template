@@ -1,16 +1,12 @@
 // LDesign Template - 模板管理系统主入口文件
 
 // 核心类和管理器
-export { TemplateManager, getGlobalTemplateManager, setGlobalTemplateManager } from './core/template-manager'
-export type { TemplateManagerConfig } from './types'
+export { getGlobalTemplateManager, setGlobalTemplateManager, TemplateManager } from './core/template-manager'
+import type { TemplateManagerConfig } from './types'
 
 // Vue 组合式函数
 export {
-  useTemplate,
-  useDeviceDetector,
-  useStorage,
-  useReactiveStorage,
-  useTemplateCache
+  useDeviceDetector, useReactiveStorage, useStorage, useTemplate, useTemplateCache
 } from './composables'
 
 // Vue 组件
@@ -20,73 +16,41 @@ export {
 // import TemplateSelector from '@ldesign/template/src/components/TemplateSelector.vue'
 
 // 工具函数
-export { DeviceDetector, StorageManager, EventEmitter, debounce, throttle, generateId, deepClone, formatFileSizeileSize,
-  delay
+export {
+  CacheManager, debounce, deepClone, DeviceDetector, EventEmitter, formatFileSize, generateId, StorageManager, TemplateFilterUtils, TemplatePathUtils, throttle, validateTemplateConfig
 } from './utils'
 
 // 模板相关
 export {
-  templateConfigs,
-  templateCategories,
-  defaultConfig,
-  getTemplatesByDevice,
-  getTemplatesByCategory,
-  getDefaultTemplate,
-  getTemplateById,
-  searchTemplates,
-  getTemplateStats,
-  validateTemplateConfig,
-  createTemplateLoader,
-  preloadDefaultTemplates,
-  clearTemplateCache
+  defaultConfig, getDefaultTemplate, getTemplatesByCategory, getTemplatesByDevice, templateCategories, templateConfigs
 } from './templates'
 
 // 类型定义
 export type {
-  // 核心类型
-  DeviceType,
-  TemplateStatus,
-  TemplateInfo,
-  TemplateConfig,
-  TemplateInstance,
-  TemplateCategory,
-  TemplateManagerConfig,
-  TemplateEvents,
-  TemplateLoader,
   DeviceDetector as DeviceDetectorType,
-  StorageAdapter as StorageAdapterType,
-  
+  // 核心类型
+  DeviceType, StorageAdapter as StorageAdapterType, TemplateCategory, TemplateConfig, TemplateContext, TemplateEvents, TemplateInfo, TemplateInstance, TemplateLoader, TemplateManagerConfig, TemplateProviderProps,
+  TemplateProviderSlots,
+  TemplateRendererProps, TemplateSelectorConfig, TemplateSelectorEmits, TemplateSelectorProps, TemplateStatus, UseDeviceDetectorReturn,
+  UseStorageReturn,
+  UseTemplateCacheReturn,
   // Vue 相关类型
   UseTemplateConfig,
-  UseTemplateReturn,
-  TemplateContext,
-  TemplateProviderProps,
-  TemplateProviderSlots,
-  TemplateRendererProps,
-  TemplateSelectorProps,
-  TemplateSelectorEmits,
-  TemplateSelectorConfig,
-  UseDeviceDetectorReturn,
-  UseStorageReturn,
-  UseTemplateCacheReturn
+  UseTemplateReturn
 } from './types'
 
-// 默认配置
-export const DEFAULT_TEMPLATE_CONFIG = {
-  autoScan: true,
-  scanDirectories: ['./templates'],
-  enableCache: true,
-  cacheExpiry: 3600000, // 1小时
-  preloadDefault: true,
-  enableDeviceDetection: true,
-  enableStorage: true,
-  storageKey: 'ldesign-template-preferences',
-  errorRetryCount: 3,
-  errorRetryDelay: 1000
-}
+// 移除重复的导出声明
 
 // 版本信息
 export const VERSION = '1.0.0'
+
+// 默认配置
+const DEFAULT_TEMPLATE_CONFIG: Partial<TemplateManagerConfig> = {
+  autoScan: true,
+  enableCache: true,
+  enableDeviceDetection: true,
+  templateRoot: '/src/templates'
+}
 
 // 创建模板管理器实例的便捷函数
 export const createTemplateManager = (config?: Partial<TemplateManagerConfig>) => {
@@ -99,13 +63,13 @@ export const createTemplateManager = (config?: Partial<TemplateManagerConfig>) =
 // 初始化函数
 export const initTemplateSystem = async (config?: Partial<TemplateManagerConfig>) => {
   const manager = createTemplateManager(config)
-  
+
   // 设置为全局管理器
   setGlobalTemplateManager(manager)
-  
+
   // 初始化管理器
   await manager.initialize()
-  
+
   return manager
 }
 
@@ -113,13 +77,13 @@ export const initTemplateSystem = async (config?: Partial<TemplateManagerConfig>
 export const install = (app: any, options?: Partial<TemplateManagerConfig>) => {
   // 创建全局模板管理器
   const manager = createTemplateManager(options)
-  
+
   // 提供给整个应用
   app.provide('templateManager', manager)
-  
+
   // 添加全局属性
   app.config.globalProperties.$templateManager = manager
-  
+
   // 初始化管理器
   manager.initialize().catch(error => {
     console.error('Failed to initialize template manager:', error)

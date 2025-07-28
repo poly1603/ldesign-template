@@ -1,0 +1,272 @@
+name: Deploy
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '20'
+  PNPM_VERSION: '8'
+
+jobs:
+  # 构建
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build library
+        run: pnpm build
+
+      - name: Build documentation
+        run: pnpm docs:build
+
+      - name: Build demo app
+        run: pnpm demo:build
+
+      - name: Upload documentation artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: docs-build
+          path: docs/.vitepress/dist/
+          retention-days: 7
+
+      - name: Upload demo app artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: demo-build
+          path: examples/demo-app/dist/
+          retention-days: 7
+
+  # 部署文档到 Netlify
+  deploy-docs:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+    steps:
+      - name: Download documentation artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: docs-build
+          path: docs-dist
+
+      - name: Deploy to Netlify
+        uses: nwtgck/actions-netlify@v2.0
+        with:
+          publish-dir: './docs-dist'
+          production-branch: main
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          deploy-message: "Deploy from GitHub Actions"
+          enable-pull-request-comment: false
+          enable-commit-comment: true
+          overwrites-pull-request-comment: true
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_DOCS_SITE_ID }}
+
+  # 部署演示应用到 Vercel
+  deploy-demo:
+    name: Deploy Demo App
+    runs-on: ubuntu-latest
+    needs: build
+    environment: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download demo app artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: demo-build
+          path: demo-dist
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_DEMO_PROJECT_ID }}
+          working-directory: ./demo-dist
+          vercel-args: '--prod'
+
+  # 部署 Storybook (如果有的话)
+  deploy-storybook:
+    name: Deploy Storybook
+    runs-on: ubuntu-latest
+    needs: build
+    if: false # 暂时禁用，如果有 Storybook 可以启用
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Storybook
+        run: pnpm build-storybook
+
+      - name: Deploy to Chromatic
+        uses: chromaui/action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          buildScriptName: build-storybook
+
+  # 更新 CDN 缓存
+  invalidate-cdn:
+    name: Invalidate CDN Cache
+    runs-on: ubuntu-latest
+    needs: [deploy-docs, deploy-demo]
+    if: always() && (needs.deploy-docs.result == 'success' || needs.deploy-demo.result == 'success')
+    steps:
+      - name: Invalidate CloudFlare cache
+        if: env.CLOUDFLARE_ZONE_ID != ''
+        run: |
+          curl -X POST "https://api.cloudflare.com/client/v4/zones/${{ secrets.CLOUDFLARE_ZONE_ID }}/purge_cache" \
+            -H "Authorization: Bearer ${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"purge_everything":true}'
+        env:
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+
+  # 通知部署结果
+  notify:
+    name: Notify Deployment
+    runs-on: ubuntu-latest
+    needs: [deploy-docs, deploy-demo]
+    if: always()
+    steps:
+      - name: Notify success
+        if: needs.deploy-docs.result == 'success' && needs.deploy-demo.result == 'success'
+        run: |
+          echo "🎉 Deployment successful!"
+          echo "📚 Documentation: https://ldesign-template.netlify.app"
+          echo "🎮 Demo App: https://ldesign-template-demo.vercel.app"
+
+      - name: Notify failure
+        if: needs.deploy-docs.result == 'failure' || needs.deploy-demo.result == 'failure'
+        run: |
+          echo "❌ Deployment failed!"
+          if [[ "${{ needs.deploy-docs.result }}" == "failure" ]]; then
+            echo "Documentation deployment failed"
+          fi
+          if [[ "${{ needs.deploy-demo.result }}" == "failure" ]]; then
+            echo "Demo app deployment failed"
+          fi
+          exit 1
+
+      # 可选：发送 Slack 通知
+      - name: Send Slack notification
+        if: always() && env.SLACK_WEBHOOK_URL != ''
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: '#deployments'
+          username: 'GitHub Actions'
+          icon_emoji: ':rocket:'
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          text: |
+            Deployment ${{ job.status }}!
+            📚 Docs: https://ldesign-template.netlify.app
+            🎮 Demo: https://ldesign-template-demo.vercel.app
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  # 性能监控
+  lighthouse:
+    name: Lighthouse Performance Audit
+    runs-on: ubuntu-latest
+    needs: [deploy-docs, deploy-demo]
+    if: needs.deploy-docs.result == 'success' && needs.deploy-demo.result == 'success'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Audit documentation site
+        uses: treosh/lighthouse-ci-action@v9
+        with:
+          urls: |
+            https://ldesign-template.netlify.app
+            https://ldesign-template.netlify.app/guide/getting-started
+            https://ldesign-template.netlify.app/api/template-manager
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Audit demo app
+        uses: treosh/lighthouse-ci-action@v9
+        with:
+          urls: |
+            https://ldesign-template-demo.vercel.app
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+  # SEO 检查
+  seo-check:
+    name: SEO Check
+    runs-on: ubuntu-latest
+    needs: [deploy-docs, deploy-demo]
+    if: needs.deploy-docs.result == 'success' && needs.deploy-demo.result == 'success'
+    steps:
+      - name: SEO check for documentation
+        run: |
+          # 检查基本 SEO 元素
+          curl -s https://ldesign-template.netlify.app | grep -q "<title>" && echo "✅ Title tag found" || echo "❌ Title tag missing"
+          curl -s https://ldesign-template.netlify.app | grep -q 'meta name="description"' && echo "✅ Meta description found" || echo "❌ Meta description missing"
+          curl -s https://ldesign-template.netlify.app | grep -q 'meta property="og:' && echo "✅ Open Graph tags found" || echo "❌ Open Graph tags missing"
+
+      - name: SEO check for demo app
+        run: |
+          curl -s https://ldesign-template-demo.vercel.app | grep -q "<title>" && echo "✅ Title tag found" || echo "❌ Title tag missing"
+          curl -s https://ldesign-template-demo.vercel.app | grep -q 'meta name="description"' && echo "✅ Meta description found" || echo "❌ Meta description missing"
+
+  # 安全扫描
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    needs: [deploy-docs, deploy-demo]
+    if: needs.deploy-docs.result == 'success' && needs.deploy-demo.result == 'success'
+    steps:
+      - name: Security headers check
+        run: |
+          echo "Checking security headers for documentation site..."
+          curl -I https://ldesign-template.netlify.app | grep -i "x-frame-options\|x-content-type-options\|x-xss-protection\|strict-transport-security" || echo "Some security headers missing"
+          
+          echo "Checking security headers for demo app..."
+          curl -I https://ldesign-template-demo.vercel.app | grep -i "x-frame-options\|x-content-type-options\|x-xss-protection\|strict-transport-security" || echo "Some security headers missing"
+
+      - name: SSL certificate check
+        run: |
+          echo "Checking SSL certificate for documentation site..."
+          echo | openssl s_client -servername ldesign-template.netlify.app -connect ldesign-template.netlify.app:443 2>/dev/null | openssl x509 -noout -dates
+          
+          echo "Checking SSL certificate for demo app..."
+          echo | openssl s_client -servername ldesign-template-demo.vercel.app -connect ldesign-template-demo.vercel.app:443 2>/dev/null | openssl x509 -noout -dates
