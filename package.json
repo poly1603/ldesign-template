@@ -216,14 +216,14 @@
     "docs:preview": "vitepress preview docs",
     "build:check": "pnpm run build && tsx scripts/validate-build.ts",
     "build:validate": "pnpm run build && tsx scripts/validate-build.ts",
-    "build:dev": "ldesign-builder build --dev"
+    "build:dev": "ldesign-builder build --dev",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@ldesign/cache": "workspace:*",
     "@ldesign/device": "workspace:*",
     "@ldesign/engine": "workspace:*",
     "@ldesign/shared": "workspace:*",
-    "@ldesign/webcomponent": "workspace:*",
     "@vueuse/core": "^13.7.0",
     "lucide-vue-next": "^0.544.0"
   },
@@ -243,7 +243,7 @@
     "@vue/test-utils": "^2.4.4",
     "autoprefixer": "^10.4.21",
     "chokidar": "^3.6.0",
-    "eslint": "^9.0.0",
+    "eslint": "^9.18.0",
     "happy-dom": "^18.0.1",
     "jsdom": "^24.0.0",
     "less": "^4.2.1",
@@ -255,11 +255,12 @@
     "rollup-plugin-postcss": "^4.0.2",
     "size-limit": "^11.0.0",
     "tsx": "^4.7.0",
-    "typescript": "^5.6.0",
+    "typescript": "^5.7.3",
     "vite": "^5.0.12",
     "vitest": "^3.2.4",
     "vue": "^3.4.15",
-    "vue-tsc": "^3.0.5"
+    "vue-tsc": "^3.0.5",
+    "@antfu/eslint-config": "^6.0.0"
   },
   "engines": {
     "node": ">=16.0.0"
