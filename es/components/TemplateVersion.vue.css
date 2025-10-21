@@ -1,0 +1,306 @@
+
+.template-version[data-v-37a33404] {
+  padding: 1rem;
+}
+.version-header[data-v-37a33404] {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+.version-info[data-v-37a33404] {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.version-label[data-v-37a33404] {
+  color: #666;
+}
+.version-number[data-v-37a33404] {
+  font-weight: bold;
+  font-size: 1.2em;
+}
+.deprecated-badge[data-v-37a33404],
+.update-badge[data-v-37a33404] {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+.deprecated-badge[data-v-37a33404] {
+  background: #ffebee;
+  color: #c62828;
+}
+.update-badge[data-v-37a33404] {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+.version-actions[data-v-37a33404] {
+  display: flex;
+  gap: 0.5rem;
+}
+.version-actions button[data-v-37a33404] {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.version-actions button[data-v-37a33404]:hover {
+  background: #f5f5f5;
+}
+.version-history[data-v-37a33404] {
+  background: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+.version-list[data-v-37a33404] {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.version-item[data-v-37a33404] {
+  padding: 1rem;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+.version-item.active[data-v-37a33404] {
+  background: #e3f2fd;
+  border-color: #2196f3;
+}
+.version-item.deprecated[data-v-37a33404] {
+  opacity: 0.6;
+}
+.version-item-header[data-v-37a33404] {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.version-num[data-v-37a33404] {
+  font-weight: bold;
+}
+.version-date[data-v-37a33404] {
+  color: #666;
+  font-size: 0.9em;
+}
+.version-desc[data-v-37a33404] {
+  color: #666;
+  margin-bottom: 0.5rem;
+}
+.version-item-actions[data-v-37a33404] {
+  display: flex;
+  gap: 0.5rem;
+}
+.version-item-actions button[data-v-37a33404] {
+  padding: 0.25rem 0.75rem;
+  font-size: 0.9em;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.version-item-actions button[data-v-37a33404]:hover:not(:disabled) {
+  background: #f5f5f5;
+}
+.version-item-actions button[data-v-37a33404]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.version-dialog-overlay[data-v-37a33404] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.version-dialog[data-v-37a33404] {
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  max-width: 500px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+.version-dialog h3[data-v-37a33404] {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+}
+.form-group[data-v-37a33404] {
+  margin-bottom: 1rem;
+}
+.form-group label[data-v-37a33404] {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+}
+.form-group input[data-v-37a33404],
+.form-group textarea[data-v-37a33404],
+.form-group select[data-v-37a33404] {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+.form-group .error[data-v-37a33404] {
+  color: #f44336;
+  font-size: 0.85em;
+  margin-top: 0.25rem;
+  display: block;
+}
+.dialog-actions[data-v-37a33404] {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+.dialog-actions button[data-v-37a33404] {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.dialog-actions button.primary[data-v-37a33404] {
+  background: #2196f3;
+  color: white;
+  border-color: #2196f3;
+}
+.dialog-actions button[data-v-37a33404]:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.dialog-actions button[data-v-37a33404]:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.version-details dl[data-v-37a33404] {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.5rem 1rem;
+}
+.version-details dt[data-v-37a33404] {
+  font-weight: 500;
+  color: #666;
+}
+.detail-section[data-v-37a33404] {
+  margin-bottom: 1.5rem;
+}
+.detail-section h4[data-v-37a33404] {
+  margin-bottom: 0.75rem;
+  color: #333;
+}
+.detail-section pre[data-v-37a33404] {
+  background: #f5f5f5;
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+}
+.status-published[data-v-37a33404] {
+  color: #4caf50;
+}
+.status-deprecated[data-v-37a33404] {
+  color: #f44336;
+}
+.status-draft[data-v-37a33404] {
+  color: #ff9800;
+}
+.migration-progress[data-v-37a33404] {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 8px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  z-index: 2000;
+  min-width: 300px;
+}
+.progress-content h4[data-v-37a33404] {
+  margin-top: 0;
+  margin-bottom: 1rem;
+}
+.progress-bar[data-v-37a33404] {
+  width: 100%;
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+.progress-fill[data-v-37a33404] {
+  height: 100%;
+  background: #2196f3;
+  transition: width 0.3s ease;
+}
+.changelog[data-v-37a33404] {
+  margin-top: 2rem;
+}
+.changelog h3[data-v-37a33404] {
+  margin-bottom: 1rem;
+}
+.changelog-list[data-v-37a33404] {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.changelog-item[data-v-37a33404] {
+  padding: 0.75rem;
+  background: #f9f9f9;
+  border-radius: 6px;
+}
+.changelog-header[data-v-37a33404] {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.changelog-version[data-v-37a33404] {
+  font-weight: bold;
+  color: #2196f3;
+}
+.changelog-date[data-v-37a33404] {
+  color: #666;
+  font-size: 0.9em;
+}
+.changelog-content[data-v-37a33404] {
+  color: #333;
+}
+
+/* 过渡动画 */
+.slide-enter-active[data-v-37a33404],
+.slide-leave-active[data-v-37a33404] {
+  transition: all 0.3s ease;
+}
+.slide-enter-from[data-v-37a33404] {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+.slide-leave-to[data-v-37a33404] {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+.fade-enter-active[data-v-37a33404],
+.fade-leave-active[data-v-37a33404] {
+  transition: opacity 0.3s ease;
+}
+.fade-enter-from[data-v-37a33404],
+.fade-leave-to[data-v-37a33404] {
+  opacity: 0;
+}
+
+/*# sourceMappingURL=TemplateVersion.vue.css.map */
