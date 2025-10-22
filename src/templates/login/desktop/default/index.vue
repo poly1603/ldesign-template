@@ -123,10 +123,8 @@ const handleSocialLogin = (provider: SocialProvider) => {
             <span>或</span>
           </div>
           <div class="social-buttons">
-            <button
-              v-for="provider in socialProviders" :key="provider.name" class="social-btn"
-              @click="handleSocialLogin(provider)"
-            >
+            <button v-for="provider in socialProviders" :key="provider.name" class="social-btn"
+              @click="handleSocialLogin(provider)">
               {{ provider.label }}
             </button>
           </div>
@@ -153,13 +151,13 @@ const handleSocialLogin = (provider: SocialProvider) => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--color-bg-page) 0%, var(--color-bg-container-tertiary) 100%);
 }
 
 .login-container {
   width: 100%;
-  max-width: 400px;
-  padding: 20px;
+  max-width: 450px;
+  padding: 20px 32px;
   background: white;
   border-radius: 8px;
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
@@ -171,8 +169,8 @@ const handleSocialLogin = (provider: SocialProvider) => {
 }
 
 .login-header h1 {
-  margin: 0 0 8px;
-  font-size: 28px;
+  margin: 0;
+  font-size: 20px;
   font-weight: 600;
   color: #333;
 }
@@ -239,6 +237,7 @@ const handleSocialLogin = (provider: SocialProvider) => {
   text-align: center;
   font-size: 14px;
   color: #666;
+  margin-top: 16px;
 }
 
 .login-footer a {
@@ -253,11 +252,11 @@ const handleSocialLogin = (provider: SocialProvider) => {
 /* Logo 样式 */
 .login-logo {
   text-align: center;
-  margin-bottom: 8px;
 }
 
 .default-logo {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   color: #667eea;
 }
 

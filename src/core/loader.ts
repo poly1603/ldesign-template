@@ -5,27 +5,33 @@
 import type { Component } from 'vue'
 import type { TemplateFilter, TemplateLoadOptions, TemplateMetadata } from '../types'
 import { getScanner } from './scanner'
+import { createSmartCache, type SmartCache } from './smart-cache'
 import { loadComponentStyle } from './style-loader'
 
 /**
- * 模板加载器类 - 内存优化版本
+ * 模板加载器类 - 使用智能三级缓存
  */
 export class TemplateLoader {
-  // 使用 WeakRef 存储组件，允许垃圾回收
-  private loadedComponents: Map<string, WeakRef<Component>> = new Map()
+  // 智能三级缓存系统
+  private smartCache: SmartCache
   // 加载中的 Promise 缓存，完成后立即清理
   private loadingPromises: Map<string, Promise<Component>> = new Map()
-  // FinalizationRegistry 自动清理已回收的组件
-  private componentRegistry = new FinalizationRegistry((key: string) => {
-    // 自动清理已被垃圾回收的组件引用
-    this.loadedComponents.delete(key)
-  })
   // 预编译的键生成函数，避免重复字符串拼接
-  private static createKey = (category: string, device: string, name: string): string => 
+  private static createKey = (category: string, device: string, name: string): string =>
     `${category}/${device}/${name}`
 
+  constructor() {
+    // 初始化智能缓存
+    this.smartCache = createSmartCache({
+      hotSize: 20,  // 保持20个强引用
+      warmSize: 50, // 50个弱引用
+      promoteThreshold: 3, // 访问3次后提升
+      enableMetrics: true,
+    })
+  }
+
   /**
-   * 加载模板组件
+   * 加载模板组件 - 使用智能三级缓存
    */
   async load(
     category: string,
@@ -35,19 +41,14 @@ export class TemplateLoader {
   ): Promise<Component> {
     const key = TemplateLoader.createKey(category, device, name)
 
-    // 检查缓存 - 优化查找逻辑
-    const weakRef = this.loadedComponents.get(key)
-    if (weakRef) {
-      const cached = weakRef.deref()
-      if (cached) {
-        options?.onLoad?.(cached)
-        return cached
-      }
-      // 组件已被垃圾回收，清理引用
-      this.loadedComponents.delete(key)
+    // 检查智能缓存
+    const cached = this.smartCache.get(key)
+    if (cached) {
+      options?.onLoad?.(cached)
+      return cached
     }
 
-    // 检查是否正在加载 - 简化逻辑
+    // 检查是否正在加载
     const pending = this.loadingPromises.get(key)
     if (pending) return pending
 
@@ -70,10 +71,8 @@ export class TemplateLoader {
 
     try {
       const component = await loadPromise
-      // 使用WeakRef存储组件，允许垃圾回收
-      const weakRef = new WeakRef(component)
-      this.loadedComponents.set(key, weakRef)
-      this.componentRegistry.register(component, key)
+      // 存储到智能缓存
+      this.smartCache.set(key, component)
       this.loadingPromises.delete(key)
       options?.onLoad?.(component)
       return component
@@ -131,7 +130,7 @@ export class TemplateLoader {
   async preloadByFilter(filter: TemplateFilter): Promise<void> {
     const scanner = getScanner()
     const allMetadata = scanner.getAllMetadata()
-    
+
     const filtered = this.filterTemplates(allMetadata, filter)
     await this.preloadBatch(filtered)
   }
@@ -141,13 +140,13 @@ export class TemplateLoader {
    */
   private filterTemplates(templates: TemplateMetadata[], filter: TemplateFilter): TemplateMetadata[] {
     // 预处理过滤条件，避免在循环中重复处理
-    const categorySet = filter.category ? 
+    const categorySet = filter.category ?
       new Set(Array.isArray(filter.category) ? filter.category : [filter.category]) : null
-    const deviceSet = filter.device ? 
+    const deviceSet = filter.device ?
       new Set(Array.isArray(filter.device) ? filter.device : [filter.device]) : null
-    const nameSet = filter.name ? 
+    const nameSet = filter.name ?
       new Set(Array.isArray(filter.name) ? filter.name : [filter.name]) : null
-    const tagsArray = filter.tags ? 
+    const tagsArray = filter.tags ?
       (Array.isArray(filter.tags) ? filter.tags : [filter.tags]) : null
 
     return templates.filter(t => {
@@ -162,16 +161,16 @@ export class TemplateLoader {
   }
 
   /**
-   * 清除缓存 - 优化版本
+   * 清除缓存
    */
   clearCache(category?: string, device?: string, name?: string): void {
     if (category && device && name) {
       const key = TemplateLoader.createKey(category, device, name)
-      this.loadedComponents.delete(key)
-      this.loadingPromises.delete(key) // 同时清理加载中的 Promise
+      this.smartCache.delete(key)
+      this.loadingPromises.delete(key)
     } else {
-      this.loadedComponents.clear()
-      this.loadingPromises.clear() // 清理所有加载中的 Promise
+      this.smartCache.clear()
+      this.loadingPromises.clear()
     }
   }
 
@@ -179,7 +178,8 @@ export class TemplateLoader {
    * 获取已加载的组件数量
    */
   getLoadedCount(): number {
-    return this.loadedComponents.size
+    const stats = this.smartCache.getStats()
+    return stats.hot.size + stats.warm.alive
   }
 
   /**
@@ -187,6 +187,27 @@ export class TemplateLoader {
    */
   getLoadingCount(): number {
     return this.loadingPromises.size
+  }
+
+  /**
+   * 获取缓存统计信息
+   */
+  getCacheStats() {
+    return this.smartCache.getStats()
+  }
+
+  /**
+   * 获取缓存性能指标
+   */
+  getCacheMetrics() {
+    return this.smartCache.getMetrics()
+  }
+
+  /**
+   * 清理已GC的暖缓存条目
+   */
+  cleanupCache(): number {
+    return this.smartCache.cleanupWarm()
   }
 }
 

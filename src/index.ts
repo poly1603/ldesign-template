@@ -62,9 +62,9 @@ export {
 // 常量导出
 export { PRESET_THEMES, TEMPLATE_EVENTS } from './composables'
 
-export type { 
-  AnimationConfig, 
-  DebuggerConfig, 
+export type {
+  AnimationConfig,
+  DebuggerConfig,
   DebugLog,
   EasingFunction,
   EventHandler,
@@ -101,7 +101,7 @@ export {
   type UseTemplateInheritanceOptions,
   useTemplateMixins
 } from './composables/useTemplateInheritance'
-// 核心模块
+// 核心模块（优化导出，支持 tree-shaking）
 export {
   createTemplateManager,
   getLoader,
@@ -114,6 +114,34 @@ export {
   TemplateManager,
   TemplateScanner,
 } from './core'
+
+// 新增：智能缓存系统（按需导入）
+export { createSmartCache, SmartCache } from './core/smart-cache'
+export type { SmartCacheOptions, CacheMetrics } from './core/smart-cache'
+
+// 新增：持久化缓存（按需导入）
+export { getPersistentCache, PersistentCache } from './core/persistent-cache'
+
+// 新增：版本管理（按需导入）
+export { getVersionManager, createVersionManager, VersionManager } from './core/version-manager'
+export type { TemplateVersion, VersionDiff, MigrationGuide } from './core/version-manager'
+
+// 新增：依赖管理（按需导入）
+export { getDependencyManager, createDependencyManager, DependencyManager } from './core/dependency-manager'
+export type { TemplateDependency, DependencyNode } from './core/dependency-manager'
+
+// 新增：A/B 测试（按需导入）
+export { getABTestEngine, createABTestEngine, ABTestEngine } from './core/ab-test-engine'
+export type { ABTestConfig, ABTestVariant, ABTestResult } from './core/ab-test-engine'
+
+// SSR/SSG 支持（按需导入）
+export * from './ssr'
+
+// DevTools（仅开发环境，按需导入）
+export * from './devtools'
+
+// 可视化编辑器（按需导入）
+export * from './editor'
 
 // 默认导出
 export { getManager as default } from './core'
@@ -139,9 +167,9 @@ export {
 } from './directives'
 
 // 语言包
-export { 
-  enUS, 
-  getLocale, 
+export {
+  enUS,
+  getLocale,
   jaJP,
   locales,
   supportedLocales,

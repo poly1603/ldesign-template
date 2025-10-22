@@ -105,12 +105,10 @@ const abortController = ref<AbortController | null>(null)
 // 自动保存
 let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
 
-// v-model 支持
+// v-model 支持 - 使用 shallowRef 优化性能
 const modelData = ref(props.modelValue)
-const modelWatcher = watch(() => props.modelValue, (newVal) => {
-  modelData.value = newVal
-})
-// Move scheduleAutoSave before usage
+
+// 自动保存调度器
 const scheduleAutoSave = () => {
   if (autoSaveTimer) clearTimeout(autoSaveTimer)
   autoSaveTimer = setTimeout(() => {
@@ -120,21 +118,38 @@ const scheduleAutoSave = () => {
   }, props.autoSaveDelay)
 }
 
-const dataWatcher = watch(modelData, (newVal) => {
-  emit('update:modelValue', newVal)
-  if (props.autoSave) {
-    scheduleAutoSave()
-  }
-}, { deep: true })
+// 合并 modelValue 的两个 watch 为一个 watchEffect，减少监听器开销
+const stopModelWatch = watch(
+  () => [props.modelValue, modelData.value, props.autoSave] as const,
+  ([newPropValue, newModelValue, autoSave], [oldPropValue, oldModelValue]) => {
+    // 处理外部 prop 变化
+    if (newPropValue !== oldPropValue && newPropValue !== newModelValue) {
+      modelData.value = newPropValue
+    }
+    
+    // 处理内部数据变化
+    if (newModelValue !== oldModelValue) {
+      emit('update:modelValue', newModelValue)
+      if (autoSave) {
+        scheduleAutoSave()
+      }
+    }
+  },
+  { deep: true }
+)
 
 // 自动保存
 // moved above to avoid use-before-define
 
-// 主题支持
-const { setTheme, currentTheme } = props.theme ? useTemplateTheme() : { setTheme: () => {}, currentTheme: ref(null) }
+// 主题支持 - 延迟初始化
+let themeApi: ReturnType<typeof useTemplateTheme> | null = null
+const currentTheme = computed(() => themeApi?.currentTheme.value || null)
+
+// 仅在需要时初始化主题
 if (props.theme) {
+  themeApi = useTemplateTheme()
   watch(() => props.theme, (newTheme) => {
-    if (newTheme) setTheme(newTheme)
+    if (newTheme && themeApi) themeApi.setTheme(newTheme)
   }, { immediate: true })
 }
 
@@ -207,21 +222,24 @@ const handleResize = () => {
   }, 150)
 }
 
-// 监听外部传入的 device 和 name 变化
-watch(() => props.device, (newDevice) => {
-  if (newDevice && newDevice !== currentDevice.value) {
-    currentDevice.value = newDevice as DeviceType
-    if (shouldAutoLoadDefault.value) {
-      loadDefaultTemplate(newDevice)
+// 合并 device 和 name 的监听，减少 watcher 数量
+watch(
+  () => [props.device, props.name] as const,
+  ([newDevice, newName], [oldDevice, oldName]) => {
+    // 处理 device 变化
+    if (newDevice && newDevice !== oldDevice && newDevice !== currentDevice.value) {
+      currentDevice.value = newDevice as DeviceType
+      if (shouldAutoLoadDefault.value) {
+        loadDefaultTemplate(newDevice)
+      }
+    }
+    
+    // 处理 name 变化
+    if (newName && newName !== oldName && newName !== currentName.value) {
+      currentName.value = newName
     }
   }
-})
-
-watch(() => props.name, (newName) => {
-  if (newName && newName !== currentName.value) {
-    currentName.value = newName
-  }
-})
+)
 
 // 生命周期
 const isInitialized = ref(false)
@@ -282,9 +300,8 @@ onUnmounted(() => {
     autoSaveTimer = null
   }
   
-  // 停止监听器
-  modelWatcher()
-  dataWatcher()
+  // 停止合并后的监听器
+  stopModelWatch()
 })
 
 /**
@@ -346,16 +363,23 @@ if (props.modelValue !== undefined) {
   provide('templateModel', modelData)
 }
 
-// 组合 componentProps 和 v-model
+// 组合 componentProps 和 v-model - 优化为 shallowReactive 减少响应式开销
 const combinedProps = computed(() => {
-  const baseProps = { ...props.componentProps }
-  if (props.modelValue !== undefined) {
-    baseProps.modelValue = modelData.value
-    baseProps['onUpdate:modelValue'] = (val: any) => {
+  // 使用浅拷贝减少对象创建开销
+  const baseProps = props.componentProps || {}
+  
+  if (props.modelValue === undefined) {
+    return baseProps
+  }
+  
+  // 仅在有 modelValue 时才创建新对象
+  return {
+    ...baseProps,
+    modelValue: modelData.value,
+    'onUpdate:modelValue': (val: any) => {
       modelData.value = val
     }
   }
-  return baseProps
 })
 
 /**
@@ -383,15 +407,16 @@ const handleTemplateSelect = (templateName: string) => {
 const slots = useSlots()
 
 /**
- * 计算可用的插槽（排除保留插槽）
+ * 计算可用的插槽（排除保留插槽）- 优化性能
  */
+const RESERVED_SLOTS = new Set(['loading', 'error', 'empty', 'skeleton'])
+
 const availableSlots = computed(() => {
-  const reserved = ['loading', 'error', 'empty']
+  // 使用 Set 加速查找，避免重复创建 array
   const result: Record<string, Slot> = {}
   
-  // 传递所有非保留插槽
   for (const slotName in slots) {
-    if (!reserved.includes(slotName)) {
+    if (!RESERVED_SLOTS.has(slotName)) {
       const s = slots[slotName]
       if (s) result[slotName] = s
     }

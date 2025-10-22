@@ -20,8 +20,10 @@ export class TemplateManager {
   private initialized = false
   private scanResult: TemplateScanResult | null = null
   private options: TemplateManagerOptions
-  // 使用 WeakMap 缓存过滤结果，允许自动垃圾回收
-  private filterCache = new WeakMap<object, TemplateMetadata[]>()
+  // 使用 Map 缓存过滤结果，使用字符串化的 key
+  private filterCache = new Map<string, { data: TemplateMetadata[]; timestamp: number }>()
+  private readonly FILTER_CACHE_TTL = 60000 // 缓存1分钟
+  private readonly FILTER_CACHE_MAX_SIZE = 100 // 最大缓存条目
   // Set 池用于高效过滤
   private setPool = createSetPool<string>(20)
 
@@ -145,6 +147,8 @@ export class TemplateManager {
   clearCache(category?: string, device?: string, name?: string): void {
     const loader = getLoader()
     loader.clearCache(category, device, name)
+    // 同时清空过滤缓存
+    this.filterCache.clear()
   }
 
   /**
@@ -166,13 +170,18 @@ export class TemplateManager {
   }
 
   /**
-   * 过滤模板 - 优化性能版本
+   * 过滤模板 - 优化性能版本，使用字符串化缓存键
    */
   private filterTemplates(templates: TemplateMetadata[], filter: TemplateFilter): TemplateMetadata[] {
+    // 生成缓存键 - 使用字符串化的 filter
+    const cacheKey = JSON.stringify(filter)
+    const now = Date.now()
+
     // 检查缓存
-    const cacheKey = { ...filter }
     const cached = this.filterCache.get(cacheKey)
-    if (cached) return cached
+    if (cached && (now - cached.timestamp) < this.FILTER_CACHE_TTL) {
+      return cached.data
+    }
 
     // 预处理过滤条件，复用 Set 对象
     const categorySet = this.createFilterSet(filter.category)
@@ -185,7 +194,7 @@ export class TemplateManager {
       if (categorySet && !categorySet.has(t.category)) return false
       if (deviceSet && !deviceSet.has(t.device)) return false
       if (nameSet && !nameSet.has(t.name)) return false
-      
+
       if (tagsArray && (!t.tags || !tagsArray.some(tag => t.tags!.includes(tag)))) return false
       if (filter.defaultOnly && !t.isDefault) return false
 
@@ -197,8 +206,15 @@ export class TemplateManager {
     if (deviceSet) this.setPool.release(deviceSet)
     if (nameSet) this.setPool.release(nameSet)
 
-    // 缓存结果
-    this.filterCache.set(cacheKey, result)
+    // 缓存结果，使用 LRU 策略
+    if (this.filterCache.size >= this.FILTER_CACHE_MAX_SIZE) {
+      // 删除最旧的缓存项
+      const firstKey = this.filterCache.keys().next().value
+      if (firstKey) {
+        this.filterCache.delete(firstKey)
+      }
+    }
+    this.filterCache.set(cacheKey, { data: result, timestamp: now })
 
     return result
   }

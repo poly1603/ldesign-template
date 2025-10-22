@@ -118,7 +118,7 @@ export function debounce<T extends (...args: any[]) => any>(
   const { leading = false, trailing = true } = options || {}
 
   const invokeFunc = () => {
-if (lastArgs) {
+    if (lastArgs) {
       fn(...lastArgs)
       lastArgs = null
     }
@@ -140,7 +140,7 @@ if (lastArgs) {
     }
   }
 
-const debounced = function (...args: Parameters<T>) {
+  const debounced = function (...args: Parameters<T>) {
     const now = Date.now()
     const isFirstCall = !lastCallTime
     lastCallTime = now
@@ -187,11 +187,11 @@ export function throttle<T extends (...args: any[]) => any>(
     lastArgs = null
   }
 
-const throttled = function (...args: Parameters<T>) {
+  const throttled = function (...args: Parameters<T>) {
     if (!inThrottle) {
-fn(...args)
+      fn(...args)
       inThrottle = true
-      
+
       timeoutId = setTimeout(() => {
         inThrottle = false
         timeoutId = null
@@ -204,7 +204,7 @@ fn(...args)
       lastArgs = args
     }
   }
-  
+
   throttled.cancel = cancel
   return throttled as any
 }
@@ -234,7 +234,7 @@ export function formatBytes(bytes: number, decimals: number = 2): string {
     SIZE_UNITS.length - 1
   )
 
-  return `${Number.parseFloat((bytes / (1024 ** i)).toFixed(dm))  } ${  SIZE_UNITS[i]}`
+  return `${Number.parseFloat((bytes / (1024 ** i)).toFixed(dm))} ${SIZE_UNITS[i]}`
 }
 
 /**
@@ -270,13 +270,13 @@ export async function retry<T>(
       return await fn()
     } catch (error) {
       lastError = error as Error
-      
+
       if (onError) {
         onError(lastError, attempt)
       }
 
       if (attempt < maxAttempts) {
-        const waitTime = delay * backoff**(attempt - 1)
+        const waitTime = delay * backoff ** (attempt - 1)
         await sleep(waitTime)
       }
     }
@@ -287,29 +287,68 @@ export async function retry<T>(
 }
 
 /**
- * 获取对象路径值 - 优化版，缓存路径解析
+ * LRU 缓存实现用于路径解析
  */
-const pathCache = new Map<string, string[]>()
-const MAX_PATH_CACHE = 500
+class PathLRUCache {
+  private cache = new Map<string, string[]>()
+  private readonly maxSize: number
 
+  constructor(maxSize: number = 500) {
+    this.maxSize = maxSize
+  }
+
+  get(key: string): string[] | undefined {
+    const value = this.cache.get(key)
+    if (value) {
+      // 移动到末尾以更新 LRU
+      this.cache.delete(key)
+      this.cache.set(key, value)
+    }
+    return value
+  }
+
+  set(key: string, value: string[]): void {
+    // 如果已存在，先删除
+    if (this.cache.has(key)) {
+      this.cache.delete(key)
+    }
+
+    // 如果超过容量，删除最久未使用的（第一个）
+    if (this.cache.size >= this.maxSize) {
+      const firstKey = this.cache.keys().next().value
+      if (firstKey) {
+        this.cache.delete(firstKey)
+      }
+    }
+
+    this.cache.set(key, value)
+  }
+
+  clear(): void {
+    this.cache.clear()
+  }
+
+  get size(): number {
+    return this.cache.size
+  }
+}
+
+const pathCache = new PathLRUCache(500)
+
+/**
+ * 获取对象路径值 - 优化版，使用 LRU 缓存路径解析
+ */
 export function get<T = unknown>(obj: unknown, path: string, defaultValue?: T): T | undefined {
   if (!obj || typeof obj !== 'object') return defaultValue
-  
-  // 使用缓存的路径解析结果
+
+  // 使用 LRU 缓存的路径解析结果
   let keys = pathCache.get(path)
   if (!keys) {
     keys = path.split('.')
-    // 限制缓存大小
-    if (pathCache.size >= MAX_PATH_CACHE) {
-      const firstKey = pathCache.keys().next().value
-      if (firstKey) {
-        pathCache.delete(firstKey)
-      }
-    }
     pathCache.set(path, keys)
   }
-  
-  let result = obj
+
+  let result: any = obj
   for (const key of keys) {
     result = result?.[key]
     if (result === undefined) {
@@ -317,33 +356,27 @@ export function get<T = unknown>(obj: unknown, path: string, defaultValue?: T): 
     }
   }
 
-  return result
+  return result as T
 }
 
 /**
- * 设置对象路径值 - 优化版，复用路径缓存
+ * 设置对象路径值 - 优化版，复用 LRU 路径缓存
  */
 export function set(obj: unknown, path: string, value: unknown): void {
   if (!obj || typeof obj !== 'object') return
-  
-  // 复用get函数的路径缓存
+
+  // 复用 LRU 缓存
   let keys = pathCache.get(path)
   if (!keys) {
     keys = path.split('.')
-    if (pathCache.size >= MAX_PATH_CACHE) {
-      const firstKey = pathCache.keys().next().value
-      if (firstKey) {
-        pathCache.delete(firstKey)
-      }
-    }
     pathCache.set(path, keys)
   }
-  
+
   if (keys.length === 0) return
-  
+
   const lastKey = keys[keys.length - 1]
-  let current = obj
-  
+  let current: any = obj
+
   for (let i = 0; i < keys.length - 1; i++) {
     const key = keys[i]
     if (!(key in current) || !isObject(current[key])) {
@@ -351,7 +384,7 @@ export function set(obj: unknown, path: string, value: unknown): void {
     }
     current = current[key]
   }
-  
+
   current[lastKey] = value
 }
 
@@ -361,7 +394,7 @@ export function set(obj: unknown, path: string, value: unknown): void {
 export function unset(obj: Record<string, unknown>, path: string): void {
   const keys = path.split('.')
   const lastKey = keys.pop()!
-  
+
   let current = obj
   for (const key of keys) {
     if (!(key in current)) {
@@ -369,7 +402,7 @@ export function unset(obj: Record<string, unknown>, path: string): void {
     }
     current = current[key]
   }
-  
+
   delete current[lastKey]
 }
 
@@ -381,13 +414,13 @@ export function pick<T extends Record<string, any>, K extends keyof T>(
   keys: K[]
 ): Pick<T, K> {
   const result = {} as Pick<T, K>
-  
+
   for (const key of keys) {
     if (key in obj) {
       result[key] = obj[key]
     }
   }
-  
+
   return result
 }
 
@@ -399,11 +432,11 @@ export function omit<T extends Record<string, any>, K extends keyof T>(
   keys: K[]
 ): Omit<T, K> {
   const result = { ...obj } as any
-  
+
   for (const key of keys) {
     delete result[key]
   }
-  
+
   return result
 }
 
@@ -415,12 +448,12 @@ export function arrayToObject<T>(
   keyFn: (item: T) => string
 ): Record<string, T> {
   const result: Record<string, T> = Object.create(null)
-  
+
   for (const item of array) {
     const key = keyFn(item)
     result[key] = item
   }
-  
+
   return result
 }
 
@@ -432,7 +465,7 @@ export function groupBy<T>(
   keyFn: (item: T) => string
 ): Record<string, T[]> {
   const map = new Map<string, T[]>()
-  
+
   for (const item of array) {
     const key = keyFn(item)
     const group = map.get(key)
@@ -442,12 +475,12 @@ export function groupBy<T>(
       map.set(key, [item])
     }
   }
-  
+
   // 转换为普通对象
   const result: Record<string, T[]> = Object.create(null)
   for (const [key, value] of map) {
     result[key] = value
   }
-  
+
   return result
 }

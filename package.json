@@ -1,7 +1,7 @@
 {
   "name": "@ldesign/template",
-  "version": "0.1.0",
-  "description": "🎨 多模板管理及动态渲染系统 - 为 Vue 3 而生的模板管理解决方案，支持智能预加载、懒加载、虚拟滚动等性能优化功能",
+  "version": "0.2.0",
+  "description": "🎨 多模板管理及动态渲染系统 - 为 Vue 3 而生的高性能模板管理解决方案。v0.2.0: 智能三级缓存、IndexedDB持久化、SSR/SSG支持、版本管理、A/B测试引擎、DevTools等企业级特性",
   "keywords": [
     "vue",
     "vue3",
@@ -16,7 +16,17 @@
     "virtual-scroll",
     "preload",
     "performance-monitor",
-    "intersection-observer"
+    "intersection-observer",
+    "smart-cache",
+    "lru-cache",
+    "indexeddb",
+    "ssr",
+    "ssg",
+    "version-management",
+    "dependency-management",
+    "ab-testing",
+    "devtools",
+    "visual-editor"
   ],
   "author": "ldesign",
   "license": "MIT",
@@ -34,6 +44,16 @@
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
       "require": "./lib/index.cjs"
+    },
+    "./cli": {
+      "types": "./es/cli/index.d.ts",
+      "import": "./es/cli/index.js",
+      "require": "./lib/cli/index.cjs"
+    },
+    "./cli/*": {
+      "types": "./es/cli/*.d.ts",
+      "import": "./es/cli/*.js",
+      "require": "./lib/cli/*.cjs"
     },
     "./components": {
       "types": "./es/components/index.d.ts",
@@ -65,6 +85,16 @@
       "import": "./es/core/*.js",
       "require": "./lib/core/*.cjs"
     },
+    "./devtools": {
+      "types": "./es/devtools/index.d.ts",
+      "import": "./es/devtools/index.js",
+      "require": "./lib/devtools/index.cjs"
+    },
+    "./devtools/*": {
+      "types": "./es/devtools/*.d.ts",
+      "import": "./es/devtools/*.js",
+      "require": "./lib/devtools/*.cjs"
+    },
     "./directives": {
       "types": "./es/directives/index.d.ts",
       "import": "./es/directives/index.js",
@@ -74,6 +104,16 @@
       "types": "./es/directives/*.d.ts",
       "import": "./es/directives/*.js",
       "require": "./lib/directives/*.cjs"
+    },
+    "./editor": {
+      "types": "./es/editor/index.d.ts",
+      "import": "./es/editor/index.js",
+      "require": "./lib/editor/index.cjs"
+    },
+    "./editor/*": {
+      "types": "./es/editor/*.d.ts",
+      "import": "./es/editor/*.js",
+      "require": "./lib/editor/*.cjs"
     },
     "./locales": {
       "types": "./es/locales/index.d.ts",
@@ -94,6 +134,16 @@
       "types": "./es/plugin/*.d.ts",
       "import": "./es/plugin/*.js",
       "require": "./lib/plugin/*.cjs"
+    },
+    "./ssr": {
+      "types": "./es/ssr/index.d.ts",
+      "import": "./es/ssr/index.js",
+      "require": "./lib/ssr/index.cjs"
+    },
+    "./ssr/*": {
+      "types": "./es/ssr/*.d.ts",
+      "import": "./es/ssr/*.js",
+      "require": "./lib/ssr/*.cjs"
     },
     "./types": {
       "types": "./es/types/index.d.ts",
@@ -133,6 +183,10 @@
     "./es/templates/dashboard/mobile/tabs/index.vue.css": "./es/templates/dashboard/mobile/tabs/index.vue.css",
     "./es/templates/dashboard/tablet/default/index.vue.css": "./es/templates/dashboard/tablet/default/index.vue.css",
     "./es/templates/dashboard/tablet/grid/index.vue.css": "./es/templates/dashboard/tablet/grid/index.vue.css",
+    "./es/templates/form/desktop/double-column/index.vue.css": "./es/templates/form/desktop/double-column/index.vue.css",
+    "./es/templates/form/desktop/single-column/index.vue.css": "./es/templates/form/desktop/single-column/index.vue.css",
+    "./es/templates/list/desktop/card/index.vue.css": "./es/templates/list/desktop/card/index.vue.css",
+    "./es/templates/list/desktop/table/index.vue.css": "./es/templates/list/desktop/table/index.vue.css",
     "./es/templates/login/desktop/default/index.vue.css": "./es/templates/login/desktop/default/index.vue.css",
     "./es/templates/login/desktop/split/index.vue.css": "./es/templates/login/desktop/split/index.vue.css",
     "./es/templates/login/mobile/card/index.vue.css": "./es/templates/login/mobile/card/index.vue.css",
@@ -157,6 +211,10 @@
     "./lib/templates/dashboard/mobile/tabs/index.vue.css": "./lib/templates/dashboard/mobile/tabs/index.vue.css",
     "./lib/templates/dashboard/tablet/default/index.vue.css": "./lib/templates/dashboard/tablet/default/index.vue.css",
     "./lib/templates/dashboard/tablet/grid/index.vue.css": "./lib/templates/dashboard/tablet/grid/index.vue.css",
+    "./lib/templates/form/desktop/double-column/index.vue.css": "./lib/templates/form/desktop/double-column/index.vue.css",
+    "./lib/templates/form/desktop/single-column/index.vue.css": "./lib/templates/form/desktop/single-column/index.vue.css",
+    "./lib/templates/list/desktop/card/index.vue.css": "./lib/templates/list/desktop/card/index.vue.css",
+    "./lib/templates/list/desktop/table/index.vue.css": "./lib/templates/list/desktop/table/index.vue.css",
     "./lib/templates/login/desktop/default/index.vue.css": "./lib/templates/login/desktop/default/index.vue.css",
     "./lib/templates/login/desktop/split/index.vue.css": "./lib/templates/login/desktop/split/index.vue.css",
     "./lib/templates/login/mobile/card/index.vue.css": "./lib/templates/login/mobile/card/index.vue.css",
