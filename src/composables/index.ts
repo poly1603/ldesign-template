@@ -106,3 +106,8 @@ export {
   useVersionComparison,
   type VersionState
 } from './useTemplateVersion'
+
+export {
+  type TemplateSelectorInjection,
+  useTemplateSelector
+} from './useTemplateSelector'

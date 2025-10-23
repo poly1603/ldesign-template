@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
+import { useTemplateSelector } from '../../../../composables/useTemplateSelector'
+import TemplateSelector from '../../../../components/TemplateSelector.vue'
 
 interface SocialProvider { name: string; label: string; icon?: string }
 
@@ -60,10 +62,18 @@ const handleForgot = () => {
 const handleSocialLogin = (provider: SocialProvider) => {
   emit('socialLogin', provider)
 }
+
+// 获取模板选择器
+const selector = useTemplateSelector()
 </script>
 
 <template>
   <div class="login-mobile-card">
+    <!-- 模板选择器 - 放在右上角 -->
+    <div v-if="selector && selector.enabled" class="template-selector-wrapper">
+      <TemplateSelector v-bind="selector.props.value" @select="selector.onSelect" />
+    </div>
+
     <div class="card-container">
       <!-- Logo 插槽 -->
       <div v-if="$slots.logo || showLogo" class="logo-section">
@@ -148,6 +158,7 @@ const handleSocialLogin = (provider: SocialProvider) => {
 
 <style scoped>
 .login-mobile-card {
+  position: relative;
   min-height: 100vh;
   padding: var(--template-spacing-xl);
   background: linear-gradient(135deg,
@@ -156,6 +167,13 @@ const handleSocialLogin = (provider: SocialProvider) => {
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+.template-selector-wrapper {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 100;
 }
 
 .card-container {

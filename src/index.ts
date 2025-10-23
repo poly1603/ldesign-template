@@ -49,6 +49,8 @@ export {
   useTemplateNavigation,
   useTemplatePerformance,
   useTemplatePrefetch,
+  // 模板选择器
+  useTemplateSelector,
   // 快照与时间旅行
   useTemplateSnapshot,
   // 主题系统
@@ -84,6 +86,7 @@ export type {
   TemplateHookResult,
   TemplateLifecycle,
   TemplatePrefetchOptions,
+  TemplateSelectorInjection,
   TemplateSnapshot,
   TemplateStateSnapshot,
   TemplateTheme,

@@ -7,7 +7,6 @@ import { useTemplateTheme } from '../composables/useTemplateTheme'
 import { getManager } from '../core'
 import { getLocale } from '../locales'
 import { useTemplatePlugin } from '../plugin/useTemplatePlugin'
-import TemplateSelector from './TemplateSelector.vue'
 import TemplateSkeleton from './TemplateSkeleton.vue'
 
 /**
@@ -126,7 +125,7 @@ const stopModelWatch = watch(
     if (newPropValue !== oldPropValue && newPropValue !== newModelValue) {
       modelData.value = newPropValue
     }
-    
+
     // 处理内部数据变化
     if (newModelValue !== oldModelValue) {
       emit('update:modelValue', newModelValue)
@@ -177,14 +176,14 @@ const detectDevice = (): DeviceType => {
 // 加载默认模板（或用户偏好模板）
 const loadDefaultTemplate = async (dev: DeviceType | string) => {
   if (!shouldAutoLoadDefault.value) return
-  
+
   try {
     // 优先使用注入的插件，如果没有则从 window 获取
     let templatePlugin = plugin
     if (!templatePlugin && typeof window !== 'undefined') {
       templatePlugin = (window as unknown as { __TEMPLATE_PLUGIN__?: TemplatePlugin }).__TEMPLATE_PLUGIN__ || null
     }
-    
+
     if (templatePlugin?.getPreferredTemplate) {
       // 使用插件的偏好管理
       const preferred = await templatePlugin.getPreferredTemplate(props.category, dev as string)
@@ -194,7 +193,7 @@ const loadDefaultTemplate = async (dev: DeviceType | string) => {
         return
       }
     }
-    
+
     // 没有插件或偏好，使用默认
     const defaultTemplate = await manager.getDefaultTemplate(props.category, dev as DeviceType)
     if (defaultTemplate?.name) {
@@ -233,7 +232,7 @@ watch(
         loadDefaultTemplate(newDevice)
       }
     }
-    
+
     // 处理 name 变化
     if (newName && newName !== oldName && newName !== currentName.value) {
       currentName.value = newName
@@ -248,27 +247,27 @@ onMounted(async () => {
   if (!isInitialized.value) {
     // 创建AbortController
     abortController.value = new AbortController()
-    
+
     try {
       // 初始化管理器
       await manager.initialize()
-      
+
       // 检查是否已被取消
       if (abortController.value.signal.aborted) return
-      
+
       // 自动检测设备
       if (shouldAutoDetect.value) {
         currentDevice.value = detectDevice()
         emit('deviceChange', currentDevice.value)
       }
-      
+
       // 自动加载默认模板
       if (shouldAutoLoadDefault.value) {
         await loadDefaultTemplate(currentDevice.value)
       }
-      
+
       isInitialized.value = true
-      
+
       // 监听窗口变化 - 使用passive优化性能
       if (shouldAutoDetect.value) {
         window.addEventListener('resize', handleResize, { passive: true })
@@ -284,12 +283,12 @@ onMounted(async () => {
 onUnmounted(() => {
   // 取消所有异步操作
   abortController.value?.abort()
-  
+
   // 清理事件监听器
   if (shouldAutoDetect.value) {
     window.removeEventListener('resize', handleResize)
   }
-  
+
   // 清理所有定时器
   if (resizeTimer) {
     clearTimeout(resizeTimer)
@@ -299,7 +298,7 @@ onUnmounted(() => {
     clearTimeout(autoSaveTimer)
     autoSaveTimer = null
   }
-  
+
   // 停止合并后的监听器
   stopModelWatch()
 })
@@ -327,14 +326,14 @@ const reload = async () => {
   if (retryCount.value >= props.retryTimes) {
     retryCount.value = 0
   }
-  
+
   try {
     await originalReload()
     retryCount.value = 0
   } catch (err) {
     if (retryCount.value < props.retryTimes) {
       retryCount.value++
-      setTimeout(() => reload(), props.retryDelay * 2**(retryCount.value - 1))
+      setTimeout(() => reload(), props.retryDelay * 2 ** (retryCount.value - 1))
     } else {
       throw err
     }
@@ -363,15 +362,33 @@ if (props.modelValue !== undefined) {
   provide('templateModel', modelData)
 }
 
+// 为子组件提供模板选择器控制
+const selectorProps = computed(() => ({
+  category: props.category,
+  device: currentDevice.value,
+  currentTemplate: currentName.value,
+}))
+
+const handleSelectorSelect = (templateName: string) => {
+  handleTemplateSelect(templateName)
+}
+
+// 提供给子组件使用
+provide('templateSelector', {
+  props: selectorProps,
+  onSelect: handleSelectorSelect,
+  enabled: props.showSelector,
+})
+
 // 组合 componentProps 和 v-model - 优化为 shallowReactive 减少响应式开销
 const combinedProps = computed(() => {
   // 使用浅拷贝减少对象创建开销
   const baseProps = props.componentProps || {}
-  
+
   if (props.modelValue === undefined) {
     return baseProps
   }
-  
+
   // 仅在有 modelValue 时才创建新对象
   return {
     ...baseProps,
@@ -389,13 +406,13 @@ const handleTemplateSelect = (templateName: string) => {
   // 更新当前模板
   currentName.value = templateName
   emit('templateChange', templateName)
-  
+
   // 保存用户偏好
   let templatePlugin = plugin
   if (!templatePlugin && typeof window !== 'undefined') {
     templatePlugin = (window as unknown as { __TEMPLATE_PLUGIN__?: TemplatePlugin }).__TEMPLATE_PLUGIN__ || null
   }
-  
+
   if (templatePlugin?.savePreference) {
     templatePlugin.savePreference(props.category, currentDevice.value, templateName)
   }
@@ -414,14 +431,14 @@ const RESERVED_SLOTS = new Set(['loading', 'error', 'empty', 'skeleton'])
 const availableSlots = computed(() => {
   // 使用 Set 加速查找，避免重复创建 array
   const result: Record<string, Slot> = {}
-  
+
   for (const slotName in slots) {
     if (!RESERVED_SLOTS.has(slotName)) {
       const s = slots[slotName]
       if (s) result[slotName] = s
     }
   }
-  
+
   return result
 })
 </script>
@@ -431,13 +448,10 @@ const availableSlots = computed(() => {
     <!-- 骨架屏 -->
     <div v-if="shouldShowSkeleton && !component" class="template-skeleton-wrapper">
       <slot name="skeleton">
-        <TemplateSkeleton 
-          :type="skeletonType"
-          animation="wave"
-        />
+        <TemplateSkeleton :type="skeletonType" animation="wave" />
       </slot>
     </div>
-    
+
     <!-- 加载中（不使用骨架屏时） -->
     <div v-else-if="loading && !shouldShowSkeleton" class="template-loading">
       <slot name="loading">
@@ -464,22 +478,12 @@ const availableSlots = computed(() => {
         </div>
       </slot>
     </div>
-    
+
     <!-- 降级组件 -->
-    <component
-      :is="fallback"
-      v-else-if="error && fallback"
-      :error="error"
-      @retry="handleReload"
-    />
+    <component :is="fallback" v-else-if="error && fallback" :error="error" @retry="handleReload" />
 
     <!-- 模板组件 -->
-    <component
-      :is="component"
-      v-else-if="component"
-      v-bind="combinedProps"
-      v-on="$attrs"
-    >
+    <component :is="component" v-else-if="component" v-bind="combinedProps" v-on="$attrs">
       <!-- 传递所有插槽（除了保留插槽） -->
       <template v-for="(slot, slotName) in availableSlots" :key="slotName" #[slotName]="slotProps">
         <slot :name="slotName" v-bind="slotProps" />
@@ -492,15 +496,6 @@ const availableSlots = computed(() => {
         <p>{{ messages.messages.noTemplates }}</p>
       </slot>
     </div>
-
-    <!-- 模板选择器 -->
-    <TemplateSelector
-      v-if="showSelector && component"
-      :category="category"
-      :device="currentDevice"
-      :current-template="currentName"
-      @select="handleTemplateSelect"
-    />
   </div>
 </template>
 

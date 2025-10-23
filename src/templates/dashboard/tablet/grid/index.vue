@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useTemplateSelector } from '../../../../composables/useTemplateSelector'
+import TemplateSelector from '../../../../components/TemplateSelector.vue'
+
 interface Props {
   title?: string
   username?: string
@@ -9,6 +12,9 @@ const props = withDefaults(defineProps<Props>(), {
   title: '网格平板仪表板',
   username: '用户'
 })
+
+// 获取模板选择器
+const selector = useTemplateSelector()
 </script>
 
 <template>
@@ -18,9 +24,15 @@ const props = withDefaults(defineProps<Props>(), {
       <slot name="logo">
         <h1>{{ title }}</h1>
       </slot>
-      <slot name="header-actions">
-        <span class="username">{{ username }}</span>
-      </slot>
+      <div class="header-right">
+        <slot name="header-actions">
+          <span class="username">{{ username }}</span>
+        </slot>
+
+        <!-- 模板选择器 - 放在右上角 -->
+        <TemplateSelector v-if="selector && selector.enabled" v-bind="selector.props.value"
+          @select="selector.onSelect" />
+      </div>
     </header>
 
     <div class="tablet-content">
@@ -66,6 +78,12 @@ const props = withDefaults(defineProps<Props>(), {
   margin: 0;
   font-size: var(--template-font-xl);
   color: var(--template-text-primary);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--template-spacing-lg);
 }
 
 .username {

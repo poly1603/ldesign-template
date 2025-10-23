@@ -1,6 +1,13 @@
 <script setup lang="ts">
+/**
+ * TemplateSelector - 基于无头逻辑层重构
+ * 使用 @ldesign/shared 的协议和逻辑层
+ */
 import type { DeviceType } from '../types'
 import { computed, inject, ref, type Ref, watch } from 'vue'
+import type { SelectorConfig, SelectorOption } from '@ldesign/shared/protocols'
+import { useHeadlessSelector, useResponsivePopup } from '@ldesign/shared/composables'
+import { renderIcon } from '@ldesign/shared/icons'
 import { useTemplateList } from '../composables'
 import { getLocale } from '../locales'
 import { useTemplatePlugin } from '../plugin/useTemplatePlugin'
@@ -16,9 +23,6 @@ const props = defineProps<Props>()
 const emit = defineEmits<{
   select: [templateName: string]
 }>()
-
-// 状态
-const expanded = ref(false)
 
 // 获取语言配置
 const plugin = useTemplatePlugin()
@@ -41,29 +45,74 @@ const deviceLabel = computed(() => {
   return messages.value.device[props.device] || props.device
 })
 
-// 切换展开状态
-const toggleExpanded = () => {
-  expanded.value = !expanded.value
+// 选择器配置（遵循协议）
+const config: SelectorConfig = {
+  icon: 'LayoutTemplate',
+  popupMode: 'auto',
+  listStyle: 'card',
+  searchable: false,
+  breakpoint: 768
 }
 
-// 选择模板
-const selectTemplate = (templateName: string) => {
-  emit('select', templateName)
-  expanded.value = false
+// 转换为 SelectorOption 格式
+const options = computed<SelectorOption[]>(() => {
+  return templates.value.map(template => ({
+    value: template.name,
+    label: template.displayName,
+    description: template.description || '',
+    badge: template.isDefault 
+      ? (messages.value.device.desktop === '桌面端' ? '默认' : 'Default') 
+      : undefined,
+    metadata: {
+      isDefault: template.isDefault,
+      category: template.category,
+      device: template.device
+    }
+  }))
+})
+
+// 处理选择
+const handleSelect = (value: string) => {
+  emit('select', value)
 }
 
-// 设备切换时自动收起
+// 使用无头选择器
+const { state, actions, triggerRef, panelRef } = useHeadlessSelector({
+  options,
+  modelValue: computed(() => props.currentTemplate),
+  searchable: config.searchable,
+  onSelect: handleSelect
+})
+
+// 使用响应式弹出
+const { currentMode, popupStyle } = useResponsivePopup({
+  mode: config.popupMode,
+  triggerRef,
+  panelRef,
+  placement: 'bottom-end',
+  breakpoint: config.breakpoint,
+  isOpen: computed(() => state.value.isOpen)
+})
+
+// 设备切换时自动关闭
 watch(() => props.device, () => {
-  expanded.value = false
+  actions.close()
 })
 </script>
 
 <template>
-  <div class="template-selector" :class="{ expanded }">
-    <!-- 切换按钮 -->
-    <button class="toggle-btn" :title="expanded ? messages.actions.clearCache : messages.actions.selectTemplate" @click="toggleExpanded">
-      <svg v-if="!expanded" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M4 6h16M4 12h16M4 18h16" stroke-width="2" stroke-linecap="round" />
+  <div class="template-selector">
+    <!-- 触发按钮 -->
+    <button 
+      ref="triggerRef"
+      class="toggle-btn" 
+      :title="state.isOpen ? messages.actions.clearCache : messages.actions.selectTemplate"
+      @click="actions.toggle"
+    >
+      <svg v-if="!state.isOpen" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+        <rect x="3" y="3" width="18" height="7" rx="1" stroke-width="2" />
+        <rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2" />
+        <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2" />
       </svg>
       <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
         <path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" />
@@ -71,46 +120,59 @@ watch(() => props.device, () => {
     </button>
 
     <!-- 选择器面板 -->
-    <div v-if="expanded" class="selector-panel">
-      <div class="panel-header">
-        <h3>{{ messages.actions.selectTemplate }}</h3>
-        <div class="current-info">
-          <span class="badge">{{ deviceLabel }}</span>
-          <span class="badge">{{ messages.category[category] || category }}</span>
-        </div>
-      </div>
-
-      <div class="template-list">
-        <div
-          v-for="template in templates"
-          :key="template.name"
-          class="template-item"
-          :class="{ active: template.name === currentTemplate }"
-          @click="selectTemplate(template.name)"
+    <Teleport to="body">
+      <Transition name="selector-panel">
+        <div 
+          v-if="state.isOpen" 
+          ref="panelRef"
+          class="selector-panel"
+          :class="{ 'selector-panel-dialog': currentMode === 'dialog' }"
+          :style="popupStyle"
+          @click.stop
         >
-          <div class="template-name">
-            {{ template.displayName }}
-            <span v-if="template.isDefault" class="default-badge">{{ messages.device.desktop === '桌面端' ? '默认' : 'Default' }}</span>
+          <div class="panel-header">
+            <h3>{{ messages.actions.selectTemplate }}</h3>
+            <div class="current-info">
+              <span class="badge">{{ deviceLabel }}</span>
+              <span class="badge">{{ messages.category[category] || category }}</span>
+            </div>
           </div>
-          <div v-if="template.description" class="template-desc">
-            {{ template.description }}
-          </div>
-        </div>
 
-        <div v-if="templates.length === 0" class="empty-state">
-          {{ messages.messages.noTemplates }}
+          <div class="template-list">
+            <div 
+              v-for="(option, index) in state.filteredOptions" 
+              :key="option.value" 
+              class="template-item"
+              :class="{ 
+                'active': state.selectedValue === option.value,
+                'hover': state.activeIndex === index
+              }" 
+              @click="actions.select(option.value)"
+              @mouseenter="state.activeIndex = index"
+            >
+              <div class="template-name">
+                {{ option.label }}
+                <span v-if="option.badge" class="default-badge">{{ option.badge }}</span>
+              </div>
+              <div v-if="option.description" class="template-desc">
+                {{ option.description }}
+              </div>
+            </div>
+
+            <div v-if="state.filteredOptions.length === 0" class="empty-state">
+              {{ messages.messages.noTemplates }}
+            </div>
+          </div>
         </div>
-      </div>
-    </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
 <style scoped>
 .template-selector {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 9999;
+  position: relative;
+  display: inline-block;
 }
 
 .toggle-btn {
@@ -134,32 +196,34 @@ watch(() => props.device, () => {
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
-.template-selector.expanded .toggle-btn {
-  background: #f56c6c;
-}
-
 .selector-panel {
-  position: absolute;
-  top: 60px;
-  right: 0;
   width: 320px;
   max-height: 500px;
   background: white;
   border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
   overflow: hidden;
-  animation: slideIn 0.3s ease;
 }
 
-@keyframes slideIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.selector-panel-dialog {
+  max-width: 90vw;
+  max-height: 80vh;
+}
+
+/* 面板动画 */
+.selector-panel-enter-active,
+.selector-panel-leave-active {
+  transition: all 0.3s ease;
+}
+
+.selector-panel-enter-from {
+  opacity: 0;
+  transform: translateY(-10px) scale(0.95);
+}
+
+.selector-panel-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 .panel-header {
@@ -201,9 +265,11 @@ watch(() => props.device, () => {
   transition: all 0.3s;
 }
 
-.template-item:hover {
+.template-item:hover,
+.template-item.hover {
   border-color: #667eea;
   background: #f5f7ff;
+  transform: translateX(4px);
 }
 
 .template-item.active {

@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { useTemplateSelector } from '../../../../composables/useTemplateSelector'
+import TemplateSelector from '../../../../components/TemplateSelector.vue'
 
 interface Props {
   title?: string
@@ -22,6 +24,9 @@ const props = withDefaults(defineProps<Props>(), {
     revenue: '89,012',
   }),
 })
+
+// 获取模板选择器
+const selector = useTemplateSelector()
 </script>
 
 <template>
@@ -41,6 +46,10 @@ const props = withDefaults(defineProps<Props>(), {
             <span>{{ username }}</span>
           </div>
         </slot>
+
+        <!-- 模板选择器 - 放在右上角 -->
+        <TemplateSelector v-if="selector && selector.enabled" v-bind="selector.props.value"
+          @select="selector.onSelect" />
       </div>
     </header>
 
@@ -59,36 +68,6 @@ const props = withDefaults(defineProps<Props>(), {
 
       <!-- 主内容区 -->
       <main class="main-content">
-        <!-- 统计卡片（可选显示） -->
-        <slot name="stats">
-          <div class="stats-grid">
-            <div class="stat-card">
-              <h3>总访问量</h3>
-              <p class="stat-value">
-                {{ stats.visits }}
-              </p>
-            </div>
-            <div class="stat-card">
-              <h3>活跃用户</h3>
-              <p class="stat-value">
-                {{ stats.users }}
-              </p>
-            </div>
-            <div class="stat-card">
-              <h3>订单数</h3>
-              <p class="stat-value">
-                {{ stats.orders }}
-              </p>
-            </div>
-            <div class="stat-card">
-              <h3>收入</h3>
-              <p class="stat-value">
-                ¥{{ stats.revenue }}
-              </p>
-            </div>
-          </div>
-        </slot>
-
         <!-- 主内容区域 -->
         <div class="content-area">
           <slot>

@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref } from 'vue'
+import { useTemplateSelector } from '../../../../composables/useTemplateSelector'
+import TemplateSelector from '../../../../components/TemplateSelector.vue'
 
 interface SocialProvider { name: string; label: string; icon?: string }
 
@@ -60,10 +62,18 @@ const handleForgotPassword = () => {
 const handleSocialLogin = (provider: SocialProvider) => {
   emit('socialLogin', provider)
 }
+
+// 获取模板选择器
+const selector = useTemplateSelector()
 </script>
 
 <template>
   <div class="login-desktop-default">
+    <!-- 模板选择器 - 放在左上角 -->
+    <div v-if="selector && selector.enabled" class="template-selector-wrapper">
+      <TemplateSelector v-bind="selector.props.value" @select="selector.onSelect" />
+    </div>
+
     <div class="login-container">
       <!-- Logo 插槽 -->
       <div v-if="$slots.logo || showLogo" class="login-logo">
@@ -147,6 +157,7 @@ const handleSocialLogin = (provider: SocialProvider) => {
 
 <style scoped>
 .login-desktop-default {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -154,6 +165,13 @@ const handleSocialLogin = (provider: SocialProvider) => {
   background: linear-gradient(135deg,
       var(--template-bg-page) 0%,
       var(--template-bg-container-tertiary) 100%);
+}
+
+.template-selector-wrapper {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 100;
 }
 
 .login-container {

@@ -1,8 +1,14 @@
 <template>
   <div class="ldesign-form-single-column">
-    <div v-if="title || subtitle" class="form-header">
-      <h2 v-if="title" class="form-title">{{ title }}</h2>
-      <p v-if="subtitle" class="form-subtitle">{{ subtitle }}</p>
+    <div v-if="title || subtitle || (selector && selector.enabled)" class="form-header">
+      <div class="header-content">
+        <h2 v-if="title" class="form-title">{{ title }}</h2>
+        <p v-if="subtitle" class="form-subtitle">{{ subtitle }}</p>
+      </div>
+
+      <!-- 模板选择器 - 放在表单标题右侧 -->
+      <TemplateSelector v-if="selector && selector.enabled" v-bind="selector.props.value" @select="selector.onSelect"
+        class="form-selector" />
     </div>
 
     <form class="form-body" @submit.prevent="handleSubmit">
@@ -44,6 +50,8 @@
 
 <script setup lang="ts">
 import { computed, reactive, ref } from 'vue'
+import { useTemplateSelector } from '../../../../composables/useTemplateSelector'
+import TemplateSelector from '../../../../components/TemplateSelector.vue'
 
 interface FormField {
   name: string
@@ -118,6 +126,9 @@ const handleSubmit = async () => {
 const handleCancel = () => {
   emit('cancel')
 }
+
+// 获取模板选择器
+const selector = useTemplateSelector()
 </script>
 
 <style scoped>
@@ -128,8 +139,20 @@ const handleCancel = () => {
 }
 
 .form-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
   margin-bottom: var(--template-spacing-3xl);
+  gap: var(--template-spacing-xl);
+}
+
+.header-content {
+  flex: 1;
   text-align: center;
+}
+
+.form-selector {
+  flex-shrink: 0;
 }
 
 .form-title {

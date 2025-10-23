@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { useTemplateSelector } from '../../../../composables/useTemplateSelector'
+import TemplateSelector from '../../../../components/TemplateSelector.vue'
+
 interface Props {
   title?: string
   username?: string
@@ -21,6 +24,9 @@ const props = withDefaults(defineProps<Props>(), {
     revenue: '89,012',
   }),
 })
+
+// 获取模板选择器
+const selector = useTemplateSelector()
 </script>
 
 <template>
@@ -40,6 +46,10 @@ const props = withDefaults(defineProps<Props>(), {
             <span>{{ username }}</span>
           </div>
         </slot>
+
+        <!-- 模板选择器 - 放在右上角 -->
+        <TemplateSelector v-if="selector && selector.enabled" v-bind="selector.props.value"
+          @select="selector.onSelect" />
       </div>
     </header>
 
