@@ -80,7 +80,7 @@ const handleSocialLogin = (provider: SocialProvider) => {
               {{ slogan }}
             </p>
           </slot>
-          
+
           <!-- 左侧额外内容 -->
           <slot name="leftExtra" />
         </div>
@@ -111,30 +111,14 @@ const handleSocialLogin = (provider: SocialProvider) => {
         </slot>
 
         <!-- 登录面板插槽 -->
-        <slot
-          name="loginPanel" 
-          :form="form"
-          :loading="loading"
-          :error="error"
-          :handle-submit="handleSubmit"
-        >
+        <slot name="loginPanel" :form="form" :loading="loading" :error="error" :handle-submit="handleSubmit">
           <form class="login-form" @submit.prevent="handleSubmit">
             <div class="form-group">
-              <input
-                v-model="form.username"
-                type="text"
-                placeholder="用户名或邮箱"
-                required
-              >
+              <input v-model="form.username" type="text" placeholder="用户名或邮箱" required>
             </div>
 
             <div class="form-group">
-              <input
-                v-model="form.password"
-                type="password"
-                placeholder="密码"
-                required
-              >
+              <input v-model="form.password" type="password" placeholder="密码" required>
             </div>
 
             <div class="form-options">
@@ -158,12 +142,8 @@ const handleSocialLogin = (provider: SocialProvider) => {
               <span>或</span>
             </div>
             <div class="social-buttons">
-              <button
-                v-for="provider in socialProviders"
-                :key="provider.name"
-                class="social-btn"
-                @click="handleSocialLogin(provider)"
-              >
+              <button v-for="provider in socialProviders" :key="provider.name" class="social-btn"
+                @click="handleSocialLogin(provider)">
                 {{ provider.label }}
               </button>
             </div>
@@ -201,23 +181,26 @@ const handleSocialLogin = (provider: SocialProvider) => {
 .overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, rgba(102, 126, 234, 0.9) 0%, rgba(118, 75, 162, 0.9) 100%);
+  background: linear-gradient(135deg,
+      var(--template-login-bg-gradient-start) 0%,
+      var(--template-login-bg-gradient-end) 100%);
+  opacity: 0.9;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  color: white;
-  padding: 40px;
+  color: var(--template-text-inverse);
+  padding: var(--template-spacing-4xl);
 }
 
 .brand {
-  font-size: 48px;
-  font-weight: 700;
-  margin: 0 0 16px;
+  font-size: var(--template-font-3xl);
+  font-weight: var(--template-font-weight-bold);
+  margin: 0 0 var(--template-spacing-xl);
 }
 
 .slogan {
-  font-size: 20px;
+  font-size: var(--template-font-xl);
   margin: 0;
   opacity: 0.9;
 }
@@ -227,8 +210,8 @@ const handleSocialLogin = (provider: SocialProvider) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: white;
-  padding: 40px;
+  background: var(--template-bg-container);
+  padding: var(--template-spacing-4xl);
 }
 
 .login-box {
@@ -237,57 +220,63 @@ const handleSocialLogin = (provider: SocialProvider) => {
 }
 
 .login-box h2 {
-  margin: 0 0 8px;
-  font-size: 32px;
-  font-weight: 600;
-  color: #333;
+  margin: 0 0 var(--template-spacing-md);
+  font-size: var(--template-font-3xl);
+  font-weight: var(--template-font-weight-semibold);
+  color: var(--template-text-primary);
 }
 
 .subtitle {
-  margin: 0 0 32px;
-  font-size: 14px;
-  color: #666;
+  margin: 0 0 var(--template-spacing-3xl);
+  font-size: var(--template-font-base);
+  color: var(--template-text-secondary);
 }
 
 .login-form {
-  margin-bottom: 24px;
+  margin-bottom: var(--template-spacing-2xl);
 }
 
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: var(--template-spacing-xl);
 }
 
 .form-group input[type="text"],
 .form-group input[type="password"] {
   width: 100%;
-  padding: 14px;
-  font-size: 14px;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  transition: all 0.3s;
+  padding: var(--template-spacing-lg);
+  font-size: var(--template-font-base);
+  border: var(--template-border-width-thin) solid var(--template-border-input);
+  border-radius: var(--template-radius-lg);
+  transition: var(--template-transition-all);
   box-sizing: border-box;
+  color: var(--template-text-primary);
+  background: var(--template-bg-container);
+}
+
+.form-group input::placeholder {
+  color: var(--template-text-placeholder);
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--template-border-input-focus);
+  box-shadow: 0 0 0 3px var(--template-primary-lighter);
 }
 
 .form-options {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 24px;
-  font-size: 14px;
+  margin-bottom: var(--template-spacing-2xl);
+  font-size: var(--template-font-base);
 }
 
 .checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--template-spacing-md);
   cursor: pointer;
-  color: #666;
+  color: var(--template-text-secondary);
 }
 
 .checkbox input {
@@ -295,78 +284,84 @@ const handleSocialLogin = (provider: SocialProvider) => {
 }
 
 .forgot-link {
-  color: #667eea;
+  color: var(--template-text-link);
   text-decoration: none;
+  transition: var(--template-transition-color);
 }
 
 .forgot-link:hover {
+  color: var(--template-text-link-hover);
   text-decoration: underline;
 }
 
 .btn-submit {
   width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 500;
-  color: white;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: var(--template-spacing-lg);
+  font-size: var(--template-font-md);
+  font-weight: var(--template-font-weight-medium);
+  color: var(--template-text-inverse);
+  background: linear-gradient(135deg,
+      var(--template-login-bg-gradient-start) 0%,
+      var(--template-login-bg-gradient-end) 100%);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--template-radius-lg);
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: var(--template-transition-transform);
 }
 
-.btn-submit:hover {
+.btn-submit:hover:not(:disabled) {
   transform: translateY(-2px);
 }
 
-.btn-submit:active {
+.btn-submit:active:not(:disabled) {
   transform: translateY(0);
 }
 
 .footer-text {
   text-align: center;
-  font-size: 14px;
-  color: #666;
+  font-size: var(--template-font-base);
+  color: var(--template-text-secondary);
 }
 
 .footer-text a {
-  color: #667eea;
+  color: var(--template-text-link);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--template-font-weight-medium);
+  transition: var(--template-transition-color);
 }
 
 .footer-text a:hover {
+  color: var(--template-text-link-hover);
   text-decoration: underline;
 }
 
 /* Logo 区域 */
 .logo-area {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--template-spacing-2xl);
 }
 
 .default-logo {
   display: inline-block;
-  color: #667eea;
+  color: var(--template-primary);
 }
 
 /* 社交登录 */
 .social-section {
-  margin: 24px 0;
+  margin: var(--template-spacing-2xl) 0;
 }
 
 .divider {
   position: relative;
   text-align: center;
-  margin: 24px 0;
+  margin: var(--template-spacing-2xl) 0;
 }
 
 .divider span {
-  background: white;
-  padding: 0 16px;
-  color: #999;
-  font-size: 13px;
+  background: var(--template-bg-container);
+  padding: 0 var(--template-spacing-xl);
+  color: var(--template-text-tertiary);
+  font-size: var(--template-font-sm);
   position: relative;
   z-index: 1;
 }
@@ -377,37 +372,37 @@ const handleSocialLogin = (provider: SocialProvider) => {
   top: 50%;
   left: 0;
   right: 0;
-  height: 1px;
-  background: #e0e0e0;
+  height: var(--template-border-width-thin);
+  background: var(--template-border-light);
 }
 
 .social-buttons {
   display: flex;
-  gap: 12px;
+  gap: var(--template-spacing-lg);
 }
 
 .social-btn {
   flex: 1;
-  padding: 10px;
-  border: 1px solid #e0e0e0;
-  background: white;
-  border-radius: 8px;
-  font-size: 14px;
-  color: #666;
+  padding: var(--template-spacing-md) var(--template-spacing-lg);
+  border: var(--template-border-width-thin) solid var(--template-border);
+  background: var(--template-bg-container);
+  border-radius: var(--template-radius-lg);
+  font-size: var(--template-font-base);
+  color: var(--template-text-secondary);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: var(--template-transition-all);
 }
 
 .social-btn:hover {
-  border-color: #667eea;
-  color: #667eea;
-  background: #f5f7ff;
+  border-color: var(--template-primary);
+  color: var(--template-primary);
+  background: var(--template-primary-lighter);
 }
 
 /* 加载状态 */
 .btn-submit:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  background: #ccc;
+  background: var(--template-bg-component-disabled);
 }
 </style>

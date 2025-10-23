@@ -27,50 +27,69 @@ const props = withDefaults(defineProps<Props>(), {
 <template>
   <div class="dashboard-desktop-default">
     <header class="dashboard-header">
-      <h1>{{ title }}</h1>
-      <div class="user-info">
-        <span>{{ username }}</span>
+      <!-- Header 左侧：Logo和标题 -->
+      <div class="header-left">
+        <slot name="logo">
+          <h1>{{ title }}</h1>
+        </slot>
+      </div>
+
+      <!-- Header 右侧：功能区（语言、主题等） -->
+      <div class="header-right">
+        <slot name="header-actions">
+          <div class="user-info">
+            <span>{{ username }}</span>
+          </div>
+        </slot>
       </div>
     </header>
 
     <div class="dashboard-content">
+      <!-- 侧边栏导航 -->
       <aside class="sidebar">
-        <nav class="nav-menu">
-          <a href="#" class="nav-item active">概览</a>
-          <a href="#" class="nav-item">数据分析</a>
-          <a href="#" class="nav-item">报表</a>
-          <a href="#" class="nav-item">设置</a>
-        </nav>
+        <slot name="sidebar">
+          <nav class="nav-menu">
+            <a href="#" class="nav-item active">概览</a>
+            <a href="#" class="nav-item">数据分析</a>
+            <a href="#" class="nav-item">报表</a>
+            <a href="#" class="nav-item">设置</a>
+          </nav>
+        </slot>
       </aside>
 
+      <!-- 主内容区 -->
       <main class="main-content">
-        <div class="stats-grid">
-          <div class="stat-card">
-            <h3>总访问量</h3>
-            <p class="stat-value">
-              {{ stats.visits }}
-            </p>
+        <!-- 统计卡片（可选显示） -->
+        <slot name="stats">
+          <div class="stats-grid">
+            <div class="stat-card">
+              <h3>总访问量</h3>
+              <p class="stat-value">
+                {{ stats.visits }}
+              </p>
+            </div>
+            <div class="stat-card">
+              <h3>活跃用户</h3>
+              <p class="stat-value">
+                {{ stats.users }}
+              </p>
+            </div>
+            <div class="stat-card">
+              <h3>订单数</h3>
+              <p class="stat-value">
+                {{ stats.orders }}
+              </p>
+            </div>
+            <div class="stat-card">
+              <h3>收入</h3>
+              <p class="stat-value">
+                ¥{{ stats.revenue }}
+              </p>
+            </div>
           </div>
-          <div class="stat-card">
-            <h3>活跃用户</h3>
-            <p class="stat-value">
-              {{ stats.users }}
-            </p>
-          </div>
-          <div class="stat-card">
-            <h3>订单数</h3>
-            <p class="stat-value">
-              {{ stats.orders }}
-            </p>
-          </div>
-          <div class="stat-card">
-            <h3>收入</h3>
-            <p class="stat-value">
-              ¥{{ stats.revenue }}
-            </p>
-          </div>
-        </div>
+        </slot>
 
+        <!-- 主内容区域 -->
         <div class="content-area">
           <slot>
             <p>这里是仪表板的主要内容区域</p>
@@ -84,97 +103,116 @@ const props = withDefaults(defineProps<Props>(), {
 <style scoped>
 .dashboard-desktop-default {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: var(--template-dashboard-content-bg);
+  display: flex;
+  flex-direction: column;
 }
 
 .dashboard-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
-  height: 60px;
-  background: white;
-  border-bottom: 1px solid #e0e0e0;
+  padding: 0 var(--template-spacing-2xl);
+  height: var(--template-dashboard-header-height);
+  background: var(--template-dashboard-header-bg);
+  border-bottom: var(--template-border-width-thin) solid var(--template-border-light);
+  position: sticky;
+  top: 0;
+  z-index: var(--template-z-sticky);
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
 }
 
 .dashboard-header h1 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
+  font-size: var(--template-font-xl);
+  font-weight: var(--template-font-weight-semibold);
+  color: var(--template-text-primary);
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: var(--template-spacing-lg);
 }
 
 .user-info {
-  font-size: 14px;
-  color: #666;
+  font-size: var(--template-font-base);
+  color: var(--template-text-secondary);
 }
 
 .dashboard-content {
   display: flex;
-  min-height: calc(100vh - 60px);
+  flex: 1;
+  min-height: calc(100vh - var(--template-dashboard-header-height));
 }
 
 .sidebar {
-  width: 240px;
-  background: white;
-  border-right: 1px solid #e0e0e0;
+  width: var(--template-dashboard-sidebar-width);
+  background: var(--template-dashboard-sidebar-bg);
+  border-right: var(--template-border-width-thin) solid var(--template-border-light);
+  flex-shrink: 0;
 }
 
 .nav-menu {
-  padding: 16px 0;
+  padding: var(--template-spacing-xl) 0;
 }
 
 .nav-item {
   display: block;
-  padding: 12px 24px;
-  color: #666;
+  padding: var(--template-spacing-lg) var(--template-spacing-2xl);
+  color: var(--template-text-secondary);
   text-decoration: none;
-  transition: all 0.3s;
+  transition: var(--template-transition-all);
 }
 
 .nav-item:hover,
 .nav-item.active {
-  color: #667eea;
-  background: #f5f7fa;
+  color: var(--template-primary);
+  background: var(--template-primary-lighter);
 }
 
 .main-content {
   flex: 1;
-  padding: 24px;
+  padding: var(--template-spacing-2xl);
+  overflow-y: auto;
 }
 
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 24px;
-  margin-bottom: 24px;
+  gap: var(--template-spacing-2xl);
+  margin-bottom: var(--template-spacing-2xl);
 }
 
 .stat-card {
-  padding: 24px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  padding: var(--template-dashboard-card-padding);
+  background: var(--template-dashboard-card-bg);
+  border-radius: var(--template-dashboard-card-radius);
+  box-shadow: var(--template-dashboard-card-shadow);
 }
 
 .stat-card h3 {
-  margin: 0 0 12px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #666;
+  margin: 0 0 var(--template-spacing-lg);
+  font-size: var(--template-font-base);
+  font-weight: var(--template-font-weight-medium);
+  color: var(--template-text-secondary);
 }
 
 .stat-value {
   margin: 0;
-  font-size: 28px;
-  font-weight: 600;
-  color: #333;
+  font-size: var(--template-font-h1);
+  font-weight: var(--template-font-weight-semibold);
+  color: var(--template-text-primary);
 }
 
 .content-area {
-  padding: 24px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  background: var(--template-dashboard-card-bg);
+  border-radius: var(--template-dashboard-card-radius);
+  box-shadow: var(--template-dashboard-card-shadow);
+  min-height: 400px;
 }
 </style>

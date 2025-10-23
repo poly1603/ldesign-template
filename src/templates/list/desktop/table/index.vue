@@ -4,14 +4,9 @@
       <slot name="header">
         <h2 v-if="title" class="table-title">{{ title }}</h2>
       </slot>
-      
+
       <div v-if="showSearch" class="table-toolbar">
-        <input
-          v-model="searchQuery"
-          type="text"
-          class="search-input"
-          :placeholder="searchPlaceholder || '搜索...'"
-        >
+        <input v-model="searchQuery" type="text" class="search-input" :placeholder="searchPlaceholder || '搜索...'">
         <slot name="toolbar" />
       </div>
     </div>
@@ -20,13 +15,8 @@
       <table class="data-table">
         <thead>
           <tr>
-            <th
-              v-for="column in columns"
-              :key="column.key"
-              :style="{ width: column.width }"
-              :class="{ sortable: column.sortable }"
-              @click="column.sortable ? handleSort(column.key) : undefined"
-            >
+            <th v-for="column in columns" :key="column.key" :style="{ width: column.width }"
+              :class="{ sortable: column.sortable }" @click="column.sortable ? handleSort(column.key) : undefined">
               {{ column.label }}
               <span v-if="column.sortable && sortKey === column.key" class="sort-icon">
                 {{ sortOrder === 'asc' ? '↑' : '↓' }}
@@ -34,7 +24,7 @@
             </th>
           </tr>
         </thead>
-        
+
         <tbody>
           <tr v-if="loading" class="loading-row">
             <td :colspan="columns.length">
@@ -43,14 +33,10 @@
               </slot>
             </td>
           </tr>
-          
+
           <template v-else-if="paginatedItems.length > 0">
-            <tr
-              v-for="(item, index) in paginatedItems"
-              :key="getItemKey(item, index)"
-              class="data-row"
-              @click="handleRowClick(item, index)"
-            >
+            <tr v-for="(item, index) in paginatedItems" :key="getItemKey(item, index)" class="data-row"
+              @click="handleRowClick(item, index)">
               <td v-for="column in columns" :key="column.key">
                 <slot :name="`cell-${column.key}`" :item="item" :value="item[column.key]">
                   {{ formatCell(item[column.key], column) }}
@@ -58,7 +44,7 @@
               </td>
             </tr>
           </template>
-          
+
           <tr v-else class="empty-row">
             <td :colspan="columns.length">
               <slot name="empty">
@@ -80,12 +66,8 @@
             上一页
           </button>
           <span class="page-numbers">
-            <button
-              v-for="page in pageNumbers"
-              :key="page"
-              :class="{ active: page === currentPage }"
-              @click="goToPage(page)"
-            >
+            <button v-for="page in pageNumbers" :key="page" :class="{ active: page === currentPage }"
+              @click="goToPage(page)">
               {{ page }}
             </button>
           </span>
@@ -149,7 +131,7 @@ const sortOrder = ref<'asc' | 'desc'>('asc')
 
 const filteredItems = computed(() => {
   let result = props.items
-  
+
   // 搜索过滤
   if (searchQuery.value) {
     const query = searchQuery.value.toLowerCase()
@@ -159,20 +141,20 @@ const filteredItems = computed(() => {
       )
     )
   }
-  
+
   // 排序
   if (sortKey.value) {
     result = [...result].sort((a, b) => {
       const aVal = a[sortKey.value]
       const bVal = b[sortKey.value]
-      
+
       if (aVal === bVal) return 0
-      
+
       const comparison = aVal > bVal ? 1 : -1
       return sortOrder.value === 'asc' ? comparison : -comparison
     })
   }
-  
+
   return result
 })
 
@@ -192,29 +174,29 @@ const paginatedItems = computed(() =>
 const pageNumbers = computed(() => {
   const pages: number[] = []
   const maxPages = 7
-  
+
   if (totalPages.value <= maxPages) {
     for (let i = 1; i <= totalPages.value; i++) {
       pages.push(i)
     }
   } else {
     pages.push(1)
-    
+
     if (currentPage.value > 3) {
       pages.push(-1) // 省略号
     }
-    
+
     for (let i = Math.max(2, currentPage.value - 1); i <= Math.min(totalPages.value - 1, currentPage.value + 1); i++) {
       pages.push(i)
     }
-    
+
     if (currentPage.value < totalPages.value - 2) {
       pages.push(-1) // 省略号
     }
-    
+
     pages.push(totalPages.value)
   }
-  
+
   return pages
 })
 
@@ -242,7 +224,7 @@ const handleSort = (key: string) => {
     sortKey.value = key
     sortOrder.value = 'asc'
   }
-  
+
   emit('sort', key, sortOrder.value)
 }
 
@@ -261,58 +243,70 @@ const goToPage = (page: number) => {
 <style scoped>
 .ldesign-list-table {
   width: 100%;
-  padding: 24px;
+  padding: var(--template-spacing-2xl);
 }
 
 .table-header {
-  margin-bottom: 24px;
+  margin-bottom: var(--template-spacing-2xl);
 }
 
 .table-title {
-  font-size: 24px;
-  font-weight: 600;
-  color: #1f2937;
-  margin: 0 0 16px 0;
+  font-size: var(--template-font-2xl);
+  font-weight: var(--template-font-weight-semibold);
+  color: var(--template-text-primary);
+  margin: 0 0 var(--template-spacing-xl) 0;
 }
 
 .table-toolbar {
   display: flex;
-  gap: 12px;
+  gap: var(--template-spacing-lg);
   align-items: center;
 }
 
 .search-input {
   flex: 1;
   max-width: 300px;
-  padding: 8px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  font-size: 14px;
+  padding: var(--template-spacing-md) var(--template-spacing-lg);
+  border: var(--template-border-width-thin) solid var(--template-border-input);
+  border-radius: var(--template-form-input-radius);
+  font-size: var(--template-font-base);
+  color: var(--template-text-primary);
+  background: var(--template-bg-container);
+  transition: var(--template-transition-border);
+}
+
+.search-input::placeholder {
+  color: var(--template-text-placeholder);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--template-border-input-focus);
 }
 
 .table-container {
   overflow-x: auto;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border-radius: var(--template-radius-lg);
+  border: var(--template-border-width-thin) solid var(--template-list-border);
 }
 
 .data-table {
   width: 100%;
   border-collapse: collapse;
-  background: white;
+  background: var(--template-bg-container);
 }
 
 .data-table thead {
-  background: #f9fafb;
+  background: var(--template-list-header-bg);
 }
 
 .data-table th {
-  padding: 12px 16px;
+  padding: var(--template-list-cell-padding);
   text-align: left;
-  font-weight: 600;
-  font-size: 13px;
-  color: #374151;
-  border-bottom: 2px solid #e5e7eb;
+  font-weight: var(--template-font-weight-semibold);
+  font-size: var(--template-font-sm);
+  color: var(--template-text-primary);
+  border-bottom: var(--template-border-width-medium) solid var(--template-list-border);
   white-space: nowrap;
 }
 
@@ -322,27 +316,27 @@ const goToPage = (page: number) => {
 }
 
 .data-table th.sortable:hover {
-  background: #f3f4f6;
+  background: var(--template-bg-component-hover);
 }
 
 .sort-icon {
-  margin-left: 4px;
-  color: #3b82f6;
+  margin-left: var(--template-spacing-xs);
+  color: var(--template-primary);
 }
 
 .data-table td {
-  padding: 12px 16px;
-  font-size: 14px;
-  color: #1f2937;
-  border-bottom: 1px solid #f3f4f6;
+  padding: var(--template-list-cell-padding);
+  font-size: var(--template-font-base);
+  color: var(--template-text-primary);
+  border-bottom: var(--template-border-width-thin) solid var(--template-list-border);
 }
 
 .data-row {
-  transition: background 0.2s;
+  transition: var(--template-transition-bg);
 }
 
 .data-row:hover {
-  background: #f9fafb;
+  background: var(--template-list-row-hover-bg);
   cursor: pointer;
 }
 
@@ -353,42 +347,42 @@ const goToPage = (page: number) => {
 
 .loading-text,
 .empty-text {
-  padding: 48px 24px;
-  color: #9ca3af;
+  padding: var(--template-spacing-4xl) var(--template-spacing-2xl);
+  color: var(--template-text-tertiary);
 }
 
 .table-pagination {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 24px;
+  margin-top: var(--template-spacing-2xl);
 }
 
 .pagination-info {
-  font-size: 14px;
-  color: #6b7280;
+  font-size: var(--template-font-base);
+  color: var(--template-text-secondary);
 }
 
 .pagination-controls {
   display: flex;
-  gap: 8px;
+  gap: var(--template-spacing-md);
   align-items: center;
 }
 
 .pagination-controls button {
-  padding: 6px 12px;
-  border: 1px solid #d1d5db;
-  border-radius: 4px;
-  background: white;
-  color: #374151;
-  font-size: 13px;
+  padding: var(--template-spacing-sm) var(--template-spacing-lg);
+  border: var(--template-border-width-thin) solid var(--template-border);
+  border-radius: var(--template-radius-sm);
+  background: var(--template-bg-container);
+  color: var(--template-text-primary);
+  font-size: var(--template-font-sm);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--template-transition-all);
 }
 
 .pagination-controls button:hover:not(:disabled) {
-  background: #f9fafb;
-  border-color: #9ca3af;
+  background: var(--template-bg-component-hover);
+  border-color: var(--template-border-dark);
 }
 
 .pagination-controls button:disabled {
@@ -397,16 +391,13 @@ const goToPage = (page: number) => {
 }
 
 .pagination-controls button.active {
-  background: #3b82f6;
-  color: white;
-  border-color: #3b82f6;
+  background: var(--template-primary);
+  color: var(--template-text-inverse);
+  border-color: var(--template-primary);
 }
 
 .page-numbers {
   display: flex;
-  gap: 4px;
+  gap: var(--template-spacing-xs);
 }
 </style>
-
-
-

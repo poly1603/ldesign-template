@@ -88,33 +88,17 @@ const handleSocialLogin = (provider: SocialProvider) => {
       </div>
 
       <!-- 登录面板插槽 -->
-      <slot
-        name="loginPanel"
-        :form="form"
-        :loading="loading"
-        :error="error"
-        :handle-submit="handleSubmit"
-      >
+      <slot name="loginPanel" :form="form" :loading="loading" :error="error" :handle-submit="handleSubmit">
         <form class="login-form" @submit.prevent="handleSubmit">
           <div class="form-group">
             <div class="input-wrapper">
-              <input
-                v-model="form.username"
-                type="text"
-                placeholder="手机号/用户名/邮箱"
-                required
-              >
+              <input v-model="form.username" type="text" placeholder="手机号/用户名/邮箱" required>
             </div>
           </div>
 
           <div class="form-group">
             <div class="input-wrapper">
-              <input
-                v-model="form.password"
-                type="password"
-                placeholder="密码"
-                required
-              >
+              <input v-model="form.password" type="password" placeholder="密码" required>
             </div>
           </div>
 
@@ -139,12 +123,8 @@ const handleSocialLogin = (provider: SocialProvider) => {
             <span>其他方式</span>
           </div>
           <div class="social-buttons">
-            <button
-              v-for="provider in socialProviders"
-              :key="provider.name"
-              class="social-btn"
-              @click="handleSocialLogin(provider)"
-            >
+            <button v-for="provider in socialProviders" :key="provider.name" class="social-btn"
+              @click="handleSocialLogin(provider)">
               <span>{{ provider.label }}</span>
             </button>
           </div>
@@ -169,8 +149,10 @@ const handleSocialLogin = (provider: SocialProvider) => {
 <style scoped>
 .login-mobile-card {
   min-height: 100vh;
-  padding: 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: var(--template-spacing-xl);
+  background: linear-gradient(135deg,
+      var(--template-login-bg-gradient-start) 0%,
+      var(--template-login-bg-gradient-end) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -179,16 +161,16 @@ const handleSocialLogin = (provider: SocialProvider) => {
 .card-container {
   width: 100%;
   max-width: 380px;
-  padding: 32px 24px;
-  background: white;
-  border-radius: 16px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  padding: var(--template-spacing-3xl) var(--template-spacing-2xl);
+  background: var(--template-login-card-bg);
+  border-radius: var(--template-radius-2xl);
+  box-shadow: var(--template-shadow-xl);
 }
 
 /* Logo */
 .logo-section {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--template-spacing-2xl);
 }
 
 .default-logo {
@@ -198,29 +180,29 @@ const handleSocialLogin = (provider: SocialProvider) => {
 /* 头部 */
 .card-header {
   text-align: center;
-  margin-bottom: 32px;
+  margin-bottom: var(--template-spacing-3xl);
 }
 
 .card-header h1 {
-  margin: 0 0 8px;
-  font-size: 26px;
-  font-weight: 600;
-  color: #1a1a1a;
+  margin: 0 0 var(--template-spacing-md);
+  font-size: var(--template-font-h2);
+  font-weight: var(--template-font-weight-semibold);
+  color: var(--template-text-primary);
 }
 
 .subtitle {
   margin: 0;
-  font-size: 14px;
-  color: #666;
+  font-size: var(--template-font-base);
+  color: var(--template-text-secondary);
 }
 
 /* 表单 */
 .login-form {
-  margin-bottom: 24px;
+  margin-bottom: var(--template-spacing-2xl);
 }
 
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: var(--template-spacing-xl);
 }
 
 .input-wrapper {
@@ -229,24 +211,25 @@ const handleSocialLogin = (provider: SocialProvider) => {
 
 .input-wrapper input {
   width: 100%;
-  padding: 14px 16px;
-  font-size: 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 10px;
-  background: #f8f8f8;
-  transition: all 0.3s;
+  padding: var(--template-spacing-lg) var(--template-spacing-xl);
+  font-size: var(--template-font-md);
+  border: var(--template-border-width-thin) solid var(--template-border-input);
+  border-radius: var(--template-radius-md);
+  background: var(--template-bg-component);
+  transition: var(--template-transition-all);
   box-sizing: border-box;
+  color: var(--template-text-primary);
 }
 
 .input-wrapper input:focus {
   outline: none;
-  border-color: #667eea;
-  background: white;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  border-color: var(--template-border-input-focus);
+  background: var(--template-bg-container);
+  box-shadow: 0 0 0 3px var(--template-primary-lighter);
 }
 
 .input-wrapper input::placeholder {
-  color: #999;
+  color: var(--template-text-placeholder);
 }
 
 /* 表单选项 */
@@ -254,15 +237,15 @@ const handleSocialLogin = (provider: SocialProvider) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  font-size: 13px;
+  margin-bottom: var(--template-spacing-xl);
+  font-size: var(--template-font-sm);
 }
 
 .remember-me {
   display: flex;
   align-items: center;
-  gap: 6px;
-  color: #666;
+  gap: var(--template-spacing-sm);
+  color: var(--template-text-secondary);
   cursor: pointer;
 }
 
@@ -271,9 +254,10 @@ const handleSocialLogin = (provider: SocialProvider) => {
 }
 
 .forgot-link {
-  color: #667eea;
+  color: var(--template-text-link);
   text-decoration: none;
-  font-size: 13px;
+  font-size: var(--template-font-sm);
+  transition: var(--template-transition-color);
 }
 
 .forgot-link:active {
@@ -283,18 +267,20 @@ const handleSocialLogin = (provider: SocialProvider) => {
 /* 登录按钮 */
 .btn-login {
   width: 100%;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 500;
-  color: white;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: var(--template-spacing-lg);
+  font-size: var(--template-font-md);
+  font-weight: var(--template-font-weight-medium);
+  color: var(--template-text-inverse);
+  background: linear-gradient(135deg,
+      var(--template-login-bg-gradient-start) 0%,
+      var(--template-login-bg-gradient-end) 100%);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--template-radius-md);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: var(--template-transition-all);
 }
 
-.btn-login:active {
+.btn-login:active:not(:disabled) {
   transform: scale(0.98);
 }
 
@@ -305,20 +291,20 @@ const handleSocialLogin = (provider: SocialProvider) => {
 
 /* 社交登录 */
 .social-section {
-  margin: 24px 0;
+  margin: var(--template-spacing-2xl) 0;
 }
 
 .social-divider {
   text-align: center;
-  margin: 20px 0;
+  margin: var(--template-spacing-xl) 0;
   position: relative;
 }
 
 .social-divider span {
-  background: white;
-  padding: 0 12px;
-  color: #999;
-  font-size: 12px;
+  background: var(--template-bg-container);
+  padding: 0 var(--template-spacing-lg);
+  color: var(--template-text-tertiary);
+  font-size: var(--template-font-sm);
   position: relative;
   z-index: 1;
 }
@@ -329,42 +315,43 @@ const handleSocialLogin = (provider: SocialProvider) => {
   top: 50%;
   left: 0;
   right: 0;
-  height: 1px;
-  background: #e0e0e0;
+  height: var(--template-border-width-thin);
+  background: var(--template-border-light);
 }
 
 .social-buttons {
   display: flex;
-  gap: 10px;
+  gap: var(--template-spacing-md);
 }
 
 .social-btn {
   flex: 1;
-  padding: 10px;
-  background: #f8f8f8;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  font-size: 13px;
-  color: #666;
+  padding: var(--template-spacing-md);
+  background: var(--template-bg-component);
+  border: var(--template-border-width-thin) solid var(--template-border);
+  border-radius: var(--template-radius-lg);
+  font-size: var(--template-font-sm);
+  color: var(--template-text-secondary);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: var(--template-transition-all);
 }
 
 .social-btn:active {
-  background: #f0f0f0;
+  background: var(--template-bg-component-hover);
   transform: scale(0.98);
 }
 
 /* 底部 */
 .card-footer {
   text-align: center;
-  padding-top: 16px;
-  font-size: 13px;
+  padding-top: var(--template-spacing-xl);
+  font-size: var(--template-font-sm);
 }
 
 .card-footer a {
-  color: #667eea;
+  color: var(--template-text-link);
   text-decoration: none;
+  transition: var(--template-transition-color);
 }
 
 .card-footer a:active {
@@ -372,7 +359,7 @@ const handleSocialLogin = (provider: SocialProvider) => {
 }
 
 .divider {
-  margin: 0 10px;
-  color: #ddd;
+  margin: 0 var(--template-spacing-md);
+  color: var(--template-border-light);
 }
 </style>

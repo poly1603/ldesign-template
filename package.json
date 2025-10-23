@@ -145,6 +145,12 @@
       "import": "./es/ssr/*.js",
       "require": "./lib/ssr/*.cjs"
     },
+    "./theme": {
+      "types": "./es/theme/index.d.ts",
+      "import": "./es/theme/index.js",
+      "require": "./lib/theme/index.cjs"
+    },
+    "./styles/variables.css": "./src/styles/variables.css",
     "./types": {
       "types": "./es/types/index.d.ts",
       "import": "./es/types/index.js",

@@ -101,6 +101,98 @@ app.use(TemplatePlugin, {
 app.mount('#app')
 ```
 
+## 🎨 主题系统 (v2.0+)
+
+@ldesign/template v2.0 引入了强大的CSS变量主题系统，支持运行时主题切换和深色模式。
+
+### 快速开始
+
+```typescript
+// 1. 初始化主题系统
+import { initTemplateTheme } from '@ldesign/template/theme'
+
+await initTemplateTheme({
+  mode: 'light',  // 'light' | 'dark' | 'auto'
+  autoInjectVariables: true,
+  followSystemTheme: true
+})
+
+// 2. 在组件中使用主题
+import { useTemplateTheme } from '@ldesign/template/theme'
+
+const { mode, isDark, toggle, setMode } = useTemplateTheme()
+
+// 切换主题
+toggle() // 在 light 和 dark 之间切换
+
+// 设置特定主题
+setMode('dark')  // 切换到深色模式
+setMode('light') // 切换到浅色模式
+setMode('auto')  // 跟随系统
+```
+
+### CSS 变量使用
+
+```vue
+<template>
+  <div class="my-card">
+    <h2>标题</h2>
+    <p>内容</p>
+  </div>
+</template>
+
+<style scoped>
+.my-card {
+  padding: var(--template-spacing-2xl);
+  background: var(--template-bg-container);
+  color: var(--template-text-primary);
+  border-radius: var(--template-radius-lg);
+  box-shadow: var(--template-shadow-md);
+}
+
+h2 {
+  font-size: var(--template-font-2xl);
+  font-weight: var(--template-font-weight-semibold);
+  color: var(--template-text-primary);
+}
+
+p {
+  font-size: var(--template-font-base);
+  color: var(--template-text-secondary);
+}
+</style>
+```
+
+### 自定义主题
+
+```css
+/* 全局自定义 */
+:root {
+  --template-primary: #ff6b6b;
+  --template-primary-hover: #ee5a6f;
+  --template-radius-lg: 12px;
+}
+
+/* 深色模式自定义 */
+:root[data-theme-mode='dark'] {
+  --template-primary: #ff8787;
+}
+```
+
+### 主题特性
+
+- ✅ **运行时切换** - 无需重新编译，即时生效
+- ✅ **深色模式** - 内置深色主题支持
+- ✅ **跟随系统** - 自动检测并跟随系统主题
+- ✅ **完整集成** - 与 @ldesign/color 和 @ldesign/size 无缝集成
+- ✅ **200+ 变量** - 覆盖所有样式属性
+- ✅ **TypeScript** - 完整的类型支持
+
+### 更多信息
+
+- 📖 [CSS 变量完整文档](./docs/CSS_VARIABLES.md)
+- 📖 [V2 迁移指南](./docs/MIGRATION_V2.md)
+
 ## 🎨 内置模板库
 
 @ldesign/template 提供了丰富的内置模板，开箱即用，无需额外配置。

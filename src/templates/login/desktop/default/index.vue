@@ -151,101 +151,116 @@ const handleSocialLogin = (provider: SocialProvider) => {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, var(--color-bg-page) 0%, var(--color-bg-container-tertiary) 100%);
+  background: linear-gradient(135deg,
+      var(--template-bg-page) 0%,
+      var(--template-bg-container-tertiary) 100%);
 }
 
 .login-container {
   width: 100%;
   max-width: 450px;
-  padding: 20px 32px;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  padding: var(--template-login-card-padding);
+  background: var(--template-login-card-bg);
+  border-radius: var(--template-login-card-radius);
+  box-shadow: var(--template-login-card-shadow);
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--template-spacing-2xl);
 }
 
 .login-header h1 {
   margin: 0;
-  font-size: 20px;
-  font-weight: 600;
-  color: #333;
+  font-size: var(--template-font-xl);
+  font-weight: var(--template-font-weight-semibold);
+  color: var(--template-text-primary);
 }
 
 .subtitle {
   margin: 0;
-  font-size: 14px;
-  color: #666;
+  font-size: var(--template-font-base);
+  color: var(--template-text-secondary);
 }
 
 .login-form {
-  margin-bottom: 24px;
+  margin-bottom: var(--template-spacing-2xl);
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: var(--template-spacing-xl);
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #333;
+  margin-bottom: var(--template-spacing-md);
+  font-size: var(--template-font-base);
+  font-weight: var(--template-font-weight-medium);
+  color: var(--template-text-primary);
 }
 
 .form-group input {
   width: 100%;
-  padding: 12px;
-  font-size: 14px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  transition: border-color 0.3s;
+  padding: var(--template-login-input-padding);
+  font-size: var(--template-font-base);
+  border: var(--template-border-width-thin) solid var(--template-border-input);
+  border-radius: var(--template-form-input-radius);
+  transition: var(--template-transition-border);
   box-sizing: border-box;
+  color: var(--template-text-primary);
+  background: var(--template-bg-container);
+}
+
+.form-group input::placeholder {
+  color: var(--template-text-placeholder);
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--template-border-input-focus);
 }
 
 .form-actions {
-  margin-top: 24px;
+  margin-top: var(--template-spacing-2xl);
 }
 
 .btn-primary {
   width: 100%;
-  padding: 12px;
-  font-size: 16px;
-  font-weight: 500;
-  color: white;
-  background: #667eea;
+  padding: var(--template-login-button-padding);
+  height: var(--template-login-button-height);
+  font-size: var(--template-font-md);
+  font-weight: var(--template-font-weight-medium);
+  color: var(--template-text-inverse);
+  background: var(--template-primary);
   border: none;
-  border-radius: 4px;
+  border-radius: var(--template-form-input-radius);
   cursor: pointer;
-  transition: background 0.3s;
+  transition: var(--template-transition-bg);
 }
 
-.btn-primary:hover {
-  background: #5568d3;
+.btn-primary:hover:not(:disabled) {
+  background: var(--template-primary-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--template-primary-active);
 }
 
 .login-footer {
   text-align: center;
-  font-size: 14px;
-  color: #666;
-  margin-top: 16px;
+  font-size: var(--template-font-base);
+  color: var(--template-text-secondary);
+  margin-top: var(--template-spacing-xl);
 }
 
 .login-footer a {
-  color: #667eea;
+  color: var(--template-text-link);
   text-decoration: none;
+  transition: var(--template-transition-color);
 }
 
 .login-footer a:hover {
+  color: var(--template-text-link-hover);
   text-decoration: underline;
 }
 
@@ -257,16 +272,16 @@ const handleSocialLogin = (provider: SocialProvider) => {
 .default-logo {
   display: inline-flex;
   align-items: center;
-  color: #667eea;
+  color: var(--template-primary);
 }
 
 /* 复选框样式 */
 .checkbox-label {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  color: #666;
+  gap: var(--template-spacing-md);
+  font-size: var(--template-font-base);
+  color: var(--template-text-secondary);
   cursor: pointer;
 }
 
@@ -276,20 +291,20 @@ const handleSocialLogin = (provider: SocialProvider) => {
 
 /* 社交登录样式 */
 .social-section {
-  margin-top: 24px;
+  margin-top: var(--template-spacing-2xl);
 }
 
 .social-divider {
   position: relative;
   text-align: center;
-  margin: 20px 0;
+  margin: var(--template-spacing-xl) 0;
 }
 
 .social-divider span {
-  background: white;
-  padding: 0 16px;
-  color: #999;
-  font-size: 13px;
+  background: var(--template-bg-container);
+  padding: 0 var(--template-spacing-xl);
+  color: var(--template-text-tertiary);
+  font-size: var(--template-font-sm);
   position: relative;
   z-index: 1;
 }
@@ -300,32 +315,32 @@ const handleSocialLogin = (provider: SocialProvider) => {
   top: 50%;
   left: 0;
   right: 0;
-  height: 1px;
-  background: #e0e0e0;
+  height: var(--template-border-width-thin);
+  background: var(--template-border-light);
 }
 
 .social-buttons {
   display: flex;
-  gap: 12px;
-  margin-top: 16px;
+  gap: var(--template-spacing-lg);
+  margin-top: var(--template-spacing-xl);
 }
 
 .social-btn {
   flex: 1;
-  padding: 10px;
-  border: 1px solid #e0e0e0;
-  background: white;
-  border-radius: 4px;
-  font-size: 14px;
-  color: #666;
+  padding: var(--template-spacing-md) var(--template-spacing-lg);
+  border: var(--template-border-width-thin) solid var(--template-border);
+  background: var(--template-bg-container);
+  border-radius: var(--template-form-input-radius);
+  font-size: var(--template-font-base);
+  color: var(--template-text-secondary);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: var(--template-transition-all);
 }
 
 .social-btn:hover {
-  border-color: #667eea;
-  color: #667eea;
-  background: #f5f7ff;
+  border-color: var(--template-primary);
+  color: var(--template-primary);
+  background: var(--template-primary-lighter);
 }
 
 /* 加载状态 */

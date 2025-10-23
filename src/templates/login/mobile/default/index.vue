@@ -84,30 +84,14 @@ const handleSocialLogin = (provider: SocialProvider) => {
     </div>
 
     <!-- 登录面板插槽 -->
-    <slot
-      name="loginPanel"
-      :form="form"
-      :loading="loading"
-      :error="error"
-      :handle-submit="handleSubmit"
-    >
+    <slot name="loginPanel" :form="form" :loading="loading" :error="error" :handle-submit="handleSubmit">
       <form class="login-form" @submit.prevent="handleSubmit">
         <div class="form-group">
-          <input
-            v-model="form.username"
-            type="text"
-            placeholder="手机号/用户名"
-            required
-          >
+          <input v-model="form.username" type="text" placeholder="手机号/用户名" required>
         </div>
 
         <div class="form-group">
-          <input
-            v-model="form.password"
-            type="password"
-            placeholder="密码"
-            required
-          >
+          <input v-model="form.password" type="password" placeholder="密码" required>
         </div>
 
         <button type="submit" class="btn-login" :disabled="loading">
@@ -123,12 +107,8 @@ const handleSocialLogin = (provider: SocialProvider) => {
           <span>其他登录方式</span>
         </div>
         <div class="social-buttons">
-          <button
-            v-for="provider in socialProviders"
-            :key="provider.name"
-            class="social-btn"
-            @click="handleSocialLogin(provider)"
-          >
+          <button v-for="provider in socialProviders" :key="provider.name" class="social-btn"
+            @click="handleSocialLogin(provider)">
             {{ provider.label }}
           </button>
         </div>
@@ -152,84 +132,86 @@ const handleSocialLogin = (provider: SocialProvider) => {
 <style scoped>
 .login-mobile-default {
   min-height: 100vh;
-  padding: 40px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: var(--template-spacing-4xl) var(--template-spacing-xl);
+  background: linear-gradient(135deg,
+      var(--template-login-bg-gradient-start) 0%,
+      var(--template-login-bg-gradient-end) 100%);
 }
 
 .login-header {
   text-align: center;
-  margin-bottom: 60px;
-  padding-top: 40px;
+  margin-bottom: var(--template-spacing-4xl);
+  padding-top: var(--template-spacing-4xl);
 }
 
 .login-header h1 {
   margin: 0;
-  font-size: 32px;
-  font-weight: 600;
-  color: white;
+  font-size: var(--template-font-3xl);
+  font-weight: var(--template-font-weight-semibold);
+  color: var(--template-text-inverse);
 }
 
 .login-form {
-  margin-bottom: 30px;
+  margin-bottom: var(--template-spacing-3xl);
 }
 
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: var(--template-spacing-xl);
 }
 
 .form-group input {
   width: 100%;
-  padding: 16px;
-  font-size: 16px;
-  color: #333;
-  background: white;
+  padding: var(--template-spacing-xl);
+  font-size: var(--template-font-md);
+  color: var(--template-text-primary);
+  background: var(--template-bg-container);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--template-radius-lg);
   box-sizing: border-box;
 }
 
 .form-group input::placeholder {
-  color: #999;
+  color: var(--template-text-placeholder);
 }
 
 .btn-login {
   width: 100%;
-  padding: 16px;
-  margin-top: 24px;
-  font-size: 18px;
-  font-weight: 500;
-  color: #667eea;
-  background: white;
+  padding: var(--template-spacing-xl);
+  margin-top: var(--template-spacing-2xl);
+  font-size: var(--template-font-lg);
+  font-weight: var(--template-font-weight-medium);
+  color: var(--template-primary);
+  background: var(--template-bg-container);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--template-radius-lg);
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: var(--template-transition-transform);
 }
 
-.btn-login:active {
+.btn-login:active:not(:disabled) {
   transform: scale(0.98);
 }
 
 .login-footer {
   text-align: center;
-  font-size: 14px;
-  color: white;
+  font-size: var(--template-font-base);
+  color: var(--template-text-inverse);
 }
 
 .login-footer a {
-  color: white;
+  color: var(--template-text-inverse);
   text-decoration: none;
 }
 
 .divider {
-  margin: 0 12px;
+  margin: 0 var(--template-spacing-lg);
 }
 
 /* Logo 样式 */
 .logo-section {
   text-align: center;
-  margin-bottom: 30px;
-  padding-top: 40px;
+  margin-bottom: var(--template-spacing-3xl);
+  padding-top: var(--template-spacing-4xl);
 }
 
 .default-logo {
@@ -238,27 +220,27 @@ const handleSocialLogin = (provider: SocialProvider) => {
 
 /* 副标题 */
 .subtitle {
-  margin: 8px 0 0;
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.8);
+  margin: var(--template-spacing-md) 0 0;
+  font-size: var(--template-font-base);
+  color: var(--template-text-inverse-secondary);
 }
 
 /* 社交登录 */
 .social-section {
-  margin: 30px 0;
+  margin: var(--template-spacing-3xl) 0;
 }
 
 .social-divider {
   text-align: center;
-  margin: 20px 0;
+  margin: var(--template-spacing-xl) 0;
   position: relative;
 }
 
 .social-divider span {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 0 16px;
-  color: white;
-  font-size: 13px;
+  background: transparent;
+  padding: 0 var(--template-spacing-xl);
+  color: var(--template-text-inverse);
+  font-size: var(--template-font-sm);
   position: relative;
   z-index: 1;
 }
@@ -269,24 +251,25 @@ const handleSocialLogin = (provider: SocialProvider) => {
   top: 50%;
   left: 0;
   right: 0;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.3);
+  height: var(--template-border-width-thin);
+  background: var(--template-text-inverse-secondary);
 }
 
 .social-buttons {
   display: flex;
-  gap: 10px;
+  gap: var(--template-spacing-md);
 }
 
 .social-btn {
   flex: 1;
-  padding: 12px;
+  padding: var(--template-spacing-lg);
   background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  border-radius: 8px;
-  font-size: 14px;
+  border: var(--template-border-width-thin) solid rgba(255, 255, 255, 0.3);
+  color: var(--template-text-inverse);
+  border-radius: var(--template-radius-lg);
+  font-size: var(--template-font-base);
   cursor: pointer;
+  transition: var(--template-transition-bg);
 }
 
 .social-btn:active {

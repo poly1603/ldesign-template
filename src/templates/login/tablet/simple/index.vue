@@ -80,28 +80,10 @@ const handleSocialLogin = (provider: SocialProvider) => {
       </slot>
 
       <!-- 登录面板插槽（最简化） -->
-      <slot
-        name="loginPanel"
-        :form="form"
-        :loading="loading"
-        :error="error"
-        :handle-submit="handleSubmit"
-      >
+      <slot name="loginPanel" :form="form" :loading="loading" :error="error" :handle-submit="handleSubmit">
         <form class="simple-form" @submit.prevent="handleSubmit">
-          <input
-            v-model="form.username"
-            type="text"
-            placeholder="用户名"
-            class="simple-input"
-            required
-          >
-          <input
-            v-model="form.password"
-            type="password"
-            placeholder="密码"
-            class="simple-input"
-            required
-          >
+          <input v-model="form.username" type="text" placeholder="用户名" class="simple-input" required>
+          <input v-model="form.password" type="password" placeholder="密码" class="simple-input" required>
           <button type="submit" class="simple-btn" :disabled="loading">
             {{ loading ? '登录中...' : '登录' }}
           </button>
@@ -112,13 +94,8 @@ const handleSocialLogin = (provider: SocialProvider) => {
       <div v-if="$slots.socialLogin || showSocialLogin" class="simple-social">
         <slot name="socialLogin" :providers="socialProviders">
           <div class="social-row">
-            <button
-              v-for="provider in socialProviders"
-              :key="provider.name"
-              class="social-icon-btn"
-              :title="provider.label"
-              @click="handleSocialLogin(provider)"
-            >
+            <button v-for="provider in socialProviders" :key="provider.name" class="social-icon-btn"
+              :title="provider.label" @click="handleSocialLogin(provider)">
               {{ provider.label[0] }}
             </button>
           </div>
@@ -146,23 +123,23 @@ const handleSocialLogin = (provider: SocialProvider) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f7fa;
-  padding: 20px;
+  background: var(--template-bg-page);
+  padding: var(--template-tablet-padding);
 }
 
 .simple-container {
   width: 100%;
   max-width: 420px;
-  padding: 40px 32px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  padding: var(--template-spacing-4xl) var(--template-spacing-3xl);
+  background: var(--template-bg-container);
+  border-radius: var(--template-radius-xl);
+  box-shadow: var(--template-shadow-md);
 }
 
 /* Logo */
 .logo-area {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--template-spacing-2xl);
 }
 
 .simple-logo {
@@ -171,61 +148,62 @@ const handleSocialLogin = (provider: SocialProvider) => {
 
 /* 标题 */
 .simple-title {
-  margin: 0 0 32px;
-  font-size: 24px;
-  font-weight: 500;
+  margin: 0 0 var(--template-spacing-3xl);
+  font-size: var(--template-font-2xl);
+  font-weight: var(--template-font-weight-medium);
   text-align: center;
-  color: #1a1a1a;
+  color: var(--template-text-primary);
 }
 
 /* 表单 */
 .simple-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--template-spacing-xl);
 }
 
 .simple-input {
   width: 100%;
-  padding: 12px 16px;
-  border: 2px solid #f0f0f0;
-  border-radius: 8px;
-  font-size: 15px;
-  transition: all 0.2s;
+  padding: var(--template-spacing-lg) var(--template-spacing-xl);
+  border: var(--template-border-width-medium) solid var(--template-bg-component);
+  border-radius: var(--template-radius-lg);
+  font-size: var(--template-font-md);
+  transition: var(--template-transition-all);
   box-sizing: border-box;
-  background: #fafafa;
+  background: var(--template-bg-component);
+  color: var(--template-text-primary);
 }
 
 .simple-input:focus {
   outline: none;
-  border-color: #667eea;
-  background: white;
+  border-color: var(--template-border-input-focus);
+  background: var(--template-bg-container);
 }
 
 .simple-input::placeholder {
-  color: #aaa;
+  color: var(--template-text-placeholder);
 }
 
 .simple-btn {
   width: 100%;
-  padding: 14px;
-  background: #667eea;
-  color: white;
+  padding: var(--template-spacing-lg);
+  background: var(--template-primary);
+  color: var(--template-text-inverse);
   border: none;
-  border-radius: 8px;
-  font-size: 16px;
-  font-weight: 500;
+  border-radius: var(--template-radius-lg);
+  font-size: var(--template-font-md);
+  font-weight: var(--template-font-weight-medium);
   cursor: pointer;
-  transition: all 0.2s;
-  margin-top: 8px;
+  transition: var(--template-transition-all);
+  margin-top: var(--template-spacing-md);
 }
 
 .simple-btn:hover:not(:disabled) {
-  background: #5568d3;
+  background: var(--template-primary-hover);
   transform: translateY(-1px);
 }
 
-.simple-btn:active {
+.simple-btn:active:not(:disabled) {
   transform: translateY(0);
 }
 
@@ -236,13 +214,13 @@ const handleSocialLogin = (provider: SocialProvider) => {
 
 /* 社交登录 */
 .simple-social {
-  margin: 24px 0;
+  margin: var(--template-spacing-2xl) 0;
 }
 
 .social-row {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: var(--template-spacing-lg);
 }
 
 .social-icon-btn {
@@ -251,41 +229,43 @@ const handleSocialLogin = (provider: SocialProvider) => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #f5f5f5;
-  border: 1px solid #e0e0e0;
-  border-radius: 50%;
-  font-size: 16px;
-  font-weight: 600;
-  color: #666;
+  background: var(--template-bg-component);
+  border: var(--template-border-width-thin) solid var(--template-border);
+  border-radius: var(--template-radius-circle);
+  font-size: var(--template-font-md);
+  font-weight: var(--template-font-weight-semibold);
+  color: var(--template-text-secondary);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--template-transition-all);
 }
 
 .social-icon-btn:hover {
-  background: #667eea;
-  border-color: #667eea;
-  color: white;
+  background: var(--template-primary);
+  border-color: var(--template-primary);
+  color: var(--template-text-inverse);
   transform: scale(1.1);
 }
 
 /* 底部 */
 .simple-footer {
   text-align: center;
-  margin-top: 24px;
-  font-size: 14px;
+  margin-top: var(--template-spacing-2xl);
+  font-size: var(--template-font-base);
 }
 
 .simple-footer a {
-  color: #667eea;
+  color: var(--template-text-link);
   text-decoration: none;
+  transition: var(--template-transition-color);
 }
 
 .simple-footer a:hover {
+  color: var(--template-text-link-hover);
   text-decoration: underline;
 }
 
 .separator {
-  margin: 0 12px;
-  color: #ccc;
+  margin: 0 var(--template-spacing-lg);
+  color: var(--template-border);
 }
 </style>
