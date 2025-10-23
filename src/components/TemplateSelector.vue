@@ -26,7 +26,19 @@ const emit = defineEmits<{
 
 // 获取语言配置
 const plugin = useTemplatePlugin()
-const locale = plugin?.currentLocale || inject<Ref<string>>('locale', ref('zh-CN'))
+const appLocale = inject<Ref<string>>('locale', ref('zh-CN'))
+
+// 优先使用插件的locale，fallback到注入的locale
+const locale = computed(() => {
+  if (plugin?.currentLocale?.value) {
+    return plugin.currentLocale.value
+  }
+  if (appLocale.value) {
+    return appLocale.value
+  }
+  return 'zh-CN'
+})
+
 const messages = computed(() => {
   const localeValue = typeof locale.value === 'string' ? locale.value : 'zh-CN'
   return getLocale(localeValue)
@@ -60,8 +72,8 @@ const options = computed<SelectorOption[]>(() => {
     value: template.name,
     label: template.displayName,
     description: template.description || '',
-    badge: template.isDefault 
-      ? (messages.value.device.desktop === '桌面端' ? '默认' : 'Default') 
+    badge: template.isDefault
+      ? (messages.value.device.desktop === '桌面端' ? '默认' : 'Default')
       : undefined,
     metadata: {
       isDefault: template.isDefault,
@@ -77,7 +89,7 @@ const handleSelect = (value: string) => {
 }
 
 // 使用无头选择器
-const { state, actions, triggerRef, panelRef } = useHeadlessSelector({
+const { state, actions, triggerRef, panelRef, activeIndexRef } = useHeadlessSelector({
   options,
   modelValue: computed(() => props.currentTemplate),
   searchable: config.searchable,
@@ -103,33 +115,26 @@ watch(() => props.device, () => {
 <template>
   <div class="template-selector">
     <!-- 触发按钮 -->
-    <button 
-      ref="triggerRef"
-      class="toggle-btn" 
+    <button ref="triggerRef" class="template-trigger"
       :title="state.isOpen ? messages.actions.clearCache : messages.actions.selectTemplate"
-      @click="actions.toggle"
-    >
-      <svg v-if="!state.isOpen" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <rect x="3" y="3" width="18" height="7" rx="1" stroke-width="2" />
-        <rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2" />
-        <rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2" />
+      :aria-expanded="state.isOpen" @click="actions.toggle">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="18" height="7" rx="1" />
+        <rect x="3" y="14" width="7" height="7" rx="1" />
+        <rect x="14" y="14" width="7" height="7" rx="1" />
       </svg>
-      <svg v-else width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-        <path d="M6 18L18 6M6 6l12 12" stroke-width="2" stroke-linecap="round" />
+      <span class="template-label">{{ messages.actions.selectTemplate }}</span>
+      <svg class="arrow" :class="{ open: state.isOpen }" width="16" height="16" viewBox="0 0 24 24" fill="none"
+        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="m6 9 6 6 6-6" />
       </svg>
     </button>
 
     <!-- 选择器面板 -->
     <Teleport to="body">
       <Transition name="selector-panel">
-        <div 
-          v-if="state.isOpen" 
-          ref="panelRef"
-          class="selector-panel"
-          :class="{ 'selector-panel-dialog': currentMode === 'dialog' }"
-          :style="popupStyle"
-          @click.stop
-        >
+        <div v-if="state.isOpen" ref="panelRef" class="selector-panel"
+          :class="{ 'selector-panel-dialog': currentMode === 'dialog' }" :style="popupStyle" @click.stop>
           <div class="panel-header">
             <h3>{{ messages.actions.selectTemplate }}</h3>
             <div class="current-info">
@@ -139,17 +144,10 @@ watch(() => props.device, () => {
           </div>
 
           <div class="template-list">
-            <div 
-              v-for="(option, index) in state.filteredOptions" 
-              :key="option.value" 
-              class="template-item"
-              :class="{ 
-                'active': state.selectedValue === option.value,
-                'hover': state.activeIndex === index
-              }" 
-              @click="actions.select(option.value)"
-              @mouseenter="state.activeIndex = index"
-            >
+            <div v-for="(option, index) in state.filteredOptions" :key="option.value" class="template-item" :class="{
+              'active': state.selectedValue === option.value,
+              'hover': state.activeIndex === index
+            }" @click="actions.select(option.value)" @mouseenter="activeIndexRef = index">
               <div class="template-name">
                 {{ option.label }}
                 <span v-if="option.badge" class="default-badge">{{ option.badge }}</span>
@@ -175,33 +173,54 @@ watch(() => props.device, () => {
   display: inline-block;
 }
 
-.toggle-btn {
-  width: 48px;
-  height: 48px;
-  display: flex;
+/* 触发按钮 - 使用 CSS 变量统一样式 */
+.template-trigger {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  background: rgba(102, 126, 234, 0.95);
-  color: white;
-  border: none;
-  border-radius: 50%;
+  gap: var(--size-spacing-md);
+  padding: var(--size-spacing-md) var(--size-spacing-lg);
+  background: var(--color-bg-container);
+  border: var(--size-border-width-thin) solid var(--color-border-light);
+  border-radius: var(--size-radius-lg);
+  color: var(--color-text-primary);
+  font-size: var(--size-font-base);
+  font-weight: var(--size-font-weight-medium);
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  transition: all 0.3s;
+  transition: all var(--size-duration-fast) var(--size-ease-out);
+  white-space: nowrap;
 }
 
-.toggle-btn:hover {
-  background: rgba(102, 126, 234, 1);
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+.template-trigger:hover {
+  background: var(--color-bg-component-hover);
+  border-color: var(--color-border);
 }
 
+.template-trigger[aria-expanded="true"] {
+  border-color: var(--color-primary-default);
+  box-shadow: 0 0 0 2px var(--color-primary-lighter);
+}
+
+.template-label {
+  flex: 1;
+}
+
+.arrow {
+  transition: transform var(--size-duration-fast) var(--size-ease-out);
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+}
+
+.arrow.open {
+  transform: rotate(180deg);
+}
+
+/* 弹窗面板 - 使用 CSS 变量统一样式 */
 .selector-panel {
-  width: 320px;
-  max-height: 500px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  min-width: 320px;
+  background: var(--color-bg-container);
+  border: var(--size-border-width-thin) solid var(--color-border-lighter);
+  border-radius: var(--size-radius-xl);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
 
@@ -210,20 +229,23 @@ watch(() => props.device, () => {
   max-height: 80vh;
 }
 
-/* 面板动画 */
-.selector-panel-enter-active,
+/* 面板动画 - 统一标准 */
+.selector-panel-enter-active {
+  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
 .selector-panel-leave-active {
-  transition: all 0.3s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 1, 1);
 }
 
 .selector-panel-enter-from {
   opacity: 0;
-  transform: translateY(-10px) scale(0.95);
+  transform: translateY(-8px) scale(0.96);
 }
 
 .selector-panel-leave-to {
   opacity: 0;
-  transform: translateY(-10px);
+  transform: translateY(-4px);
 }
 
 .panel-header {
@@ -256,25 +278,24 @@ watch(() => props.device, () => {
   padding: 8px;
 }
 
+/* 模板选项 - 使用 CSS 变量统一样式 */
 .template-item {
-  padding: 12px;
-  margin-bottom: 8px;
-  border: 2px solid #e0e0e0;
-  border-radius: 8px;
+  padding: var(--size-spacing-lg) var(--size-spacing-xl);
+  margin-bottom: var(--size-spacing-xs);
+  border: var(--size-border-width-medium) solid transparent;
+  border-radius: var(--size-radius-md);
   cursor: pointer;
-  transition: all 0.3s;
+  transition: all var(--size-duration-fast) var(--size-ease-out);
 }
 
 .template-item:hover,
 .template-item.hover {
-  border-color: #667eea;
-  background: #f5f7ff;
-  transform: translateX(4px);
+  background: var(--color-bg-component-hover);
 }
 
 .template-item.active {
-  border-color: #667eea;
-  background: #e8ecff;
+  background: color-mix(in srgb, var(--color-primary-default) 8%, transparent);
+  border-color: color-mix(in srgb, var(--color-primary-default) 30%, transparent);
 }
 
 .template-name {
@@ -325,4 +346,7 @@ watch(() => props.device, () => {
 .template-list::-webkit-scrollbar-thumb:hover {
   background: #999;
 }
+
+/* 深色模式会自动通过 CSS 变量切换,无需额外定义 */
+/* CSS 变量在 :root[data-theme-mode='dark'] 下会自动更新 */
 </style>
