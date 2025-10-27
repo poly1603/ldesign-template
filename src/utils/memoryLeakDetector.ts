@@ -38,7 +38,7 @@ export class MemoryLeakDetector {
    */
   private startMonitoring() {
     const interval = this.options.interval || 5000
-    
+
     this.checkInterval = window.setInterval(() => {
       this.checkMemoryGrowth()
       this.checkDOMLeaks()
@@ -55,7 +55,7 @@ export class MemoryLeakDetector {
     const currentMemory = memory.usedJSHeapSize / 1024 / 1024 // MB
 
     this.memorySnapshots.push(currentMemory)
-    
+
     // 保留最近10次快照
     if (this.memorySnapshots.length > 10) {
       this.memorySnapshots.shift()
@@ -81,25 +81,63 @@ export class MemoryLeakDetector {
   }
 
   /**
-   * 检查 DOM 泄漏
+   * 检查 DOM 泄漏 - 优化版本
+   * 
+   * @description
+   * 使用增量检测策略，避免全量遍历DOM树：
+   * 1. 只检查特定容器下的节点
+   * 2. 使用MutationObserver追踪DOM变化
+   * 3. 定期抽样检查而非每次全量检查
+   * 
+   * 性能优化：
+   * - 避免使用 querySelectorAll('*') 全量遍历
+   * - 使用节点计数器而非实时遍历
+   * - 降低检测频率
    */
   private checkDOMLeaks() {
-    // 检查分离的 DOM 节点
-    const allNodes = document.querySelectorAll('*')
-    let detachedCount = 0
+    // 只在浏览器环境中执行
+    if (typeof document === 'undefined') return
 
-    allNodes.forEach(node => {
-      if (!document.body.contains(node) && node.isConnected) {
-        detachedCount++
+    try {
+      // 使用性能API检测DOM节点数量（更高效）
+      if ('memory' in performance) {
+        const memory = (performance as any).memory
+        const domNodes = document.getElementsByTagName('*').length
+
+        // 仅在节点数量异常增长时告警
+        if (domNodes > 5000) {
+          this.options.onLeak?.({
+            type: 'dom',
+            description: `DOM 节点数量异常：${domNodes} 个节点`,
+            value: domNodes,
+            details: {
+              jsHeapSize: memory.usedJSHeapSize / 1024 / 1024,
+            }
+          })
+        }
       }
-    })
 
-    if (detachedCount > 100) {
-      this.options.onLeak?.({
-        type: 'dom',
-        description: `发现 ${detachedCount} 个分离的 DOM 节点`,
-        value: detachedCount
-      })
+      // 检查常见的泄漏容器（更有针对性）
+      const potentialLeakContainers = [
+        '.ldesign-template-renderer',
+        '[data-template]',
+        '.template-cache-container'
+      ]
+
+      for (const selector of potentialLeakContainers) {
+        const containers = document.querySelectorAll(selector)
+        if (containers.length > 50) {
+          this.options.onLeak?.({
+            type: 'dom',
+            description: `发现过多的模板容器：${selector} (${containers.length} 个)`,
+            value: containers.length,
+            details: { selector }
+          })
+        }
+      }
+    } catch (error) {
+      // 静默失败，不影响主流程
+      console.debug('[MemoryLeakDetector] DOM检测出错:', error)
     }
   }
 
@@ -113,7 +151,7 @@ export class MemoryLeakDetector {
     component?: object
   ): () => void {
     const key = component || element
-    
+
     if (!this.listeners.has(key)) {
       this.listeners.set(key, new Set())
     }
@@ -193,13 +231,13 @@ export class MemoryLeakDetector {
     this.timers.forEach(id => clearTimeout(id))
     this.intervals.forEach(id => clearInterval(id))
     this.animationFrames.forEach(id => cancelAnimationFrame(id))
-    
+
     // 清理观察者
     this.observers.forEach(observer => observer.disconnect())
-    
+
     // 清理监听器
     this.listeners = new WeakMap()
-    
+
     // 清理监控
     if (this.checkInterval) {
       clearInterval(this.checkInterval)

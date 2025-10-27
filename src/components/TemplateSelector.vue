@@ -123,11 +123,11 @@ watch(() => props.device, () => {
         <rect x="3" y="14" width="7" height="7" rx="1" />
         <rect x="14" y="14" width="7" height="7" rx="1" />
       </svg>
-      <span class="template-label">{{ messages.actions.selectTemplate }}</span>
-      <svg class="arrow" :class="{ open: state.isOpen }" width="16" height="16" viewBox="0 0 24 24" fill="none"
+      <!-- <span class="template-label">{{ messages.actions.selectTemplate }}</span> -->
+      <!-- <svg class="arrow" :class="{ open: state.isOpen }" width="16" height="16" viewBox="0 0 24 24" fill="none"
         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="m6 9 6 6 6-6" />
-      </svg>
+      </svg> -->
     </button>
 
     <!-- 选择器面板 -->
@@ -135,13 +135,6 @@ watch(() => props.device, () => {
       <Transition name="selector-panel">
         <div v-if="state.isOpen" ref="panelRef" class="selector-panel"
           :class="{ 'selector-panel-dialog': currentMode === 'dialog' }" :style="popupStyle" @click.stop>
-          <div class="panel-header">
-            <h3>{{ messages.actions.selectTemplate }}</h3>
-            <div class="current-info">
-              <span class="badge">{{ deviceLabel }}</span>
-              <span class="badge">{{ messages.category[category] || category }}</span>
-            </div>
-          </div>
 
           <div class="template-list">
             <div v-for="(option, index) in state.filteredOptions" :key="option.value" class="template-item" :class="{
@@ -177,27 +170,28 @@ watch(() => props.device, () => {
 .template-trigger {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: var(--size-spacing-md);
-  padding: var(--size-spacing-md) var(--size-spacing-lg);
   background: var(--color-bg-container);
-  border: var(--size-border-width-thin) solid var(--color-border-light);
-  border-radius: var(--size-radius-lg);
+  border-radius: var(--size-radius-md);
   color: var(--color-text-primary);
   font-size: var(--size-font-base);
   font-weight: var(--size-font-weight-medium);
   cursor: pointer;
   transition: all var(--size-duration-fast) var(--size-ease-out);
   white-space: nowrap;
+  width: var(--size-comp-size-l);
+  height: var(--size-comp-size-l);
+  border: none;
+  box-sizing: border-box;
 }
 
 .template-trigger:hover {
-  background: var(--color-bg-component-hover);
-  border-color: var(--color-border);
+  background-color: var(--color-bg-component);
 }
 
 .template-trigger[aria-expanded="true"] {
-  border-color: var(--color-primary-default);
-  box-shadow: 0 0 0 2px var(--color-primary-lighter);
+  background-color: var(--color-bg-component-hover);
 }
 
 .template-label {
@@ -281,11 +275,14 @@ watch(() => props.device, () => {
 /* 模板选项 - 使用 CSS 变量统一样式 */
 .template-item {
   padding: var(--size-spacing-lg) var(--size-spacing-xl);
-  margin-bottom: var(--size-spacing-xs);
   border: var(--size-border-width-medium) solid transparent;
   border-radius: var(--size-radius-md);
   cursor: pointer;
   transition: all var(--size-duration-fast) var(--size-ease-out);
+
+  &:not(:last-child) {
+    margin-bottom: var(--size-spacing-md);
+  }
 }
 
 .template-item:hover,

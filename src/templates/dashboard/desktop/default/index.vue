@@ -30,168 +30,79 @@ const selector = useTemplateSelector()
 </script>
 
 <template>
-  <div class="dashboard-desktop-default">
-    <header class="dashboard-header">
-      <!-- Header 左侧：Logo和标题 -->
-      <div class="header-left">
-        <slot name="logo">
-          <h1>{{ title }}</h1>
-        </slot>
+  <div class="ldesign-dashboard ldesign-dashboard--desktop-default">
+    <div class="ldesign-dashboard__header">
+      <div class="ldesign-dashboard__header-left">
+        <slot name="logo"></slot>
+        <slot name="title"></slot>
+        <slot name="subtitle"></slot>
       </div>
-
-      <!-- Header 右侧：功能区（语言、主题等） -->
-      <div class="header-right">
-        <slot name="header-actions">
-          <div class="user-info">
-            <span>{{ username }}</span>
-          </div>
-        </slot>
-
-        <!-- 模板选择器 - 放在右上角 -->
-        <TemplateSelector v-if="selector && selector.enabled" v-bind="selector.props.value"
-          @select="selector.onSelect" />
+      <div class="ldesign-dashboard__header-center"></div>
+      <div class="ldesign-dashboard__header-right">
+        <slot name="actions"></slot>
       </div>
-    </header>
-
-    <div class="dashboard-content">
-      <!-- 侧边栏导航 -->
-      <aside class="sidebar">
-        <slot name="sidebar">
-          <nav class="nav-menu">
-            <a href="#" class="nav-item active">概览</a>
-            <a href="#" class="nav-item">数据分析</a>
-            <a href="#" class="nav-item">报表</a>
-            <a href="#" class="nav-item">设置</a>
-          </nav>
-        </slot>
-      </aside>
-
-      <!-- 主内容区 -->
-      <main class="main-content">
-        <!-- 主内容区域 -->
-        <div class="content-area">
-          <slot>
-            <p>这里是仪表板的主要内容区域</p>
-          </slot>
-        </div>
-      </main>
+    </div>
+    <div class="ldesign-dashboard__aside">
+      <slot name="aside"></slot>
+    </div>
+    <div class="ldesign-dashboard__main">
+      <div class="ldesign-dashboard__main-tabs">
+        <slot name="tabs"></slot>
+      </div>
+      <div class="ldesign-dashboard__main-content">
+        <slot></slot>
+      </div>
     </div>
   </div>
 </template>
 
-<style scoped>
-.dashboard-desktop-default {
-  min-height: 100vh;
-  background: var(--template-dashboard-content-bg);
-  display: flex;
-  flex-direction: column;
-}
+<style lang="less">
+.ldesign-dashboard {
+  &--desktop-default {
+    display: grid;
+    grid-template-columns: var(--dashboard-desktop-default-aside-width, calc(var(--size-5) * 20)) 1fr;
+    grid-template-rows: var(--dashboard-desktop-default-header-height, calc(var(--size-5) * 5)) 1fr;
+    background: var(--dashboard-desktop-default-bg, var(--color-bg-page));
+    height: 100%;
+    overflow: hidden;
+  }
 
-.dashboard-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 var(--template-spacing-2xl);
-  height: var(--template-dashboard-header-height);
-  background: var(--template-dashboard-header-bg);
-  border-bottom: var(--template-border-width-thin) solid var(--template-border-light);
-  position: sticky;
-  top: 0;
-  z-index: var(--template-z-sticky);
-}
+  &__header {
+    grid-area: 1 / 1 / 2 / 3;
+    background-color: var(--dashboard-desktop-header-bg, var(--color-bg-container));
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    padding: 0 var(--dashboard-desktop-header-padding, var(--size-spacing-lg));
+    align-items: center;
+  }
 
-.header-left {
-  display: flex;
-  align-items: center;
-}
+  &__aside {
+    grid-area: 2 / 1 / 3 / 2;
+    background-color: var(--dashboard-desktop-aside-bg, var(--color-bg-container));
+  }
 
-.dashboard-header h1 {
-  margin: 0;
-  font-size: var(--template-font-xl);
-  font-weight: var(--template-font-weight-semibold);
-  color: var(--template-text-primary);
-}
+  &__main {
+    grid-area: 2 / 2 / 3 / 3;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow: hidden;
+    align-items: center;
 
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: var(--template-spacing-lg);
-}
+    &-tabs {
+      height: var(--dashboard-desktop-main-tabs-height, calc(var(--size-5) * 4));
+      overflow: hidden;
+      background-color: var(--dashboard-desktop-tabs-bg, var(--color-bg-component));
+      width: 100%;
+    }
 
-.user-info {
-  font-size: var(--template-font-base);
-  color: var(--template-text-secondary);
-}
-
-.dashboard-content {
-  display: flex;
-  flex: 1;
-  min-height: calc(100vh - var(--template-dashboard-header-height));
-}
-
-.sidebar {
-  width: var(--template-dashboard-sidebar-width);
-  background: var(--template-dashboard-sidebar-bg);
-  border-right: var(--template-border-width-thin) solid var(--template-border-light);
-  flex-shrink: 0;
-}
-
-.nav-menu {
-  padding: var(--template-spacing-xl) 0;
-}
-
-.nav-item {
-  display: block;
-  padding: var(--template-spacing-lg) var(--template-spacing-2xl);
-  color: var(--template-text-secondary);
-  text-decoration: none;
-  transition: var(--template-transition-all);
-}
-
-.nav-item:hover,
-.nav-item.active {
-  color: var(--template-primary);
-  background: var(--template-primary-lighter);
-}
-
-.main-content {
-  flex: 1;
-  padding: var(--template-spacing-2xl);
-  overflow-y: auto;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: var(--template-spacing-2xl);
-  margin-bottom: var(--template-spacing-2xl);
-}
-
-.stat-card {
-  padding: var(--template-dashboard-card-padding);
-  background: var(--template-dashboard-card-bg);
-  border-radius: var(--template-dashboard-card-radius);
-  box-shadow: var(--template-dashboard-card-shadow);
-}
-
-.stat-card h3 {
-  margin: 0 0 var(--template-spacing-lg);
-  font-size: var(--template-font-base);
-  font-weight: var(--template-font-weight-medium);
-  color: var(--template-text-secondary);
-}
-
-.stat-value {
-  margin: 0;
-  font-size: var(--template-font-h1);
-  font-weight: var(--template-font-weight-semibold);
-  color: var(--template-text-primary);
-}
-
-.content-area {
-  background: var(--template-dashboard-card-bg);
-  border-radius: var(--template-dashboard-card-radius);
-  box-shadow: var(--template-dashboard-card-shadow);
-  min-height: 400px;
+    &-content {
+      padding: var(--dashboard-desktop-main-padding, var(--size-spacing-lg));
+      width: 100%;
+      flex: 1;
+      overflow: auto;
+      box-sizing: border-box;
+    }
+  }
 }
 </style>

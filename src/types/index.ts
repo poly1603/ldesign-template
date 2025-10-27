@@ -1,44 +1,149 @@
 /**
  * @ldesign/template 核心类型定义
+ * 
+ * @description
+ * 提供完整的TypeScript类型定义，支持：
+ * - 模板元数据和配置
+ * - 设备类型和分类
+ * - 性能监控和报告
+ * - 事件和回调
+ * - 插槽和属性
+ * 
+ * @example
+ * ```ts
+ * import type { TemplateMetadata, DeviceType } from '@ldesign/template'
+ * 
+ * const metadata: TemplateMetadata = {
+ *   name: 'login-mobile',
+ *   displayName: '移动端登录',
+ *   category: 'login',
+ *   device: 'mobile',
+ *   version: '1.0.0'
+ * }
+ * ```
  */
 
 import type { Component } from 'vue'
 
 /**
  * 设备类型
+ * 
+ * @description
+ * 支持的设备类型，用于响应式模板选择
+ * 
+ * - `desktop`: 桌面端（>= 1024px）
+ * - `tablet`: 平板端（768px - 1023px）
+ * - `mobile`: 移动端（< 768px）
  */
 export type DeviceType = 'desktop' | 'mobile' | 'tablet'
 
 /**
  * 模板分类
+ * 
+ * @description
+ * 模板的业务分类，可以是预定义类型或自定义字符串
+ * 
+ * **预定义分类：**
+ * - `login`: 登录页面
+ * - `dashboard`: 仪表板
+ * - `profile`: 个人资料
+ * - `settings`: 设置页面
+ * 
+ * **自定义分类：**
+ * 可以使用任何字符串作为自定义分类
  */
 export type TemplateCategory = 'login' | 'dashboard' | 'profile' | 'settings' | string
 
 /**
  * 模板元数据
+ * 
+ * @description
+ * 描述模板的基本信息，用于模板发现、搜索和管理
+ * 
+ * @example
+ * ```ts
+ * const metadata: TemplateMetadata = {
+ *   name: 'modern-login',
+ *   displayName: '现代化登录页',
+ *   description: '简洁优雅的登录页面设计',
+ *   category: 'login',
+ *   device: 'desktop',
+ *   version: '1.0.0',
+ *   author: 'LDesign Team',
+ *   tags: ['modern', 'minimal', 'responsive'],
+ *   isDefault: true,
+ *   preview: '/previews/modern-login.png'
+ * }
+ * ```
  */
 export interface TemplateMetadata {
-  /** 模板名称（唯一标识） */
+  /** 
+   * 模板名称（唯一标识）
+   * @required
+   */
   name: string
-  /** 显示名称 */
+
+  /** 
+   * 显示名称
+   * 用于UI展示的友好名称
+   * @required
+   */
   displayName: string
-  /** 模板描述 */
+
+  /** 
+   * 模板描述
+   * 详细说明模板的用途和特点
+   */
   description?: string
-  /** 模板分类 */
+
+  /** 
+   * 模板分类
+   * 用于分组和筛选
+   * @required
+   */
   category: TemplateCategory
-  /** 设备类型 */
+
+  /** 
+   * 设备类型
+   * 指定模板适用的设备类型
+   * @required
+   */
   device: DeviceType
-  /** 版本号 */
+
+  /** 
+   * 版本号
+   * 遵循语义化版本规范（Semver）
+   */
   version?: string
-  /** 作者 */
+
+  /** 
+   * 作者
+   * 模板创建者或团队名称
+   */
   author?: string
-  /** 标签 */
+
+  /** 
+   * 标签
+   * 用于搜索和分类的关键词
+   */
   tags?: string[]
-  /** 是否为默认模板 */
+
+  /** 
+   * 是否为默认模板
+   * 在未指定模板时使用
+   */
   isDefault?: boolean
-  /** 预览图 */
+
+  /** 
+   * 预览图
+   * 模板预览图的URL或路径
+   */
   preview?: string
-  /** 最后修改时间 */
+
+  /** 
+   * 最后修改时间
+   * Unix时间戳（毫秒）
+   */
   lastModified?: number
 }
 

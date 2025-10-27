@@ -150,7 +150,11 @@
       "import": "./es/theme/index.js",
       "require": "./lib/theme/index.cjs"
     },
-    "./styles/variables.css": "./src/styles/variables.css",
+    "./theme/*": {
+      "types": "./es/theme/*.d.ts",
+      "import": "./es/theme/*.js",
+      "require": "./lib/theme/*.cjs"
+    },
     "./types": {
       "types": "./es/types/index.d.ts",
       "import": "./es/types/index.js",
@@ -178,7 +182,6 @@
     "./es/components/InheritableTemplate.vue.css": "./es/components/InheritableTemplate.vue.css",
     "./es/components/TemplateDevPanel.vue.css": "./es/components/TemplateDevPanel.vue.css",
     "./es/components/TemplateRenderer.vue.css": "./es/components/TemplateRenderer.vue.css",
-    "./es/components/TemplateRenderer.vue2.css": "./es/components/TemplateRenderer.vue2.css",
     "./es/components/TemplateSelector.vue.css": "./es/components/TemplateSelector.vue.css",
     "./es/components/TemplateSkeleton.vue.css": "./es/components/TemplateSkeleton.vue.css",
     "./es/components/TemplateVersion.vue.css": "./es/components/TemplateVersion.vue.css",
@@ -200,13 +203,12 @@
     "./es/templates/login/tablet/default/index.vue.css": "./es/templates/login/tablet/default/index.vue.css",
     "./es/templates/login/tablet/simple/index.vue.css": "./es/templates/login/tablet/simple/index.vue.css",
     "./lib/components/ABTestTemplate.vue.css": "./lib/components/ABTestTemplate.vue.css",
-    "./lib/components/ABTestTemplate.vue2.css": "./lib/components/ABTestTemplate.vue2.css",
     "./lib/components/ConditionalTemplate.vue.css": "./lib/components/ConditionalTemplate.vue.css",
+    "./lib/components/ConditionalTemplate.vue2.css": "./lib/components/ConditionalTemplate.vue2.css",
     "./lib/components/index.css": "./lib/components/index.css",
     "./lib/components/InheritableTemplate.vue.css": "./lib/components/InheritableTemplate.vue.css",
     "./lib/components/TemplateDevPanel.vue.css": "./lib/components/TemplateDevPanel.vue.css",
     "./lib/components/TemplateRenderer.vue.css": "./lib/components/TemplateRenderer.vue.css",
-    "./lib/components/TemplateRenderer.vue2.css": "./lib/components/TemplateRenderer.vue2.css",
     "./lib/components/TemplateSelector.vue.css": "./lib/components/TemplateSelector.vue.css",
     "./lib/components/TemplateSkeleton.vue.css": "./lib/components/TemplateSkeleton.vue.css",
     "./lib/components/TemplateVersion.vue.css": "./lib/components/TemplateVersion.vue.css",

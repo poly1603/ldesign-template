@@ -136,26 +136,50 @@ export class TemplateLoader {
   }
 
   /**
-   * 过滤模板 - 内存优化版本
+   * 过滤模板 - 性能优化版本
+   * 
+   * @description
+   * 针对单值和多值条件分别优化：
+   * - 单值：直接比较，避免Set创建开销
+   * - 多值：使用Set实现O(1)查找
+   * 
+   * @param templates - 模板列表
+   * @param filter - 过滤条件
+   * @returns 过滤后的模板列表
    */
   private filterTemplates(templates: TemplateMetadata[], filter: TemplateFilter): TemplateMetadata[] {
-    // 预处理过滤条件，避免在循环中重复处理
-    const categorySet = filter.category ?
+    // 判断是否为单值条件
+    const isSingleCategory = filter.category && !Array.isArray(filter.category)
+    const isSingleDevice = filter.device && !Array.isArray(filter.device)
+    const isSingleName = filter.name && !Array.isArray(filter.name)
+
+    // 预处理过滤条件，仅在多值时创建Set
+    const categorySet = filter.category && !isSingleCategory ?
       new Set(Array.isArray(filter.category) ? filter.category : [filter.category]) : null
-    const deviceSet = filter.device ?
+    const deviceSet = filter.device && !isSingleDevice ?
       new Set(Array.isArray(filter.device) ? filter.device : [filter.device]) : null
-    const nameSet = filter.name ?
+    const nameSet = filter.name && !isSingleName ?
       new Set(Array.isArray(filter.name) ? filter.name : [filter.name]) : null
     const tagsArray = filter.tags ?
       (Array.isArray(filter.tags) ? filter.tags : [filter.tags]) : null
 
     return templates.filter(t => {
-      // 使用 Set 进行 O(1) 查找
+      // 单值条件直接比较（更快）
+      if (isSingleCategory && t.category !== filter.category) return false
+      if (isSingleDevice && t.device !== filter.device) return false
+      if (isSingleName && t.name !== filter.name) return false
+
+      // 多值条件使用Set（O(1)查找）
       if (categorySet && !categorySet.has(t.category)) return false
       if (deviceSet && !deviceSet.has(t.device)) return false
       if (nameSet && !nameSet.has(t.name)) return false
+
+      // 标签过滤
       if (tagsArray && (!t.tags || !tagsArray.some(tag => t.tags!.includes(tag)))) return false
+
+      // 默认模板过滤
       if (filter.defaultOnly && !t.isDefault) return false
+
       return true
     })
   }
