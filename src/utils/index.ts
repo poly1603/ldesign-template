@@ -9,7 +9,6 @@ export {
   type ErrorRecoveryStrategy,
   globalErrorHandler,
   GlobalTemplateErrorHandler,
-  TemplateError,
   TemplateErrorType
 } from './errorHandler'
 
