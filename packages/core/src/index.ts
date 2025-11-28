@@ -1,27 +1,35 @@
 /**
  * @ldesign/template-core
- * 
- * 框架无关的模板管理核心库
+ * 模板管理核心库 - 框架无关
  */
 
-// Types
-export * from './types'
+// 导出类型
+export type {
+  DeviceType,
+  TemplateMetadata,
+  TemplateConfig,
+  QueryConditions,
+  QueryResult,
+} from './types'
 
-// Registry
-export * from './registry/TemplateRegistry'
+// 导出注册表
+export { TemplateRegistry } from './registry'
 
-// State Management
-export * from './manager/TemplateStateManager'
-export * from './manager/TemplateOrchestrator'
+// 导出管理器
+export { TemplateManager } from './manager'
 
-// Loader
-export * from './loader/TemplateLoadCoordinator'
+// 导出查询构建器
+export { TemplateQuery } from './query'
 
-// Device
-export * from './device/DeviceDetector'
-
-// Selector
-export * from './selector/TemplateSelectorLogic'
-
-// Scanner (abstract)
-export * from './scanner/TemplateScanner'
+// 导出工具函数
+export {
+  parsePath,
+  generateTemplateId,
+  parseTemplateId,
+  isValidDevice,
+  normalizePath,
+  validateTemplateMetadata,
+  validateTemplateConfig,
+  isValidTemplateId,
+  type ParsedPath,
+} from './utils'

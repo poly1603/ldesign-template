@@ -1,153 +1,180 @@
-/**
- * Template Registry
- * 
- * 模板注册表 - 抽象类，由框架适配层实现
- */
-
-import type {
-  TemplateMetadata,
-  TemplateRegistryItem,
-  TemplateFilter,
-  TemplateCategory,
-  DeviceType,
-} from '../types'
+import type { DeviceType, TemplateMetadata } from '../types'
 
 /**
- * 模板注册表抽象类
- * 
- * 框架适配层需要实现扫描逻辑
+ * 模板注册表
+ * 使用 Map 数据结构提供高效的模板存储和查询
  */
-export abstract class TemplateRegistry<TComponent = unknown> {
-  protected registry = new Map<string, TemplateRegistryItem<TComponent>>()
-  protected initialized = false
-  
+export class TemplateRegistry {
   /**
-   * 生成注册键
+   * 主存储 - 按 ID 存储模板元数据
    */
-  protected createKey(category: string, device: string, name: string): string {
-    return `${category}/${device}/${name}`
-  }
-  
+  private templates = new Map<string, TemplateMetadata>()
+
   /**
-   * 扫描并注册所有模板（由子类实现）
+   * 分类索引 - 按功能分类存储模板 ID 集合
    */
-  abstract scan(): Promise<void>
-  
+  private categoryIndex = new Map<string, Set<string>>()
+
+  /**
+   * 设备索引 - 按设备类型存储模板 ID 集合
+   */
+  private deviceIndex = new Map<DeviceType, Set<string>>()
+
   /**
    * 注册单个模板
    */
-  register(item: TemplateRegistryItem<TComponent>): void {
-    const { category, device, name } = item.metadata
-    const key = this.createKey(category, device, name)
-    this.registry.set(key, item)
+  register(metadata: TemplateMetadata): void {
+    const { id, category, device } = metadata
+
+    if (!id || !category || !device) {
+      throw new Error('模板元数据缺少必需字段: id, category, device')
+    }
+
+    // 主存储
+    this.templates.set(id, metadata)
+
+    // 构建分类索引
+    if (!this.categoryIndex.has(category)) {
+      this.categoryIndex.set(category, new Set())
+    }
+    this.categoryIndex.get(category)!.add(id)
+
+    // 构建设备索引
+    if (!this.deviceIndex.has(device)) {
+      this.deviceIndex.set(device, new Set())
+    }
+    this.deviceIndex.get(device)!.add(id)
   }
-  
+
   /**
-   * 获取指定模板
+   * 批量注册模板
    */
-  getTemplate(
-    category: string,
-    device: string,
-    name: string
-  ): TemplateRegistryItem<TComponent> | null {
-    const key = this.createKey(category, device, name)
-    return this.registry.get(key) || null
+  registerBatch(metadataList: TemplateMetadata[]): void {
+    metadataList.forEach((metadata) => this.register(metadata))
   }
-  
+
   /**
-   * 查询模板（支持过滤）
+   * 注销模板
    */
-  query(filter: TemplateFilter = {}): TemplateMetadata[] {
-    const allTemplates = Array.from(this.registry.values()).map(item => item.metadata)
-    return this.filterTemplates(allTemplates, filter)
+  unregister(id: string): boolean {
+    const template = this.templates.get(id)
+    if (!template) {
+      return false
+    }
+
+    const { category, device } = template
+
+    // 从主存储删除
+    this.templates.delete(id)
+
+    // 从分类索引删除
+    const categorySet = this.categoryIndex.get(category)
+    if (categorySet) {
+      categorySet.delete(id)
+      if (categorySet.size === 0) {
+        this.categoryIndex.delete(category)
+      }
+    }
+
+    // 从设备索引删除
+    const deviceSet = this.deviceIndex.get(device)
+    if (deviceSet) {
+      deviceSet.delete(id)
+      if (deviceSet.size === 0) {
+        this.deviceIndex.delete(device)
+      }
+    }
+
+    return true
   }
-  
+
   /**
-   * 获取所有元数据
+   * 通过 ID 获取模板
    */
-  getAllMetadata(): TemplateMetadata[] {
-    return Array.from(this.registry.values()).map(item => item.metadata)
+  get(id: string): TemplateMetadata | undefined {
+    return this.templates.get(id)
   }
-  
-  /**
-   * 获取注册表 Map
-   */
-  getRegistry(): Map<string, TemplateRegistryItem<TComponent>> {
-    return this.registry
-  }
-  
+
   /**
    * 检查模板是否存在
    */
-  has(category: string, device: string, name: string): boolean {
-    const key = this.createKey(category, device, name)
-    return this.registry.has(key)
+  has(id: string): boolean {
+    return this.templates.has(id)
   }
-  
+
+  /**
+   * 获取所有模板
+   */
+  getAll(): TemplateMetadata[] {
+    return Array.from(this.templates.values())
+  }
+
+  /**
+   * 通过分类获取所有模板 ID
+   */
+  getIdsByCategory(category: string): string[] {
+    const categorySet = this.categoryIndex.get(category)
+    return categorySet ? Array.from(categorySet) : []
+  }
+
+  /**
+   * 通过设备类型获取所有模板 ID
+   */
+  getIdsByDevice(device: DeviceType): string[] {
+    const deviceSet = this.deviceIndex.get(device)
+    return deviceSet ? Array.from(deviceSet) : []
+  }
+
+  /**
+   * 通过分类和设备获取模板 ID
+   * 返回同时满足分类和设备类型条件的模板 ID（交集）
+   */
+  getIdsByCategoryAndDevice(category: string, device: DeviceType): string[] {
+    const categoryIds = this.categoryIndex.get(category)
+    const deviceIds = this.deviceIndex.get(device)
+
+    if (!categoryIds || !deviceIds) {
+      return []
+    }
+
+    // 计算交集
+    return Array.from(categoryIds).filter((id) => deviceIds.has(id))
+  }
+
+  /**
+   * 获取所有分类
+   */
+  getCategories(): string[] {
+    return Array.from(this.categoryIndex.keys())
+  }
+
+  /**
+   * 获取所有设备类型
+   */
+  getDevices(): DeviceType[] {
+    return Array.from(this.deviceIndex.keys())
+  }
+
+  /**
+   * 获取模板总数
+   */
+  get size(): number {
+    return this.templates.size
+  }
+
   /**
    * 清空注册表
    */
   clear(): void {
-    this.registry.clear()
-    this.initialized = false
+    this.templates.clear()
+    this.categoryIndex.clear()
+    this.deviceIndex.clear()
   }
-  
+
   /**
-   * 过滤模板 - 高性能实现
+   * 导出所有数据（用于序列化）
    */
-  private filterTemplates(
-    templates: TemplateMetadata[],
-    filter: TemplateFilter
-  ): TemplateMetadata[] {
-    // 判断是否为单值条件
-    const isSingleCategory = filter.category && !Array.isArray(filter.category)
-    const isSingleDevice = filter.device && !Array.isArray(filter.device)
-    const isSingleName = filter.name && !Array.isArray(filter.name)
-    
-    // 只在多值时创建 Set（性能优化）
-    const categorySet = !isSingleCategory && filter.category
-      ? new Set(Array.isArray(filter.category) ? filter.category : [filter.category])
-      : null
-      
-    const deviceSet = !isSingleDevice && filter.device
-      ? new Set(Array.isArray(filter.device) ? filter.device : [filter.device])
-      : null
-      
-    const nameSet = !isSingleName && filter.name
-      ? new Set(Array.isArray(filter.name) ? filter.name : [filter.name])
-      : null
-      
-    const tagsArray = filter.tags
-      ? (Array.isArray(filter.tags) ? filter.tags : [filter.tags])
-      : null
-    
-    return templates.filter(t => {
-      // 单值条件直接比较（更快）
-      if (isSingleCategory && t.category !== filter.category) return false
-      if (isSingleDevice && t.device !== filter.device) return false
-      if (isSingleName && t.name !== filter.name) return false
-      
-      // 多值条件使用 Set（O(1) 查找）
-      if (categorySet && !categorySet.has(t.category)) return false
-      if (deviceSet && !deviceSet.has(t.device)) return false
-      if (nameSet && !nameSet.has(t.name)) return false
-      
-      // 标签过滤
-      if (tagsArray && (!t.tags || !tagsArray.some(tag => t.tags!.includes(tag)))) {
-        return false
-      }
-      
-      // 默认模板过滤
-      if (filter.defaultOnly && !t.isDefault) return false
-      
-      return true
-    })
-  }
-  
-  /**
-   * 是否已初始化
-   */
-  isInitialized(): boolean {
-    return this.initialized
+  toJSON(): TemplateMetadata[] {
+    return this.getAll()
   }
 }

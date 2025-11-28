@@ -1,44 +1,116 @@
 {
   "name": "@ldesign/template-vue",
   "version": "1.0.0",
-  "description": "Vue 3 template management system",
-  "type": "module",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
-    }
-  },
-  "files": [
-    "dist"
-  ],
-  "scripts": {
-    "build": "tsup",
-    "dev": "tsup --watch",
-    "type-check": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "vue": "^3.3.0"
-  },
-  "dependencies": {
-    "@ldesign/template-core": "workspace:*"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "tsup": "^8.0.0",
-    "typescript": "^5.3.0",
-    "vue": "^3.4.0"
-  },
+  "description": "Vue 3 模板管理系统 - 基于 @ldesign/template-core",
   "keywords": [
     "vue",
     "vue3",
     "template",
-    "dynamic",
-    "component"
+    "template-engine",
+    "dynamic-rendering",
+    "composition-api"
   ],
   "author": "ldesign",
-  "license": "MIT"
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./esm/index.d.ts",
+      "import": "./esm/index.js",
+      "require": "./lib/index.cjs",
+      "default": "./esm/index.js"
+    },
+    "./components": {
+      "types": "./esm/components/index.d.ts",
+      "import": "./esm/components/index.js",
+      "require": "./lib/components/index.cjs",
+      "default": "./esm/components/index.js"
+    },
+    "./components/*": {
+      "types": "./esm/components/*.d.ts",
+      "import": "./esm/components/*.js",
+      "require": "./lib/components/*.cjs",
+      "default": "./esm/components/*.js"
+    },
+    "./composables": {
+      "types": "./esm/composables/index.d.ts",
+      "import": "./esm/composables/index.js",
+      "require": "./lib/composables/index.cjs",
+      "default": "./esm/composables/index.js"
+    },
+    "./composables/*": {
+      "types": "./esm/composables/*.d.ts",
+      "import": "./esm/composables/*.js",
+      "require": "./lib/composables/*.cjs",
+      "default": "./esm/composables/*.js"
+    },
+    "./plugin": {
+      "types": "./esm/plugin/index.d.ts",
+      "import": "./esm/plugin/index.js",
+      "require": "./lib/plugin/index.cjs",
+      "default": "./esm/plugin/index.js"
+    },
+    "./plugin/*": {
+      "types": "./esm/plugin/*.d.ts",
+      "import": "./esm/plugin/*.js",
+      "require": "./lib/plugin/*.cjs",
+      "default": "./esm/plugin/*.js"
+    },
+    "./scanner": {
+      "types": "./esm/scanner/index.d.ts",
+      "import": "./esm/scanner/index.js",
+      "require": "./lib/scanner/index.cjs",
+      "default": "./esm/scanner/index.js"
+    },
+    "./scanner/*": {
+      "types": "./esm/scanner/*.d.ts",
+      "import": "./esm/scanner/*.js",
+      "require": "./lib/scanner/*.cjs",
+      "default": "./esm/scanner/*.js"
+    },
+    "./lib/components/TemplateRenderer.vue.css": "./lib/components/TemplateRenderer.vue.css",
+    "./lib/components/TemplateSelector.vue.css": "./lib/components/TemplateSelector.vue.css",
+    "./lib/index.css": "./lib/index.css",
+    "./lib/templates/login/desktop/default/index.vue.css": "./lib/templates/login/desktop/default/index.vue.css",
+    "./lib/templates/login/mobile/default/index.vue.css": "./lib/templates/login/mobile/default/index.vue.css",
+    "./lib/templates/login/tablet/default/index.vue.css": "./lib/templates/login/tablet/default/index.vue.css",
+    "./dist/index.css": "./dist/index.css",
+    "./dist/index.min.css": "./dist/index.min.css",
+    "./package.json": "./package.json"
+  },
+  "main": "./lib/index.cjs",
+  "module": "./esm/index.js",
+  "types": "./esm/index.d.ts",
+  "unpkg": "./dist/index.min.js",
+  "jsdelivr": "./dist/index.min.js",
+  "files": [
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "esm",
+    "lib",
+    "dist"
+  ],
+  "scripts": {
+    "build": "ldesign-builder build",
+    "dev": "ldesign-builder watch",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@ldesign/template-core": "workspace:*",
+    "@vueuse/core": "^13.7.0"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.0"
+  },
+  "devDependencies": {
+    "@ldesign/builder": "workspace:*",
+    "@vitejs/plugin-vue": "^5.0.0",
+    "typescript": "^5.7.3",
+    "vue": "^3.4.0",
+    "vue-tsc": "^3.0.0"
+  },
+  "typings": "./esm/index.d.ts",
+  "browser": "./dist/index.js"
 }
