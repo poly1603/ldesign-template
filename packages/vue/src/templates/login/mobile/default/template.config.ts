@@ -1,28 +1,16 @@
 import type { TemplateConfig } from '@ldesign/template-core'
 
-/**
- * 移动端默认登录模板配置
- */
 export default {
   name: 'default',
-  displayName: '移动端默认登录模板',
-  description: '适合移动设备的全屏登录页面，简洁易用',
+  displayName: '渐变全屏',
+  description: '渐变背景，简洁无标签设计',
   author: 'ldesign',
   version: '1.0.0',
-  tags: ['login', 'mobile', 'simple', 'fullscreen'],
+  tags: ['gradient', 'simple', 'fullscreen'],
   props: {
-    title: {
-      type: String,
-      default: '欢迎登录',
-    },
-    logo: {
-      type: String,
-      required: false,
-    },
-    onSubmit: {
-      type: Function,
-      required: true,
-    },
+    title: { type: String, default: '欢迎登录' },
+    logo: { type: String, required: false },
+    onSubmit: { type: Function, required: true },
   },
 } satisfies TemplateConfig
 

@@ -1,7 +1,7 @@
 import type { App, Plugin } from 'vue'
 import { TemplateRegistry, TemplateManager } from '@ldesign/template-core'
 import type { TemplateMetadata } from '@ldesign/template-core'
-import { createTemplateScanner } from '../scanner'
+import { getBuiltinTemplates } from '../templates'
 import { setTemplateManager } from './context'
 
 /**
@@ -9,13 +9,13 @@ import { setTemplateManager } from './context'
  */
 export interface TemplatePluginOptions {
   /**
-   * 是否自动扫描模板
+   * 是否自动加载内置模板
    * @default true
    */
   autoScan?: boolean
 
   /**
-   * 初始模板列表
+   * 额外的模板列表（用户自定义模板）
    */
   templates?: TemplateMetadata[]
 
@@ -28,9 +28,23 @@ export interface TemplatePluginOptions {
 
 /**
  * 创建模板插件
+ *
+ * @param options - 插件选项
+ * @returns Vue 插件
+ *
+ * @example
+ * ```ts
+ * // 使用内置模板（推荐）
+ * app.use(createTemplatePlugin())
+ *
+ * // 添加自定义模板
+ * app.use(createTemplatePlugin({
+ *   templates: [myCustomTemplate],
+ * }))
+ * ```
  */
 export function createTemplatePlugin(
-  options: TemplatePluginOptions = {}
+  options: TemplatePluginOptions = {},
 ): Plugin {
   const { autoScan = true, templates = [], debug = false } = options
 
@@ -40,28 +54,22 @@ export function createTemplatePlugin(
       const registry = new TemplateRegistry()
       const manager = new TemplateManager(registry)
 
-      // 自动扫描模板
+      // 加载内置模板
       if (autoScan) {
-        try {
-          const scanner = createTemplateScanner()
-          const scannedTemplates = scanner.scan()
-          
-          if (debug) {
-            console.log('[TemplatePlugin] 扫描到的模板:', scannedTemplates)
-            console.log('[TemplatePlugin] 扫描统计:', scanner.getStats())
-          }
-          
-          registry.registerBatch(scannedTemplates)
-        } catch (error) {
-          console.error('[TemplatePlugin] 模板扫描失败:', error)
+        const builtinTemplates = getBuiltinTemplates()
+
+        if (debug) {
+          console.log('[TemplatePlugin] 内置模板:', builtinTemplates.map(t => t.id))
         }
+
+        registry.registerBatch(builtinTemplates)
       }
 
-      // 注册预定义模板
+      // 注册用户自定义模板
       if (templates.length > 0) {
         registry.registerBatch(templates)
         if (debug) {
-          console.log('[TemplatePlugin] 注册预定义模板:', templates.length)
+          console.log('[TemplatePlugin] 注册自定义模板:', templates.length)
         }
       }
 

@@ -1,12 +1,12 @@
 import type { TemplateConfig } from '@ldesign/template-core'
 
 export default {
-  name: 'default',
-  displayName: '渐变卡片',
-  description: '带副标题的卡片式布局',
+  name: 'minimal',
+  displayName: '简约分栏',
+  description: '左右分栏布局，暗色品牌展示区',
   author: 'ldesign',
   version: '1.0.0',
-  tags: ['card', 'subtitle', 'gradient'],
+  tags: ['split', 'dark', 'brand'],
   props: {
     title: { type: String, default: '欢迎登录' },
     logo: { type: String, required: false },

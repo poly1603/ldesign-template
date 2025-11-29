@@ -5,16 +5,33 @@
 
 // 导出核心类型 (从 core 包重新导出)
 export type {
-  DeviceType,
   TemplateMetadata,
-  TemplateConfig,
+  TemplateConfig as CoreTemplateConfig,
 } from '@ldesign/template-core'
+
+// 导出配置类型
+export type {
+  DeviceType,
+  TemplateChangeInfo,
+  DeviceTemplateConfig,
+  CategoryTemplateConfig,
+  TemplateSelectorConfig,
+  TemplateCacheConfig,
+  BreakpointConfig,
+  TemplateConfig,
+} from './types/config'
 
 // 导出扫描器
 export { TemplateScanner, createTemplateScanner } from './scanner'
 
-// 导出插件
+// 导出 Vue 插件（直接使用）
 export { createTemplatePlugin, type TemplatePluginOptions } from './plugin'
+
+// 导出引擎插件（与其他包统一）
+export {
+  createTemplateEnginePlugin,
+  type TemplateEnginePluginOptions,
+} from './plugins'
 
 // 导出 Composables
 export {
@@ -27,5 +44,8 @@ export {
 // 导出组件
 export { TemplateRenderer, TemplateSelector } from './components'
 
-// 默认导出插件
-export { createTemplatePlugin as default } from './plugin'
+// 导出内置模板
+export { getBuiltinTemplates, builtinTemplates } from './templates'
+
+// 默认导出引擎插件
+export { createTemplateEnginePlugin as default } from './plugins'
