@@ -10,3 +10,18 @@ export {
   type UseAutoDeviceReturn,
   type UseAutoDeviceOptions,
 } from './useAutoDevice'
+
+// 布局相关 composables
+export {
+  useLayout,
+  type LayoutMode,
+  type LayoutState,
+  type UseLayoutReturn,
+  type UseLayoutOptions,
+} from './useLayout'
+export {
+  useSider,
+  type SiderState,
+  type UseSiderReturn,
+  type UseSiderOptions,
+} from './useSider'

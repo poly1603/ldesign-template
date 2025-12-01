@@ -39,15 +39,36 @@ export {
   useTemplateList,
   useAutoDevice,
   getCurrentDeviceType,
+  // 布局相关 composables
+  useLayout,
+  useSider,
   type UseTemplateReturn,
   type UseTemplateOptions,
   type UseTemplateListReturn,
   type UseAutoDeviceReturn,
   type UseAutoDeviceOptions,
+  // 布局相关类型
+  type LayoutMode,
+  type LayoutState,
+  type UseLayoutReturn,
+  type UseLayoutOptions,
+  type SiderState,
+  type UseSiderReturn,
+  type UseSiderOptions,
 } from './composables'
 
 // 导出组件
-export { TemplateRenderer, TemplateSelector } from './components'
+export {
+  TemplateRenderer,
+  TemplateSelector,
+  // 布局组件
+  LayoutHeader,
+  LayoutSider,
+  LayoutContent,
+  LayoutFooter,
+  LayoutTabs,
+  type TabItem,
+} from './components'
 
 // 导出指令
 export {
