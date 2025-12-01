@@ -37,8 +37,13 @@ export {
 export {
   useTemplate,
   useTemplateList,
+  useAutoDevice,
+  getCurrentDeviceType,
   type UseTemplateReturn,
+  type UseTemplateOptions,
   type UseTemplateListReturn,
+  type UseAutoDeviceReturn,
+  type UseAutoDeviceOptions,
 } from './composables'
 
 // 导出组件

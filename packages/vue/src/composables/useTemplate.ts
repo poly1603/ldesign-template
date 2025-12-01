@@ -1,9 +1,10 @@
 import type { Component, Ref } from 'vue'
-import { markRaw, nextTick, ref, shallowRef, watch } from 'vue'
+import { markRaw, nextTick, ref, shallowRef, watch, onMounted, onUnmounted } from 'vue'
 import type { TemplateMetadata } from '@ldesign/template-core'
 import { getTemplateManager, hasTemplateManager } from '../plugin/context'
 import type { DeviceType, TemplateChangeInfo } from '../types/config'
 import {
+  getBreakpoints,
   getCategoryConfig,
   getDefaultTemplateName,
   getDisabledMessage,
@@ -37,8 +38,10 @@ export interface UseTemplateReturn {
   disabled: Ref<boolean>
   /** 禁用消息 */
   disabledMessage: Ref<string>
+  /** 当前设备类型（自动检测时有效） */
+  deviceType: Ref<DeviceType>
   /** 加载模板 */
-  load: (id?: string) => Promise<void>
+  load: (id?: string, loadSource?: 'user' | 'auto' | 'cache' | 'default') => Promise<void>
   /** 卸载模板 */
   unload: () => void
 }
@@ -62,10 +65,21 @@ async function waitForManager(): Promise<boolean> {
 export interface UseTemplateOptions {
   /** 是否自动加载 @default false */
   immediate?: boolean
-  /** 模板分类（用于配置查找） */
+  /** 模板分类（用于配置查找，简化模式下必填） */
   category?: string
-  /** 设备类型（用于配置查找） */
+  /**
+   * 设备类型（用于配置查找）
+   * - 如果不传递，将自动检测当前设备类型
+   * - 如果传递了具体值，将使用指定的设备类型
+   */
   device?: DeviceType
+  /**
+   * 是否启用自动设备检测和响应式切换
+   * - true: 自动检测设备类型，并在窗口大小变化时自动切换模板
+   * - false: 不自动检测，使用传入的 device 参数
+   * @default true（当 device 未指定时）
+   */
+  autoDevice?: boolean
   /** 切换来源标识 @default 'auto' */
   source?: 'user' | 'auto' | 'cache' | 'default'
   /** 加载成功回调 */
@@ -74,21 +88,37 @@ export interface UseTemplateOptions {
   onError?: (error: Error) => void
   /** 模板切换回调（补充全局回调） */
   onChange?: (info: TemplateChangeInfo) => void
+  /** 设备类型变化回调 */
+  onDeviceChange?: (device: DeviceType) => void
+}
+
+/**
+ * 根据宽度计算设备类型
+ */
+function calculateDeviceType(width: number): DeviceType {
+  const bp = getBreakpoints()
+  if (width < bp.mobile) return 'mobile'
+  if (width < bp.tablet) return 'tablet'
+  return 'desktop'
 }
 
 /**
  * 使用模板 Composable
  *
- * @param templateId - 模板ID或响应式ID
+ * 支持两种使用模式：
+ * 1. 简化模式：只传分类名，自动检测设备类型
+ *    ```ts
+ *    const { component } = useTemplate('login', { immediate: true })
+ *    ```
+ *
+ * 2. 完整模式：传完整的模板ID
+ *    ```ts
+ *    const { component } = useTemplate('login:desktop:default', { immediate: true })
+ *    ```
+ *
+ * @param templateId - 模板ID、分类名或响应式ID
  * @param options - 选项
  * @returns 模板状态和操作方法
- *
- * @example
- * ```ts
- * const { component, loading, error, load } = useTemplate('login:desktop:default')
- *
- * onMounted(() => load())
- * ```
  */
 export function useTemplate(
   templateId: string | Ref<string>,
@@ -98,11 +128,17 @@ export function useTemplate(
     immediate = false,
     category: optCategory,
     device: optDevice,
+    autoDevice: optAutoDevice,
     source = 'auto',
     onLoad,
     onError,
     onChange,
+    onDeviceChange,
   } = options
+
+  // 判断是否需要自动设备检测
+  // 如果显式传了 device，默认不自动检测；否则默认自动检测
+  const shouldAutoDetect = optAutoDevice ?? (optDevice === undefined)
 
   const template = ref<TemplateMetadata>()
   const component = shallowRef<Component>()
@@ -111,8 +147,19 @@ export function useTemplate(
   const disabled = ref(false)
   const disabledMessage = ref('')
 
+  // 当前设备类型（用于自动检测模式）
+  const deviceType = ref<DeviceType>(
+    optDevice ?? (typeof window !== 'undefined' ? calculateDeviceType(window.innerWidth) : 'desktop'),
+  )
+
   /** 上一个模板（用于切换回调） */
   let previousTemplate: TemplateMetadata | undefined
+
+  /** 防抖定时器 */
+  let resizeDebounceTimer: ReturnType<typeof setTimeout> | null = null
+
+  /** 是否正在加载中（用于防止重复加载） */
+  let isLoading = false
 
   /**
    * 解析模板ID，提取分类、设备和名称
@@ -168,22 +215,55 @@ export function useTemplate(
   }
 
   /**
+   * 判断传入的 ID 是否为简化模式（只有分类名）
+   */
+  function isSimplifiedId(id: string): boolean {
+    return !id.includes(':')
+  }
+
+  /**
    * 加载模板
-   * @param id - 模板ID
+   * @param id - 模板ID（可以是完整ID如 'login:desktop:default'，也可以是简化的分类名如 'login'）
    * @param loadSource - 加载来源（覆盖默认 source）
    */
   async function load(id?: string, loadSource?: 'user' | 'auto' | 'cache' | 'default'): Promise<void> {
+    // 防止重复加载
+    if (isLoading) return
+    isLoading = true
+
     const originalId = id || (typeof templateId === 'string' ? templateId : templateId.value)
 
     if (!originalId) {
       const err = new Error('模板ID不能为空')
       error.value = err
       onError?.(err)
+      isLoading = false
       return
     }
 
+    // 判断是否为简化模式（只传分类名）
+    const isSimplified = isSimplifiedId(originalId)
+
     // 解析原始模板ID
-    const { category, device } = parseTemplateId(originalId)
+    let category: string
+    let device: DeviceType
+    let name: string
+
+    if (isSimplified) {
+      // 简化模式：originalId 就是分类名
+      category = originalId
+      device = deviceType.value // 使用自动检测的设备类型
+      name = 'default'
+    }
+    else {
+      // 完整模式：解析完整的模板ID
+      const parsed = parseTemplateId(originalId)
+      category = parsed.category
+      device = parsed.device
+      name = parsed.name
+    }
+
+    // 应用选项覆盖
     const currentCategory = optCategory || category
     const currentDevice = optDevice || device
 
@@ -192,6 +272,7 @@ export function useTemplate(
       disabled.value = true
       disabledMessage.value = getDisabledMessage(currentCategory, currentDevice)
       loading.value = false
+      isLoading = false
 
       // 加载禁用提示组件
       const categoryConfig = getCategoryConfig(currentCategory)
@@ -287,6 +368,7 @@ export function useTemplate(
     }
     finally {
       loading.value = false
+      isLoading = false
     }
   }
 
@@ -300,6 +382,61 @@ export function useTemplate(
     error.value = undefined
     disabled.value = false
     disabledMessage.value = ''
+  }
+
+  /**
+   * 处理窗口大小变化（带防抖）
+   */
+  function handleResize(): void {
+    if (resizeDebounceTimer) {
+      clearTimeout(resizeDebounceTimer)
+    }
+    resizeDebounceTimer = setTimeout(() => {
+      if (typeof window === 'undefined') return
+
+      const newDeviceType = calculateDeviceType(window.innerWidth)
+      if (newDeviceType !== deviceType.value) {
+        const oldDeviceType = deviceType.value
+        deviceType.value = newDeviceType
+
+        // 触发设备变化回调
+        onDeviceChange?.(newDeviceType)
+
+        // 自动加载新设备类型的模板
+        const currentId = typeof templateId === 'string' ? templateId : templateId.value
+        if (currentId) {
+          // 如果是简化模式，直接使用分类名重新加载
+          if (isSimplifiedId(currentId)) {
+            load(currentId)
+          }
+          else {
+            // 完整模式：替换设备类型部分
+            const { category, name } = parseTemplateId(currentId)
+            load(`${category}:${newDeviceType}:${name}`)
+          }
+        }
+      }
+      resizeDebounceTimer = null
+    }, 100)
+  }
+
+  // 设置自动设备检测
+  if (shouldAutoDetect) {
+    onMounted(() => {
+      if (typeof window !== 'undefined') {
+        window.addEventListener('resize', handleResize)
+      }
+    })
+
+    onUnmounted(() => {
+      if (resizeDebounceTimer) {
+        clearTimeout(resizeDebounceTimer)
+        resizeDebounceTimer = null
+      }
+      if (typeof window !== 'undefined') {
+        window.removeEventListener('resize', handleResize)
+      }
+    })
   }
 
   // 响应式ID变化
@@ -329,6 +466,7 @@ export function useTemplate(
     error,
     disabled,
     disabledMessage,
+    deviceType,
     load,
     unload,
   }

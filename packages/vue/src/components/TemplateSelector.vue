@@ -2,6 +2,7 @@
 import { computed } from 'vue'
 import type { DeviceType } from '@ldesign/template-core'
 import { useTemplateList } from '../composables/useTemplateList'
+import { useAutoDevice } from '../composables/useAutoDevice'
 
 interface Props {
   /**
@@ -11,6 +12,8 @@ interface Props {
 
   /**
    * 设备类型
+   * - 如果不传递，将自动检测当前设备类型
+   * - 如果传递了具体值，将使用指定的设备类型
    */
   device?: DeviceType
 
@@ -40,9 +43,15 @@ const emit = defineEmits<{
   'change': [value: string]
 }>()
 
+// 自动设备检测（当 device prop 未传递时使用）
+const { deviceType: autoDeviceType } = useAutoDevice()
+
+// 计算实际使用的设备类型：优先使用 prop，其次使用自动检测
+const effectiveDevice = computed(() => props.device ?? autoDeviceType.value)
+
 const { templates, loading } = useTemplateList(
   computed(() => props.category),
-  computed(() => props.device)
+  effectiveDevice,
 )
 
 function selectTemplate(id: string) {
@@ -60,13 +69,8 @@ function selectTemplate(id: string) {
 
     <!-- 模板列表 -->
     <div v-else-if="templates.length > 0" class="template-selector__list">
-      <div
-        v-for="template in templates"
-        :key="template.id"
-        class="template-selector__item"
-        :class="{ 'is-active': modelValue === template.id }"
-        @click="selectTemplate(template.id)"
-      >
+      <div v-for="template in templates" :key="template.id" class="template-selector__item"
+        :class="{ 'is-active': modelValue === template.id }" @click="selectTemplate(template.id)">
         <!-- 预览图 -->
         <div v-if="showPreview && template.preview" class="template-selector__preview">
           <img :src="template.preview" :alt="template.displayName || template.name" />
@@ -84,11 +88,7 @@ function selectTemplate(id: string) {
 
           <!-- 标签 -->
           <div v-if="template.tags && template.tags.length > 0" class="template-selector__tags">
-            <span
-              v-for="tag in template.tags"
-              :key="tag"
-              class="template-selector__tag"
-            >
+            <span v-for="tag in template.tags" :key="tag" class="template-selector__tag">
               {{ tag }}
             </span>
           </div>
