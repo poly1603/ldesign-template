@@ -45,6 +45,18 @@
       "require": "./lib/composables/*.cjs",
       "default": "./esm/composables/*.js"
     },
+    "./directives": {
+      "types": "./esm/directives/index.d.ts",
+      "import": "./esm/directives/index.js",
+      "require": "./lib/directives/index.cjs",
+      "default": "./esm/directives/index.js"
+    },
+    "./directives/*": {
+      "types": "./esm/directives/*.d.ts",
+      "import": "./esm/directives/*.js",
+      "require": "./lib/directives/*.cjs",
+      "default": "./esm/directives/*.js"
+    },
     "./plugin": {
       "types": "./esm/plugin/index.d.ts",
       "import": "./esm/plugin/index.js",
@@ -56,6 +68,18 @@
       "import": "./esm/plugin/*.js",
       "require": "./lib/plugin/*.cjs",
       "default": "./esm/plugin/*.js"
+    },
+    "./plugins": {
+      "types": "./esm/plugins/index.d.ts",
+      "import": "./esm/plugins/index.js",
+      "require": "./lib/plugins/index.cjs",
+      "default": "./esm/plugins/index.js"
+    },
+    "./plugins/*": {
+      "types": "./esm/plugins/*.d.ts",
+      "import": "./esm/plugins/*.js",
+      "require": "./lib/plugins/*.cjs",
+      "default": "./esm/plugins/*.js"
     },
     "./scanner": {
       "types": "./esm/scanner/index.d.ts",
@@ -69,12 +93,34 @@
       "require": "./lib/scanner/*.cjs",
       "default": "./esm/scanner/*.js"
     },
+    "./templates": {
+      "types": "./esm/templates/index.d.ts",
+      "import": "./esm/templates/index.js",
+      "require": "./lib/templates/index.cjs",
+      "default": "./esm/templates/index.js"
+    },
+    "./templates/*": {
+      "types": "./esm/templates/*.d.ts",
+      "import": "./esm/templates/*.js",
+      "require": "./lib/templates/*.cjs",
+      "default": "./esm/templates/*.js"
+    },
+    "./types/*": {
+      "types": "./esm/types/*.d.ts",
+      "import": "./esm/types/*.js",
+      "require": "./lib/types/*.cjs",
+      "default": "./esm/types/*.js"
+    },
     "./lib/components/TemplateRenderer.vue.css": "./lib/components/TemplateRenderer.vue.css",
     "./lib/components/TemplateSelector.vue.css": "./lib/components/TemplateSelector.vue.css",
+    "./lib/composables/index.css": "./lib/composables/index.css",
     "./lib/index.css": "./lib/index.css",
     "./lib/templates/login/desktop/default/index.vue.css": "./lib/templates/login/desktop/default/index.vue.css",
+    "./lib/templates/login/desktop/minimal/index.vue.css": "./lib/templates/login/desktop/minimal/index.vue.css",
     "./lib/templates/login/mobile/default/index.vue.css": "./lib/templates/login/mobile/default/index.vue.css",
+    "./lib/templates/login/mobile/minimal/index.vue.css": "./lib/templates/login/mobile/minimal/index.vue.css",
     "./lib/templates/login/tablet/default/index.vue.css": "./lib/templates/login/tablet/default/index.vue.css",
+    "./lib/templates/login/tablet/minimal/index.vue.css": "./lib/templates/login/tablet/minimal/index.vue.css",
     "./dist/index.css": "./dist/index.css",
     "./dist/index.min.css": "./dist/index.min.css",
     "./package.json": "./package.json"

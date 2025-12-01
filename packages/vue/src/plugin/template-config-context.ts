@@ -18,6 +18,12 @@ import type {
 /** 全局配置实例 */
 let globalConfig: TemplateConfig | null = null
 
+/** 当前活动的模板分类 */
+let currentCategory: string | undefined
+
+/** 分类变化监听器 */
+const categoryChangeListeners = new Set<(category: string | undefined) => void>()
+
 /** 默认断点配置 */
 const DEFAULT_BREAKPOINTS: Required<BreakpointConfig> = {
   mobile: 768,
@@ -151,8 +157,59 @@ export function getSelectorConfig(): Required<Omit<TemplateSelectorConfig, 'filt
  * 触发模板切换回调
  */
 export async function triggerTemplateChange(info: TemplateChangeInfo): Promise<void> {
+  // 更新当前分类
+  if (info.category !== currentCategory) {
+    currentCategory = info.category
+    // 通知所有监听器
+    categoryChangeListeners.forEach((listener) => {
+      try {
+        listener(currentCategory)
+      }
+      catch (e) {
+        console.error('[Template] Category change listener error:', e)
+      }
+    })
+  }
+
   if (globalConfig?.onTemplateChange) {
     await globalConfig.onTemplateChange(info)
+  }
+}
+
+/**
+ * 获取当前活动的模板分类
+ */
+export function getCurrentCategory(): string | undefined {
+  return currentCategory
+}
+
+/**
+ * 设置当前活动的模板分类
+ */
+export function setCurrentCategory(category: string | undefined): void {
+  if (category !== currentCategory) {
+    currentCategory = category
+    categoryChangeListeners.forEach((listener) => {
+      try {
+        listener(currentCategory)
+      }
+      catch (e) {
+        console.error('[Template] Category change listener error:', e)
+      }
+    })
+  }
+}
+
+/**
+ * 监听分类变化
+ * @returns 取消订阅函数
+ */
+export function onCategoryChange(
+  listener: (category: string | undefined) => void,
+): () => void {
+  categoryChangeListeners.add(listener)
+  return () => {
+    categoryChangeListeners.delete(listener)
   }
 }
 

@@ -49,6 +49,18 @@ export {
 // 导出组件
 export { TemplateRenderer, TemplateSelector } from './components'
 
+// 导出指令
+export {
+  vTemplateDevice,
+  vTemplateCategory,
+  createTemplateDeviceDirective,
+  createTemplateCategoryDirective,
+  type TemplateDeviceDirectiveValue,
+  type TemplateDeviceDirectiveModifiers,
+  type TemplateCategoryDirectiveValue,
+  type TemplateCategoryDirectiveModifiers,
+} from './directives'
+
 // 导出内置模板
 export { getBuiltinTemplates, builtinTemplates } from './templates'
 

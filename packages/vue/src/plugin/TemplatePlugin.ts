@@ -3,6 +3,8 @@ import { TemplateRegistry, TemplateManager } from '@ldesign/template-core'
 import type { TemplateMetadata } from '@ldesign/template-core'
 import { getBuiltinTemplates } from '../templates'
 import { setTemplateManager } from './context'
+import { vTemplateDevice } from '../directives/vTemplateDevice'
+import { vTemplateCategory } from '../directives/vTemplateCategory'
 
 /**
  * 模板插件选项
@@ -82,9 +84,14 @@ export function createTemplatePlugin(
       // 全局属性
       app.config.globalProperties.$templates = manager
 
+      // 注册指令
+      app.directive('template-device', vTemplateDevice)
+      app.directive('template-category', vTemplateCategory)
+
       if (debug) {
         console.log('[TemplatePlugin] 插件已安装')
         console.log('[TemplatePlugin] 总模板数:', manager.getTemplateCount())
+        console.log('[TemplatePlugin] 已注册指令: v-template-device, v-template-category')
       }
     },
   }
