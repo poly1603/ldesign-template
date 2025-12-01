@@ -1,12 +1,16 @@
 <script setup lang="ts">
 /**
- * Admin 后台管理布局模板
+ * Sidebar 经典侧边栏布局模板
  *
  * 经典的后台管理系统布局：左侧边栏 + 顶栏 + 内容区
+ * 适用于大多数后台管理系统，如 Ant Design Pro、Element Plus Admin 等
  *
  * @example
  * ```vue
  * <TemplateRenderer category="layout">
+ *   <template #logo>
+ *     <Logo />
+ *   </template>
  *   <template #sider>
  *     <Menu :data="menuData" />
  *   </template>
@@ -123,16 +127,9 @@ function handleCloseSider() {
 <template>
   <div class="admin-layout">
     <!-- 侧边栏 -->
-    <LayoutSider
-      v-model:collapsed="siderCollapsed"
-      v-model:visible="siderVisible"
-      :width="siderWidth"
-      :collapsed-width="siderCollapsedWidth"
-      :fixed="fixedSider"
-      :drawer="isMobile"
-      :top-offset="0"
-      @mask-click="handleCloseSider"
-    >
+    <LayoutSider v-model:collapsed="siderCollapsed" v-model:visible="siderVisible" :width="siderWidth"
+      :collapsed-width="siderCollapsedWidth" :fixed="fixedSider" :drawer="isMobile" :top-offset="0"
+      @mask-click="handleCloseSider">
       <template #logo>
         <slot name="logo" :collapsed="siderCollapsed" />
       </template>
@@ -143,17 +140,10 @@ function handleCloseSider() {
     </LayoutSider>
 
     <!-- 主区域 -->
-    <div
-      class="admin-layout__main"
-      :style="{ marginLeft: `${contentOffset}px` }"
-    >
+    <div class="admin-layout__main" :style="{ marginLeft: `${contentOffset}px` }">
       <!-- 顶栏 -->
-      <LayoutHeader
-        :height="headerHeight"
-        :fixed="fixedHeader"
-        :left-offset="headerOffset"
-        @toggle-sider="handleToggleSider"
-      >
+      <LayoutHeader :height="headerHeight" :fixed="fixedHeader" :left-offset="headerOffset"
+        @toggle-sider="handleToggleSider">
         <template #menuButton>
           <slot name="menu-button">
             <span class="admin-layout__menu-icon">☰</span>
@@ -171,21 +161,15 @@ function handleCloseSider() {
       </LayoutHeader>
 
       <!-- 标签栏 -->
-      <div
-        v-if="showTabs"
-        class="admin-layout__tabs"
-        :style="{ top: fixedHeader ? `${headerHeight}px` : undefined, left: `${headerOffset}px` }"
-      >
+      <div v-if="showTabs" class="admin-layout__tabs"
+        :style="{ top: fixedHeader ? `${headerHeight}px` : undefined, left: `${headerOffset}px` }">
         <slot name="tabs">
           <LayoutTabs :height="tabsHeight" />
         </slot>
       </div>
 
       <!-- 内容区 -->
-      <LayoutContent
-        class="admin-layout__content"
-        :style="{ paddingTop: `${contentTopOffset}px` }"
-      >
+      <LayoutContent class="admin-layout__content" :style="{ paddingTop: `${contentTopOffset}px` }">
         <slot />
       </LayoutContent>
 
@@ -227,4 +211,3 @@ function handleCloseSider() {
   font-size: 20px;
 }
 </style>
-

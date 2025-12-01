@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * Mobile 移动端布局模板
+ * TabBar 移动端底部导航布局模板
  *
- * 移动端布局，底部导航 + 顶栏
+ * 顶栏 + 内容区 + 底部 Tab 栏，iOS/Android 风格
  *
  * @example
  * ```vue
@@ -82,12 +82,7 @@ const tabBarStyle = computed(() => ({
 <template>
   <div class="mobile-layout">
     <!-- 顶栏 -->
-    <LayoutHeader
-      v-if="showHeader"
-      :height="headerHeight"
-      :fixed="fixedHeader"
-      class="mobile-layout__header"
-    >
+    <LayoutHeader v-if="showHeader" :height="headerHeight" :fixed="fixedHeader" class="mobile-layout__header">
       <template #left>
         <slot name="header-left" />
       </template>
@@ -105,11 +100,8 @@ const tabBarStyle = computed(() => ({
     </LayoutContent>
 
     <!-- 底部导航 -->
-    <nav
-      v-if="showTabBar"
-      :class="['mobile-layout__tab-bar', { 'mobile-layout__tab-bar--fixed': fixedTabBar }]"
-      :style="tabBarStyle"
-    >
+    <nav v-if="showTabBar" :class="['mobile-layout__tab-bar', { 'mobile-layout__tab-bar--fixed': fixedTabBar }]"
+      :style="tabBarStyle">
       <slot name="tab-bar" />
     </nav>
   </div>
@@ -148,4 +140,3 @@ const tabBarStyle = computed(() => ({
   z-index: 100;
 }
 </style>
-

@@ -6,9 +6,9 @@ import type { TemplateConfig } from '@ldesign/template-core'
  * 平板端布局，可折叠侧边栏 + 顶栏
  */
 export default {
-  name: 'default',
-  displayName: '平板端布局',
-  description: '平板端布局，可折叠侧边栏 + 顶栏，适合 iPad 等平板设备',
+  name: 'sidebar',
+  displayName: '可折叠侧边栏布局',
+  description: '可折叠侧边栏 + 顶栏，默认折叠状态，适合平板设备',
   author: 'ldesign',
   version: '1.0.0',
   tags: ['tablet', 'sidebar', 'responsive'],

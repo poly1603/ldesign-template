@@ -31,11 +31,18 @@ interface Props {
    * 是否显示描述
    */
   showDescription?: boolean
+
+  /**
+   * 要排除的模板名称列表
+   * 例如: ['blank'] 会排除空白布局
+   */
+  exclude?: string[]
 }
 
 const props = withDefaults(defineProps<Props>(), {
   showPreview: true,
   showDescription: true,
+  exclude: () => [],
 })
 
 const emit = defineEmits<{
@@ -49,10 +56,23 @@ const { deviceType: autoDeviceType } = useAutoDevice()
 // 计算实际使用的设备类型：优先使用 prop，其次使用自动检测
 const effectiveDevice = computed(() => props.device ?? autoDeviceType.value)
 
-const { templates, loading } = useTemplateList(
+const { templates: allTemplates, loading } = useTemplateList(
   computed(() => props.category),
   effectiveDevice,
 )
+
+/**
+ * 过滤后的模板列表
+ * 排除 exclude 数组中指定的模板名称
+ */
+const templates = computed(() => {
+  if (props.exclude.length === 0) {
+    return allTemplates.value
+  }
+  return allTemplates.value.filter(
+    template => !props.exclude.includes(template.name),
+  )
+})
 
 function selectTemplate(id: string) {
   emit('update:modelValue', id)

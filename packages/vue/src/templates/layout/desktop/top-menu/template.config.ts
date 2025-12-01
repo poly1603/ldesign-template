@@ -1,17 +1,17 @@
 import type { TemplateConfig } from '@ldesign/template-core'
 
 /**
- * Portal 门户网站布局配置
+ * TopMenu 顶部菜单布局配置
  *
- * 顶部导航式布局，适合门户网站、官网等
+ * 顶部水平导航布局：顶栏包含 Logo 和水平菜单 + 内容区
  */
 export default {
-  name: 'portal',
-  displayName: '门户网站布局',
-  description: '顶部导航式布局，适合门户网站、官网、博客等',
+  name: 'top-menu',
+  displayName: '顶部菜单布局',
+  description: '顶部水平导航 + 内容区，适合菜单项较少的系统',
   author: 'ldesign',
   version: '1.0.0',
-  tags: ['portal', 'top-nav', 'website'],
+  tags: ['top-menu', 'horizontal', 'navbar'],
   props: {
     /** 顶栏高度 */
     headerHeight: { type: Number, default: 64 },
@@ -20,11 +20,9 @@ export default {
     /** 是否显示页脚 */
     showFooter: { type: Boolean, default: true },
     /** 页脚高度 */
-    footerHeight: { type: Number, default: 64 },
+    footerHeight: { type: Number, default: 48 },
     /** 内容区最大宽度 */
-    maxWidth: { type: Number, default: 1200 },
-    /** 是否居中内容 */
-    centered: { type: Boolean, default: true },
+    maxContentWidth: { type: Number, default: 0 },
   },
 } satisfies TemplateConfig
 

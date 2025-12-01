@@ -1,14 +1,14 @@
 import type { TemplateConfig } from '@ldesign/template-core'
 
 /**
- * Admin 后台管理布局配置
+ * Sidebar 经典侧边栏布局配置
  *
  * 经典的后台管理系统布局：左侧边栏 + 顶栏 + 内容区
  */
 export default {
-  name: 'admin',
-  displayName: '后台管理布局',
-  description: '经典后台管理布局，包含侧边栏、顶栏、标签栏和内容区',
+  name: 'sidebar',
+  displayName: '经典侧边栏布局',
+  description: '左侧边栏 + 顶栏 + 内容区，适合大多数后台管理系统',
   author: 'ldesign',
   version: '1.0.0',
   tags: ['admin', 'sidebar', 'classic'],

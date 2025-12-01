@@ -1,8 +1,8 @@
 <script setup lang="ts">
 /**
- * Tablet 平板端布局模板
+ * Sidebar 平板端可折叠侧边栏布局模板
  *
- * 平板端布局，可折叠侧边栏 + 顶栏
+ * 可折叠侧边栏 + 顶栏，默认折叠状态，点击展开
  *
  * @example
  * ```vue
@@ -85,13 +85,8 @@ function handleToggleSider() {
 <template>
   <div class="tablet-layout">
     <!-- 侧边栏 -->
-    <LayoutSider
-      v-model:collapsed="siderCollapsed"
-      :width="siderWidth"
-      :collapsed-width="siderCollapsedWidth"
-      :fixed="fixedSider"
-      :top-offset="0"
-    >
+    <LayoutSider v-model:collapsed="siderCollapsed" :width="siderWidth" :collapsed-width="siderCollapsedWidth"
+      :fixed="fixedSider" :top-offset="0">
       <template #logo>
         <slot name="logo" :collapsed="siderCollapsed" />
       </template>
@@ -105,17 +100,10 @@ function handleToggleSider() {
     </LayoutSider>
 
     <!-- 主区域 -->
-    <div
-      class="tablet-layout__main"
-      :style="{ marginLeft: `${contentOffset}px` }"
-    >
+    <div class="tablet-layout__main" :style="{ marginLeft: `${contentOffset}px` }">
       <!-- 顶栏 -->
-      <LayoutHeader
-        :height="headerHeight"
-        :fixed="fixedHeader"
-        :left-offset="headerOffset"
-        @toggle-sider="handleToggleSider"
-      >
+      <LayoutHeader :height="headerHeight" :fixed="fixedHeader" :left-offset="headerOffset"
+        @toggle-sider="handleToggleSider">
         <template #menuButton>
           <slot name="menu-button">
             <span class="tablet-layout__menu-icon">☰</span>
@@ -133,10 +121,8 @@ function handleToggleSider() {
       </LayoutHeader>
 
       <!-- 内容区 -->
-      <LayoutContent
-        class="tablet-layout__content"
-        :style="{ paddingTop: fixedHeader ? `${headerHeight}px` : undefined }"
-      >
+      <LayoutContent class="tablet-layout__content"
+        :style="{ paddingTop: fixedHeader ? `${headerHeight}px` : undefined }">
         <slot />
       </LayoutContent>
 
@@ -171,4 +157,3 @@ function handleToggleSider() {
   font-size: 18px;
 }
 </style>
-

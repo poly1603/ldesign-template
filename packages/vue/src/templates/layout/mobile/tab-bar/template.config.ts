@@ -6,9 +6,9 @@ import type { TemplateConfig } from '@ldesign/template-core'
  * 移动端布局，底部导航 + 顶栏
  */
 export default {
-  name: 'default',
-  displayName: '移动端布局',
-  description: '移动端布局，包含顶栏和底部导航栏',
+  name: 'tab-bar',
+  displayName: '底部导航布局',
+  description: '顶栏 + 内容区 + 底部 Tab 栏，iOS/Android 风格',
   author: 'ldesign',
   version: '1.0.0',
   tags: ['mobile', 'bottom-nav', 'app'],
