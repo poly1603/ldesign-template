@@ -33,3 +33,26 @@ export {
   isValidTemplateId,
   type ParsedPath,
 } from './utils'
+
+// 导出多语言支持
+export {
+  zhCN as templateZhCN,
+  enUS as templateEnUS,
+  jaJP as templateJaJP,
+  koKR as templateKoKR,
+  deDE as templateDeDE,
+  frFR as templateFrFR,
+  esES as templateEsES,
+  locales as templateLocales,
+  getLocale as getTemplateLocale,
+  type TemplateLocale,
+  type LocaleKey as TemplateLocaleKey,
+} from './locales'
+
+// 导出 locale manager（单独导出避免循环引用）
+export {
+  TemplateLocaleManager,
+  createTemplateLocaleManager,
+  type ExternalI18n as TemplateExternalI18n,
+  type LocaleKey,
+} from './locales/manager'

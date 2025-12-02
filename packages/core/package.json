@@ -19,6 +19,18 @@
       "require": "./lib/index.cjs",
       "default": "./es/index.js"
     },
+    "./locales": {
+      "types": "./es/locales/index.d.ts",
+      "import": "./es/locales/index.js",
+      "require": "./lib/locales/index.cjs",
+      "default": "./es/locales/index.js"
+    },
+    "./locales/*": {
+      "types": "./es/locales/*.d.ts",
+      "import": "./es/locales/*.js",
+      "require": "./lib/locales/*.cjs",
+      "default": "./es/locales/*.js"
+    },
     "./manager": {
       "types": "./es/manager/index.d.ts",
       "import": "./es/manager/index.js",

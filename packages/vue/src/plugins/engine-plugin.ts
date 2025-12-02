@@ -37,11 +37,14 @@
  */
 import type { App } from 'vue'
 import type { TemplateMetadata } from '@ldesign/template-core'
-import { TemplateManager, TemplateRegistry } from '@ldesign/template-core'
+import { TemplateManager, TemplateRegistry, createTemplateLocaleManager } from '@ldesign/template-core'
 import { getBuiltinTemplates } from '../templates'
 import { setTemplateManager } from '../plugin/context'
 import { setTemplateConfig } from '../plugin/template-config-context'
 import type { TemplateConfig } from '../types/config'
+
+/** 全局 locale manager 实例 */
+let templateLocaleManager = createTemplateLocaleManager()
 
 /** 引擎类型接口 */
 interface EngineLike {
@@ -52,13 +55,19 @@ interface EngineLike {
     once: (event: string, handler: (...args: unknown[]) => void) => void
   }
   api?: {
-    register: (name: string, service: unknown) => void
+    register: (api: { name: string, version: string, [key: string]: unknown }) => void
     get: (name: string) => unknown
   }
   logger?: {
     info: (...args: unknown[]) => void
     debug: (...args: unknown[]) => void
     error: (...args: unknown[]) => void
+  }
+  /** i18n 实例（可选） */
+  i18n?: {
+    t: (key: string, ...args: unknown[]) => string
+    has?: (key: string) => boolean
+    getLocale?: () => string
   }
 }
 
@@ -271,6 +280,7 @@ export function createTemplateEnginePlugin(
           // 获取当前配置
           getConfig: () => templateConfig,
         }
+        // 注册 API 到 API 注册表（API 对象必须包含 name 和 version）
         engine.api.register(templateAPI)
         if (debug) {
           console.log('[Template Plugin] Template API 已注册到引擎')
@@ -307,6 +317,64 @@ export function createTemplateEnginePlugin(
           if (app) installVuePlugin(app)
         })
       }
+
+      // 监听语言变化事件，实时更新 locale manager
+      if (engine?.events?.on) {
+        engine.events.on('i18n:localeChanged', (payload: unknown) => {
+          const locale = (payload as { locale?: string })?.locale || (payload as string)
+          if (locale && typeof locale === 'string') {
+            templateLocaleManager.setLocale(locale)
+            if (debug) {
+              console.log('[Template Plugin] 语言已切换:', locale)
+            }
+          }
+        })
+      }
+
+      // 尝试从 engine 获取外部 i18n 实例
+      let i18nInstance: any = null
+      try {
+        // 尝试从容器获取 i18n 实例
+        const container = context?.container || (engine as any).container
+        if (container && typeof container.has === 'function' && container.has('i18n')) {
+          i18nInstance = container.resolve('i18n')
+          if (debug) {
+            console.log('[Template Plugin] 从容器获取到 i18n 实例')
+          }
+        }
+      }
+      catch (error) {
+        if (debug) {
+          console.log('[Template Plugin] 未在容器中找到 i18n 实例，使用内置 locales')
+        }
+      }
+
+      // 获取初始语言
+      let initialLocale = 'zh-CN'
+      if (i18nInstance && typeof i18nInstance.getLocale === 'function') {
+        initialLocale = i18nInstance.getLocale()
+      }
+      else if (engine.state?.get) {
+        initialLocale = engine.state.get('i18n:locale') || 'zh-CN'
+      }
+
+      // 设置初始语言
+      templateLocaleManager.setLocale(initialLocale)
+      if (debug) {
+        console.log('[Template Plugin] 初始语言:', initialLocale)
+      }
+
+      // 如果有 i18n 实例，设置外部 i18n
+      if (i18nInstance && typeof i18nInstance.t === 'function') {
+        templateLocaleManager.setExternalI18n({
+          t: (key: string) => i18nInstance.t(key),
+          has: i18nInstance.has ? (key: string) => i18nInstance.has(key) : undefined,
+          getLocale: i18nInstance.getLocale ? () => i18nInstance.getLocale() : undefined,
+        })
+        if (debug) {
+          console.log('[Template Plugin] 已集成外部 i18n')
+        }
+      }
     },
 
     async uninstall(context: PluginContext | EngineLike) {
@@ -321,5 +389,13 @@ export function createTemplateEnginePlugin(
       }
     },
   }
+}
+
+/**
+ * 获取 Template Locale Manager 实例
+ * @returns TemplateLocaleManager 实例
+ */
+export function getTemplateLocaleManager() {
+  return templateLocaleManager
 }
 

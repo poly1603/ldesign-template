@@ -1,8 +1,111 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+/**
+ * 模板选择器组件
+ *
+ * 支持多语言实时切换，通过监听 i18n 的 localeChanged 事件实现响应式更新
+ */
+import { computed, getCurrentInstance, inject, onUnmounted, ref } from 'vue'
 import type { DeviceType } from '@ldesign/template-core'
 import { useTemplateList } from '../composables/useTemplateList'
 import { useAutoDevice } from '../composables/useAutoDevice'
+import { getTemplateLocaleManager } from '../plugins/engine-plugin'
+
+/** i18n Symbol key (需要与 @ldesign/i18n-vue 保持一致) */
+const I18N_SYMBOL = Symbol.for('i18n')
+
+/** 获取 locale manager 实例 */
+const localeManager = getTemplateLocaleManager()
+
+/** 当前语言 ref，用于触发响应式更新 */
+const localeRef = ref<string>(localeManager.getLocale())
+
+/** 事件清理函数 */
+let cleanupFn: (() => void) | null = null
+
+// 尝试获取 i18n 实例并监听语言变化
+try {
+  // 1. 尝试从 Symbol inject 获取（优先）
+  let i18nInstance: any = inject(I18N_SYMBOL, null)
+
+  // 2. 尝试从字符串 key inject 获取
+  if (!i18nInstance) {
+    i18nInstance = inject('i18n', null)
+  }
+
+  // 3. 尝试从 globalProperties 获取
+  if (!i18nInstance) {
+    const instance = getCurrentInstance()
+    const globalProperties = instance?.appContext?.config?.globalProperties
+    i18nInstance = globalProperties?.$i18n
+  }
+
+  // 如果找到 i18n 实例，监听 locale 变化
+  if (i18nInstance) {
+    // 初始化 locale
+    const initialLocale = i18nInstance.getLocale?.() || i18nInstance.locale || 'zh-CN'
+    localeRef.value = initialLocale
+    localeManager.setLocale(initialLocale)
+
+    // 监听 locale 变化事件
+    if (i18nInstance.on) {
+      const handler = ({ locale }: { locale: string }) => {
+        localeRef.value = locale
+        localeManager.setLocale(locale)
+      }
+      i18nInstance.on('localeChanged', handler)
+      // 保存清理函数
+      cleanupFn = () => {
+        if (i18nInstance.off) {
+          i18nInstance.off('localeChanged', handler)
+        }
+      }
+    }
+  }
+}
+catch (e) {
+  // 忽略错误，使用 fallback
+  console.warn('[TemplateSelector] Failed to get i18n instance:', e)
+}
+
+// 组件卸载时清理事件监听
+onUnmounted(() => {
+  cleanupFn?.()
+})
+
+/**
+ * 响应式翻译函数
+ * 依赖 localeRef 以触发重新计算
+ */
+function t(key: string): string {
+  // 强制依赖 localeRef 以触发重新计算
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _currentLocale = localeRef.value
+  return localeManager.t(key)
+}
+
+/**
+ * 获取模板的翻译显示名称
+ * @param templateName - 模板名称
+ * @param fallback - 备用显示名称
+ */
+function getTemplateDisplayName(templateName: string, fallback?: string): string {
+  // 强制依赖 localeRef 以触发重新计算
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _currentLocale = localeRef.value
+  return localeManager.getTemplateDisplayName(templateName, fallback)
+}
+
+/**
+ * 获取模板的翻译描述
+ * @param templateName - 模板名称
+ * @param fallback - 备用描述
+ */
+function getTemplateDescription(templateName: string, fallback?: string): string {
+  // 强制依赖 localeRef 以触发重新计算
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _currentLocale = localeRef.value
+  return localeManager.getTemplateDescription(templateName, fallback)
+}
 
 interface Props {
   /**
@@ -84,7 +187,7 @@ function selectTemplate(id: string) {
   <div class="template-selector">
     <!-- 加载状态 -->
     <div v-if="loading" class="template-selector__loading">
-      <slot name="loading">加载中...</slot>
+      <slot name="loading">{{ t('selector.loading') }}</slot>
     </div>
 
     <!-- 模板列表 -->
@@ -93,17 +196,17 @@ function selectTemplate(id: string) {
         :class="{ 'is-active': modelValue === template.id }" @click="selectTemplate(template.id)">
         <!-- 预览图 -->
         <div v-if="showPreview && template.preview" class="template-selector__preview">
-          <img :src="template.preview" :alt="template.displayName || template.name" />
+          <img :src="template.preview" :alt="getTemplateDisplayName(template.name, template.displayName)" />
         </div>
 
         <!-- 信息 -->
         <div class="template-selector__info">
           <div class="template-selector__name">
-            {{ template.displayName || template.name }}
+            {{ getTemplateDisplayName(template.name, template.displayName) }}
           </div>
 
-          <div v-if="showDescription && template.description" class="template-selector__description">
-            {{ template.description }}
+          <div v-if="showDescription" class="template-selector__description">
+            {{ getTemplateDescription(template.name, template.description) }}
           </div>
 
           <!-- 标签 -->
@@ -123,7 +226,7 @@ function selectTemplate(id: string) {
 
     <!-- 空状态 -->
     <div v-else class="template-selector__empty">
-      <slot name="empty">暂无模板</slot>
+      <slot name="empty">{{ t('selector.empty') }}</slot>
     </div>
   </div>
 </template>
