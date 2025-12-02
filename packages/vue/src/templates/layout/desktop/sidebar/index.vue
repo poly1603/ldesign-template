@@ -24,7 +24,8 @@
  * ```
  */
 import { computed, ref, watch } from 'vue'
-import { LayoutHeader, LayoutSider, LayoutContent, LayoutFooter, LayoutTabs } from '../../../../components/layout'
+import { LayoutHeader, LayoutSider, LayoutContent, LayoutFooter } from '../../../../components/layout'
+import { ChromeTabs } from '@ldesign/bookmark-vue'
 import { useAutoDevice } from '../../../../composables/useAutoDevice'
 
 interface Props {
@@ -164,7 +165,7 @@ function handleCloseSider() {
       <div v-if="showTabs" class="admin-layout__tabs"
         :style="{ top: fixedHeader ? `${headerHeight}px` : undefined, left: `${headerOffset}px` }">
         <slot name="tabs">
-          <LayoutTabs :height="tabsHeight" />
+          <ChromeTabs :height="tabsHeight" />
         </slot>
       </div>
 

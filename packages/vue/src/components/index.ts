@@ -11,6 +11,7 @@ export {
   LayoutSider,
   LayoutContent,
   LayoutFooter,
-  LayoutTabs,
-  type TabItem,
 } from './layout'
+
+// 注意：LayoutTabs 已迁移到 @ldesign/bookmark-vue 包中
+// 请使用: import { ChromeTabs } from '@ldesign/bookmark-vue'

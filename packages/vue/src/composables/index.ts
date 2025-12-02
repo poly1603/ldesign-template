@@ -25,3 +25,5 @@ export {
   type UseSiderReturn,
   type UseSiderOptions,
 } from './useSider'
+
+// 注意：useRouteTabs 已迁移到 @ldesign/bookmark-vue 包中

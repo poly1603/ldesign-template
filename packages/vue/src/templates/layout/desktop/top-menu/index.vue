@@ -25,10 +25,15 @@
  */
 import { computed } from 'vue'
 import { LayoutHeader, LayoutContent, LayoutFooter } from '../../../../components/layout'
+import { ChromeTabs } from '@ldesign/bookmark-vue'
 
 interface Props {
   /** 顶栏高度 @default 64 */
   headerHeight?: number
+  /** 标签栏高度 @default 40 */
+  tabsHeight?: number
+  /** 是否显示标签栏 @default true */
+  showTabs?: boolean
   /** 是否固定顶栏 @default true */
   fixedHeader?: boolean
   /** 是否显示页脚 @default true */
@@ -41,6 +46,8 @@ interface Props {
 
 const props = withDefaults(defineProps<Props>(), {
   headerHeight: 64,
+  tabsHeight: 40,
+  showTabs: true,
   fixedHeader: true,
   showFooter: true,
   footerHeight: 48,
@@ -48,9 +55,11 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 /** 内容区顶部偏移 */
-const contentTopOffset = computed(() =>
-  props.fixedHeader ? props.headerHeight : 0,
-)
+const contentTopOffset = computed(() => {
+  let offset = props.fixedHeader ? props.headerHeight : 0
+  if (props.showTabs) offset += props.tabsHeight
+  return offset
+})
 
 /** 内容区样式 */
 const contentStyle = computed(() => ({
@@ -63,11 +72,7 @@ const contentStyle = computed(() => ({
 <template>
   <div class="top-menu-layout">
     <!-- 顶栏 -->
-    <LayoutHeader
-      :height="headerHeight"
-      :fixed="fixedHeader"
-      class="top-menu-layout__header"
-    >
+    <LayoutHeader :height="headerHeight" :fixed="fixedHeader" class="top-menu-layout__header">
       <template #left>
         <div class="top-menu-layout__logo">
           <slot name="logo" />
@@ -83,6 +88,13 @@ const contentStyle = computed(() => ({
         <slot name="header-right" />
       </template>
     </LayoutHeader>
+
+    <!-- 标签栏 -->
+    <div v-if="showTabs" class="top-menu-layout__tabs" :style="{ top: fixedHeader ? `${headerHeight}px` : undefined }">
+      <slot name="tabs">
+        <ChromeTabs :height="tabsHeight" />
+      </slot>
+    </div>
 
     <!-- 内容区 -->
     <LayoutContent class="top-menu-layout__content" :style="contentStyle">
@@ -121,9 +133,16 @@ const contentStyle = computed(() => ({
   flex: 1;
 }
 
+.top-menu-layout__tabs {
+  position: fixed;
+  left: 0;
+  right: 0;
+  z-index: 99;
+  background-color: var(--layout-tabs-bg, #fff);
+}
+
 .top-menu-layout__content {
   flex: 1;
   padding: 24px;
 }
 </style>
-

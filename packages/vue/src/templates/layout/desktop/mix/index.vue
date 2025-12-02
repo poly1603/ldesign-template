@@ -28,6 +28,7 @@
  */
 import { computed, ref, watch } from 'vue'
 import { LayoutHeader, LayoutSider, LayoutContent, LayoutFooter } from '../../../../components/layout'
+import { ChromeTabs } from '@ldesign/bookmark-vue'
 import { useAutoDevice } from '../../../../composables/useAutoDevice'
 
 interface Props {
@@ -37,6 +38,10 @@ interface Props {
   siderCollapsedWidth?: number
   /** 顶栏高度 @default 64 */
   headerHeight?: number
+  /** 标签栏高度 @default 40 */
+  tabsHeight?: number
+  /** 是否显示标签栏 @default true */
+  showTabs?: boolean
   /** 是否固定顶栏 @default true */
   fixedHeader?: boolean
   /** 是否固定侧边栏 @default true */
@@ -53,6 +58,8 @@ const props = withDefaults(defineProps<Props>(), {
   siderWidth: 200,
   siderCollapsedWidth: 48,
   headerHeight: 64,
+  tabsHeight: 40,
+  showTabs: true,
   fixedHeader: true,
   fixedSider: true,
   defaultCollapsed: false,
@@ -77,9 +84,11 @@ const contentOffset = computed(() => {
   return props.fixedSider ? actualSiderWidth.value : 0
 })
 
-const contentTopOffset = computed(() =>
-  props.fixedHeader ? props.headerHeight : 0,
-)
+const contentTopOffset = computed(() => {
+  let offset = props.fixedHeader ? props.headerHeight : 0
+  if (props.showTabs) offset += props.tabsHeight
+  return offset
+})
 
 watch(isMobile, (mobile) => {
   if (mobile) {
@@ -129,6 +138,14 @@ function handleCloseSider() {
 
     <!-- 主区域 -->
     <div class="mix-layout__main" :style="{ marginLeft: `${contentOffset}px`, paddingTop: `${contentTopOffset}px` }">
+      <!-- 标签栏 -->
+      <div v-if="showTabs" class="mix-layout__tabs"
+        :style="{ top: fixedHeader ? `${headerHeight}px` : undefined, left: `${contentOffset}px` }">
+        <slot name="tabs">
+          <ChromeTabs :height="tabsHeight" />
+        </slot>
+      </div>
+
       <button class="mix-layout__toggle" type="button" @click="handleToggleSider">
         {{ siderCollapsed ? '»' : '«' }}
       </button>
@@ -183,6 +200,13 @@ function handleCloseSider() {
   flex: 1;
   min-width: 0;
   transition: margin-left 0.3s ease;
+}
+
+.mix-layout__tabs {
+  position: fixed;
+  right: 0;
+  z-index: 99;
+  background-color: var(--layout-tabs-bg, #fff);
 }
 
 .mix-layout__toggle {

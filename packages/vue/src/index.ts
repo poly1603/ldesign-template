@@ -57,6 +57,8 @@ export {
   type UseSiderOptions,
 } from './composables'
 
+// 注意：useRouteTabs 已迁移到 @ldesign/bookmark-vue 包中
+
 // 导出组件
 export {
   TemplateRenderer,
@@ -66,9 +68,10 @@ export {
   LayoutSider,
   LayoutContent,
   LayoutFooter,
-  LayoutTabs,
-  type TabItem,
 } from './components'
+
+// 注意：LayoutTabs 已迁移到 @ldesign/bookmark-vue 包中
+// 请使用: import { ChromeTabs } from '@ldesign/bookmark-vue'
 
 // 导出指令
 export {
