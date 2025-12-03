@@ -78,6 +78,7 @@ export const zhCN: TemplateLocale = {
     detail: '详情',
   },
   templates: {
+    // Layout templates - 布局模板
     'sidebar': {
       displayName: '经典侧边栏布局',
       description: '左侧边栏 + 顶栏 + 内容区，适合大多数后台管理系统',
@@ -93,6 +94,23 @@ export const zhCN: TemplateLocale = {
     'top-menu': {
       displayName: '顶部菜单布局',
       description: '顶部水平导航 + 内容区，适合菜单项较少的系统',
+    },
+    'drawer': {
+      displayName: '抽屉式布局',
+      description: '抽屉式侧边栏 + 顶栏，点击触发滑出',
+    },
+    'tab-bar': {
+      displayName: '底部导航布局',
+      description: '顶栏 + 内容区 + 底部 Tab 栏，iOS/Android 风格',
+    },
+    // Login templates - 登录模板
+    'default': {
+      displayName: '经典卡片',
+      description: '居中卡片式布局，紫色渐变背景',
+    },
+    'minimal': {
+      displayName: '简约分栏',
+      description: '左右分栏布局，暗色品牌展示区',
     },
   },
 }
@@ -124,6 +142,7 @@ export const enUS: TemplateLocale = {
     detail: 'Detail',
   },
   templates: {
+    // Layout templates
     'sidebar': {
       displayName: 'Classic Sidebar Layout',
       description: 'Left sidebar + top bar + content area, suitable for most admin systems',
@@ -139,6 +158,23 @@ export const enUS: TemplateLocale = {
     'top-menu': {
       displayName: 'Top Menu Layout',
       description: 'Top horizontal nav + content area, suitable for systems with fewer menu items',
+    },
+    'drawer': {
+      displayName: 'Drawer Layout',
+      description: 'Drawer sidebar + top bar, slide out on click',
+    },
+    'tab-bar': {
+      displayName: 'Tab Bar Layout',
+      description: 'Top bar + content area + bottom tab bar, iOS/Android style',
+    },
+    // Login templates
+    'default': {
+      displayName: 'Classic Card',
+      description: 'Centered card layout with gradient background',
+    },
+    'minimal': {
+      displayName: 'Minimal Split',
+      description: 'Left-right split layout with dark brand showcase',
     },
   },
 }
