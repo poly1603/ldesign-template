@@ -67,8 +67,8 @@ const contentClass = computed(() => [
 <style scoped>
 .layout-content {
   flex: 1;
-  background-color: var(--layout-content-bg, #f0f2f5);
-  transition: all 0.3s ease;
+  background-color: var(--color-bg-page);
+  transition: all var(--size-duration-fast) ease;
 }
 
 .layout-content--scroll {
@@ -85,4 +85,3 @@ const contentClass = computed(() => [
   padding: 0 !important;
 }
 </style>
-

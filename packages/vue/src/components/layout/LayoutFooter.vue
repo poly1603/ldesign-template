@@ -79,9 +79,9 @@ const footerClass = computed(() => [
 .layout-footer {
   display: flex;
   align-items: center;
-  background-color: var(--layout-footer-bg, #fff);
-  color: var(--layout-footer-color, rgba(0, 0, 0, 0.65));
-  font-size: 14px;
+  background-color: var(--color-bg-container);
+  color: var(--color-text-secondary);
+  font-size: var(--size-font-md);
 }
 
 .layout-footer--fixed {
@@ -93,7 +93,7 @@ const footerClass = computed(() => [
 }
 
 .layout-footer--bordered {
-  border-top: 1px solid var(--layout-border-color, #e8e8e8);
+  border-top: var(--size-border-width-thin) solid var(--color-border);
 }
 
 .layout-footer__inner {
@@ -102,14 +102,14 @@ const footerClass = computed(() => [
   justify-content: space-between;
   width: 100%;
   height: 100%;
-  padding: 0 24px;
+  padding: 0 var(--size-space-lg);
 }
 
 .layout-footer__left,
 .layout-footer__right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--size-space-md);
 }
 
 .layout-footer__center {
@@ -117,4 +117,3 @@ const footerClass = computed(() => [
   text-align: center;
 }
 </style>
-

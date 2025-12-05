@@ -105,11 +105,7 @@ function handleCollapseClick() {
   <div class="layout-sider-wrapper">
     <!-- 遮罩层（移动端抽屉模式） -->
     <Transition name="fade">
-      <div
-        v-if="drawer && visible"
-        class="layout-sider__mask"
-        @click="handleMaskClick"
-      />
+      <div v-if="drawer && visible" class="layout-sider__mask" @click="handleMaskClick" />
     </Transition>
 
     <!-- 侧边栏主体 -->
@@ -130,13 +126,8 @@ function handleCollapseClick() {
       </div>
 
       <!-- 折叠按钮 -->
-      <button
-        v-if="!drawer && $slots.collapseButton !== undefined"
-        class="layout-sider__collapse-btn"
-        type="button"
-        :aria-label="collapsed ? '展开侧边栏' : '折叠侧边栏'"
-        @click="handleCollapseClick"
-      >
+      <button v-if="!drawer && $slots.collapseButton !== undefined" class="layout-sider__collapse-btn" type="button"
+        :aria-label="collapsed ? '展开侧边栏' : '折叠侧边栏'" @click="handleCollapseClick">
         <slot name="collapseButton" :collapsed="collapsed">
           <span class="layout-sider__collapse-icon">
             {{ collapsed ? '»' : '«' }}
@@ -156,9 +147,9 @@ function handleCollapseClick() {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--layout-sider-bg, #001529);
-  color: var(--layout-sider-color, rgba(255, 255, 255, 0.85));
-  transition: width 0.3s ease, transform 0.3s ease;
+  background-color: var(--color-bg-container-secondary);
+  color: var(--color-text-primary);
+  transition: width var(--size-duration-fast) ease, transform var(--size-duration-fast) ease;
   overflow: hidden;
   z-index: 101;
 }
@@ -177,11 +168,11 @@ function handleCollapseClick() {
 }
 
 .layout-sider--shadow {
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--size-space-xxs) 0 var(--size-space-xs) var(--color-shadow-medium);
 }
 
 .layout-sider--bordered {
-  border-right: 1px solid var(--layout-border-color, #e8e8e8);
+  border-right: var(--size-border-width-thin) solid var(--color-border);
 }
 
 .layout-sider__mask {
@@ -190,7 +181,7 @@ function handleCollapseClick() {
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.45);
+  background-color: var(--color-bg-mask);
   z-index: 100;
 }
 
@@ -198,8 +189,8 @@ function handleCollapseClick() {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 64px;
-  padding: 0 16px;
+  height: var(--size-size-8);
+  padding: 0 var(--size-space-md);
   overflow: hidden;
 }
 
@@ -210,35 +201,35 @@ function handleCollapseClick() {
 }
 
 .layout-sider__footer {
-  padding: 12px 16px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: var(--size-space-sm) var(--size-space-md);
+  border-top: var(--size-border-width-thin) solid var(--color-border-light);
 }
 
 .layout-sider__collapse-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 48px;
+  height: var(--size-size-8);
   padding: 0;
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--color-bg-hover);
   border: none;
   color: inherit;
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color var(--size-duration-fast);
 }
 
 .layout-sider__collapse-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
+  background: var(--color-bg-component);
 }
 
 .layout-sider__collapse-icon {
-  font-size: 16px;
+  font-size: var(--size-font-lg);
 }
 
 /* 过渡动画 */
 .fade-enter-active,
 .fade-leave-active {
-  transition: opacity 0.3s ease;
+  transition: opacity var(--size-duration-fast) ease;
 }
 
 .fade-enter-from,
@@ -246,4 +237,3 @@ function handleCollapseClick() {
   opacity: 0;
 }
 </style>
-

@@ -63,6 +63,7 @@ export {
 export {
   TemplateRenderer,
   TemplateSelector,
+  TemplateSwitcher,
   // 布局组件
   LayoutHeader,
   LayoutSider,

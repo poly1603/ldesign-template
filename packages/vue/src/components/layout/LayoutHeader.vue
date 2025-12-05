@@ -77,13 +77,8 @@ function handleToggleSider() {
     <div class="layout-header__inner">
       <!-- 左侧区域（Logo、菜单按钮等） -->
       <div class="layout-header__left">
-        <button
-          v-if="$slots.menuButton"
-          class="layout-header__menu-btn"
-          type="button"
-          aria-label="切换菜单"
-          @click="handleToggleSider"
-        >
+        <button v-if="$slots.menuButton" class="layout-header__menu-btn" type="button" aria-label="切换菜单"
+          @click="handleToggleSider">
           <slot name="menuButton">
             <span class="layout-header__menu-icon">☰</span>
           </slot>
@@ -111,9 +106,9 @@ function handleToggleSider() {
 .layout-header {
   display: flex;
   align-items: center;
-  background-color: var(--layout-header-bg, #fff);
-  color: var(--layout-header-color, #333);
-  transition: all 0.3s ease;
+  background-color: var(--color-bg-container);
+  color: var(--color-text-primary);
+  transition: all var(--size-duration-fast) ease;
   z-index: 100;
 }
 
@@ -125,11 +120,11 @@ function handleToggleSider() {
 }
 
 .layout-header--shadow {
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 var(--size-border-width-thin) var(--size-space-xxs) var(--color-shadow-small);
 }
 
 .layout-header--bordered {
-  border-bottom: 1px solid var(--layout-border-color, #e8e8e8);
+  border-bottom: var(--size-border-width-thin) solid var(--color-border);
 }
 
 .layout-header__inner {
@@ -137,14 +132,14 @@ function handleToggleSider() {
   align-items: center;
   width: 100%;
   height: 100%;
-  padding: 0 16px;
+  padding: 0 var(--size-space-md);
 }
 
 .layout-header__left,
 .layout-header__right {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--size-space-xs);
 }
 
 .layout-header__center {
@@ -152,29 +147,28 @@ function handleToggleSider() {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0 16px;
+  padding: 0 var(--size-space-md);
 }
 
 .layout-header__menu-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: var(--size-size-5);
+  height: var(--size-size-5);
   padding: 0;
   background: transparent;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--size-radius-xs);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background-color var(--size-duration-fast);
 }
 
 .layout-header__menu-btn:hover {
-  background-color: var(--layout-hover-bg, rgba(0, 0, 0, 0.04));
+  background-color: var(--color-bg-hover);
 }
 
 .layout-header__menu-icon {
-  font-size: 20px;
+  font-size: var(--size-icon-md);
 }
 </style>
-
