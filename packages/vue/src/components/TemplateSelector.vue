@@ -245,30 +245,29 @@ function selectTemplate(id: string) {
 }
 
 .template-selector__list {
-  display: flex;
-  flex-direction: column;
-  gap: var(--size-2, 8px);
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--size-space-xs, 8px);
 }
 
 .template-selector__item {
   position: relative;
-  border: 1px solid var(--color-border, #e8e8e8);
-  border-radius: var(--size-2, 8px);
-  padding: var(--size-4, 16px);
+  border: 1px solid var(--color-gray-100, #f3f4f6);
+  border-radius: var(--size-radius-sm, 6px);
+  padding: var(--size-space-s, 12px);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  background: var(--color-bg-container, #ffffff);
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--color-gray-50, #f9fafb);
 }
 
 .template-selector__item:hover {
-  border-color: var(--color-primary-default, #1890ff);
-  background: var(--color-bg-component-hover, #f5f5f5);
+  border-color: var(--color-gray-200, #e5e7eb);
+  background: var(--color-bg-container, #ffffff);
 }
 
 .template-selector__item.is-active {
-  border-color: var(--color-primary-default, #1890ff);
-  background: var(--color-primary-lighter, #e6f7ff);
-  box-shadow: 0 0 0 2px var(--color-primary-default, #1890ff) inset;
+  border-color: var(--color-primary-200, #bfdbfe);
+  background: var(--color-primary-50, #eff6ff);
 }
 
 .template-selector__preview {
@@ -298,7 +297,7 @@ function selectTemplate(id: string) {
 }
 
 .template-selector__item.is-active .template-selector__name {
-  color: var(--color-primary-default, #1890ff);
+  color: var(--color-primary-600, #2563eb);
 }
 
 .template-selector__description {
@@ -325,17 +324,17 @@ function selectTemplate(id: string) {
 
 .template-selector__check {
   position: absolute;
-  top: var(--size-3, 12px);
-  right: var(--size-3, 12px);
-  width: 24px;
-  height: 24px;
+  top: var(--size-space-xs, 8px);
+  right: var(--size-space-xs, 8px);
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--color-primary-default, #1890ff);
+  background: var(--color-primary-500, #3b82f6);
   color: #ffffff;
   border-radius: 50%;
-  font-size: var(--size-font-base, 14px);
+  font-size: var(--size-font-xs, 12px);
   font-weight: 600;
 }
 </style>
