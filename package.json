@@ -39,198 +39,15 @@
     "url": "https://github.com/ldesign-org/template/issues"
   },
   "type": "module",
+  "sideEffects": false,
   "exports": {
     ".": {
       "types": "./es/index.d.ts",
       "import": "./es/index.js",
-      "require": "./lib/index.cjs"
+      "require": "./lib/index.cjs",
+      "default": "./es/index.js"
     },
-    "./cli": {
-      "types": "./es/cli/index.d.ts",
-      "import": "./es/cli/index.js",
-      "require": "./lib/cli/index.cjs"
-    },
-    "./cli/*": {
-      "types": "./es/cli/*.d.ts",
-      "import": "./es/cli/*.js",
-      "require": "./lib/cli/*.cjs"
-    },
-    "./components": {
-      "types": "./es/components/index.d.ts",
-      "import": "./es/components/index.js",
-      "require": "./lib/components/index.cjs"
-    },
-    "./components/*": {
-      "types": "./es/components/*.d.ts",
-      "import": "./es/components/*.js",
-      "require": "./lib/components/*.cjs"
-    },
-    "./composables": {
-      "types": "./es/composables/index.d.ts",
-      "import": "./es/composables/index.js",
-      "require": "./lib/composables/index.cjs"
-    },
-    "./composables/*": {
-      "types": "./es/composables/*.d.ts",
-      "import": "./es/composables/*.js",
-      "require": "./lib/composables/*.cjs"
-    },
-    "./core": {
-      "types": "./es/core/index.d.ts",
-      "import": "./es/core/index.js",
-      "require": "./lib/core/index.cjs"
-    },
-    "./core/*": {
-      "types": "./es/core/*.d.ts",
-      "import": "./es/core/*.js",
-      "require": "./lib/core/*.cjs"
-    },
-    "./devtools": {
-      "types": "./es/devtools/index.d.ts",
-      "import": "./es/devtools/index.js",
-      "require": "./lib/devtools/index.cjs"
-    },
-    "./devtools/*": {
-      "types": "./es/devtools/*.d.ts",
-      "import": "./es/devtools/*.js",
-      "require": "./lib/devtools/*.cjs"
-    },
-    "./directives": {
-      "types": "./es/directives/index.d.ts",
-      "import": "./es/directives/index.js",
-      "require": "./lib/directives/index.cjs"
-    },
-    "./directives/*": {
-      "types": "./es/directives/*.d.ts",
-      "import": "./es/directives/*.js",
-      "require": "./lib/directives/*.cjs"
-    },
-    "./editor": {
-      "types": "./es/editor/index.d.ts",
-      "import": "./es/editor/index.js",
-      "require": "./lib/editor/index.cjs"
-    },
-    "./editor/*": {
-      "types": "./es/editor/*.d.ts",
-      "import": "./es/editor/*.js",
-      "require": "./lib/editor/*.cjs"
-    },
-    "./locales": {
-      "types": "./es/locales/index.d.ts",
-      "import": "./es/locales/index.js",
-      "require": "./lib/locales/index.cjs"
-    },
-    "./locales/*": {
-      "types": "./es/locales/*.d.ts",
-      "import": "./es/locales/*.js",
-      "require": "./lib/locales/*.cjs"
-    },
-    "./plugin": {
-      "types": "./es/plugin/index.d.ts",
-      "import": "./es/plugin/index.js",
-      "require": "./lib/plugin/index.cjs"
-    },
-    "./plugin/*": {
-      "types": "./es/plugin/*.d.ts",
-      "import": "./es/plugin/*.js",
-      "require": "./lib/plugin/*.cjs"
-    },
-    "./ssr": {
-      "types": "./es/ssr/index.d.ts",
-      "import": "./es/ssr/index.js",
-      "require": "./lib/ssr/index.cjs"
-    },
-    "./ssr/*": {
-      "types": "./es/ssr/*.d.ts",
-      "import": "./es/ssr/*.js",
-      "require": "./lib/ssr/*.cjs"
-    },
-    "./theme": {
-      "types": "./es/theme/index.d.ts",
-      "import": "./es/theme/index.js",
-      "require": "./lib/theme/index.cjs"
-    },
-    "./theme/*": {
-      "types": "./es/theme/*.d.ts",
-      "import": "./es/theme/*.js",
-      "require": "./lib/theme/*.cjs"
-    },
-    "./types": {
-      "types": "./es/types/index.d.ts",
-      "import": "./es/types/index.js",
-      "require": "./lib/types/index.cjs"
-    },
-    "./types/*": {
-      "types": "./es/types/*.d.ts",
-      "import": "./es/types/*.js",
-      "require": "./lib/types/*.cjs"
-    },
-    "./utils": {
-      "types": "./es/utils/index.d.ts",
-      "import": "./es/utils/index.js",
-      "require": "./lib/utils/index.cjs"
-    },
-    "./utils/*": {
-      "types": "./es/utils/*.d.ts",
-      "import": "./es/utils/*.js",
-      "require": "./lib/utils/*.cjs"
-    },
-    "./es/components/ABTestTemplate.vue.css": "./es/components/ABTestTemplate.vue.css",
-    "./es/components/ABTestTemplate.vue2.css": "./es/components/ABTestTemplate.vue2.css",
-    "./es/components/ConditionalTemplate.vue.css": "./es/components/ConditionalTemplate.vue.css",
-    "./es/components/index.css": "./es/components/index.css",
-    "./es/components/InheritableTemplate.vue.css": "./es/components/InheritableTemplate.vue.css",
-    "./es/components/TemplateDevPanel.vue.css": "./es/components/TemplateDevPanel.vue.css",
-    "./es/components/TemplateRenderer.vue.css": "./es/components/TemplateRenderer.vue.css",
-    "./es/components/TemplateSelector.vue.css": "./es/components/TemplateSelector.vue.css",
-    "./es/components/TemplateSkeleton.vue.css": "./es/components/TemplateSkeleton.vue.css",
-    "./es/components/TemplateVersion.vue.css": "./es/components/TemplateVersion.vue.css",
-    "./es/index.css": "./es/index.css",
-    "./es/templates/dashboard/desktop/default/index.vue.css": "./es/templates/dashboard/desktop/default/index.vue.css",
-    "./es/templates/dashboard/desktop/sidebar/index.vue.css": "./es/templates/dashboard/desktop/sidebar/index.vue.css",
-    "./es/templates/dashboard/mobile/default/index.vue.css": "./es/templates/dashboard/mobile/default/index.vue.css",
-    "./es/templates/dashboard/mobile/tabs/index.vue.css": "./es/templates/dashboard/mobile/tabs/index.vue.css",
-    "./es/templates/dashboard/tablet/default/index.vue.css": "./es/templates/dashboard/tablet/default/index.vue.css",
-    "./es/templates/dashboard/tablet/grid/index.vue.css": "./es/templates/dashboard/tablet/grid/index.vue.css",
-    "./es/templates/form/desktop/double-column/index.vue.css": "./es/templates/form/desktop/double-column/index.vue.css",
-    "./es/templates/form/desktop/single-column/index.vue.css": "./es/templates/form/desktop/single-column/index.vue.css",
-    "./es/templates/list/desktop/card/index.vue.css": "./es/templates/list/desktop/card/index.vue.css",
-    "./es/templates/list/desktop/table/index.vue.css": "./es/templates/list/desktop/table/index.vue.css",
-    "./es/templates/login/desktop/default/index.vue.css": "./es/templates/login/desktop/default/index.vue.css",
-    "./es/templates/login/desktop/split/index.vue.css": "./es/templates/login/desktop/split/index.vue.css",
-    "./es/templates/login/mobile/card/index.vue.css": "./es/templates/login/mobile/card/index.vue.css",
-    "./es/templates/login/mobile/default/index.vue.css": "./es/templates/login/mobile/default/index.vue.css",
-    "./es/templates/login/tablet/default/index.vue.css": "./es/templates/login/tablet/default/index.vue.css",
-    "./es/templates/login/tablet/simple/index.vue.css": "./es/templates/login/tablet/simple/index.vue.css",
-    "./lib/components/ABTestTemplate.vue.css": "./lib/components/ABTestTemplate.vue.css",
-    "./lib/components/ConditionalTemplate.vue.css": "./lib/components/ConditionalTemplate.vue.css",
-    "./lib/components/ConditionalTemplate.vue2.css": "./lib/components/ConditionalTemplate.vue2.css",
-    "./lib/components/index.css": "./lib/components/index.css",
-    "./lib/components/InheritableTemplate.vue.css": "./lib/components/InheritableTemplate.vue.css",
-    "./lib/components/TemplateDevPanel.vue.css": "./lib/components/TemplateDevPanel.vue.css",
-    "./lib/components/TemplateRenderer.vue.css": "./lib/components/TemplateRenderer.vue.css",
-    "./lib/components/TemplateSelector.vue.css": "./lib/components/TemplateSelector.vue.css",
-    "./lib/components/TemplateSkeleton.vue.css": "./lib/components/TemplateSkeleton.vue.css",
-    "./lib/components/TemplateVersion.vue.css": "./lib/components/TemplateVersion.vue.css",
-    "./lib/index.css": "./lib/index.css",
-    "./lib/templates/dashboard/desktop/default/index.vue.css": "./lib/templates/dashboard/desktop/default/index.vue.css",
-    "./lib/templates/dashboard/desktop/sidebar/index.vue.css": "./lib/templates/dashboard/desktop/sidebar/index.vue.css",
-    "./lib/templates/dashboard/mobile/default/index.vue.css": "./lib/templates/dashboard/mobile/default/index.vue.css",
-    "./lib/templates/dashboard/mobile/tabs/index.vue.css": "./lib/templates/dashboard/mobile/tabs/index.vue.css",
-    "./lib/templates/dashboard/tablet/default/index.vue.css": "./lib/templates/dashboard/tablet/default/index.vue.css",
-    "./lib/templates/dashboard/tablet/grid/index.vue.css": "./lib/templates/dashboard/tablet/grid/index.vue.css",
-    "./lib/templates/form/desktop/double-column/index.vue.css": "./lib/templates/form/desktop/double-column/index.vue.css",
-    "./lib/templates/form/desktop/single-column/index.vue.css": "./lib/templates/form/desktop/single-column/index.vue.css",
-    "./lib/templates/list/desktop/card/index.vue.css": "./lib/templates/list/desktop/card/index.vue.css",
-    "./lib/templates/list/desktop/table/index.vue.css": "./lib/templates/list/desktop/table/index.vue.css",
-    "./lib/templates/login/desktop/default/index.vue.css": "./lib/templates/login/desktop/default/index.vue.css",
-    "./lib/templates/login/desktop/split/index.vue.css": "./lib/templates/login/desktop/split/index.vue.css",
-    "./lib/templates/login/mobile/card/index.vue.css": "./lib/templates/login/mobile/card/index.vue.css",
-    "./lib/templates/login/mobile/default/index.vue.css": "./lib/templates/login/mobile/default/index.vue.css",
-    "./lib/templates/login/tablet/default/index.vue.css": "./lib/templates/login/tablet/default/index.vue.css",
-    "./lib/templates/login/tablet/simple/index.vue.css": "./lib/templates/login/tablet/simple/index.vue.css",
-    "./dist/index.css": "./dist/index.css",
-    "./dist/index.min.css": "./dist/index.min.css"
+    "./package.json": "./package.json"
   },
   "main": "./lib/index.cjs",
   "module": "./es/index.js",
@@ -240,7 +57,7 @@
   "files": [
     "README.md",
     "LICENSE",
-    "package.json",
+    "CHANGELOG.md",
     "es",
     "lib",
     "dist"
@@ -338,5 +155,7 @@
     "vue": {
       "optional": true
     }
-  }
+  },
+  "typings": "./es/index.d.ts",
+  "browser": "./dist/index.js"
 }

@@ -10,6 +10,7 @@ import {
   getDisabledMessage,
   isDeviceDisabled,
   triggerTemplateChange,
+  onTemplateChange,
 } from '../plugin/template-config-context'
 import {
   cacheTemplateSelection,
@@ -161,6 +162,9 @@ export function useTemplate(
   /** 是否正在加载中（用于防止重复加载） */
   let isLoading = false
 
+  /** 取消订阅模板变化事件的函数 */
+  let unsubscribeTemplateChange: (() => void) | null = null
+
   /**
    * 解析模板ID，提取分类、设备和名称
    */
@@ -176,11 +180,6 @@ export function useTemplate(
   /**
    * 解析最终要加载的模板ID
    * 优先级：缓存 > 配置默认值 > 传入的ID
-   *
-   * @param originalId - 原始模板ID
-   * @param currentCategory - 当前分类
-   * @param currentDevice - 当前设备
-   * @returns 最终模板ID和来源
    */
   function resolveTemplateId(
     originalId: string,
@@ -223,8 +222,6 @@ export function useTemplate(
 
   /**
    * 加载模板
-   * @param id - 模板ID（可以是完整ID如 'login:desktop:default'，也可以是简化的分类名如 'login'）
-   * @param loadSource - 加载来源（覆盖默认 source）
    */
   async function load(id?: string, loadSource?: 'user' | 'auto' | 'cache' | 'default'): Promise<void> {
     // 防止重复加载
@@ -250,13 +247,11 @@ export function useTemplate(
     let name: string
 
     if (isSimplified) {
-      // 简化模式：originalId 就是分类名
       category = originalId
-      device = deviceType.value // 使用自动检测的设备类型
+      device = deviceType.value
       name = 'default'
     }
     else {
-      // 完整模式：解析完整的模板ID
       const parsed = parseTemplateId(originalId)
       category = parsed.category
       device = parsed.device
@@ -274,7 +269,6 @@ export function useTemplate(
       loading.value = false
       isLoading = false
 
-      // 加载禁用提示组件
       const categoryConfig = getCategoryConfig(currentCategory)
       component.value = markRaw(categoryConfig?.disabledComponent || TemplateDeviceNotSupported)
       template.value = undefined
@@ -287,58 +281,44 @@ export function useTemplate(
     error.value = undefined
 
     try {
-      // 等待管理器初始化
       const ready = await waitForManager()
       if (!ready) {
         throw new Error('模板管理器初始化超时。请确保已安装 TemplatePlugin')
       }
 
-      // 解析最终模板ID（优先使用缓存）
-      // 如果是用户手动选择（loadSource === 'user'），则直接使用传入的ID
       let targetId: string
       let actualSource: 'user' | 'auto' | 'cache' | 'default'
 
       if (loadSource === 'user') {
-        // 用户手动选择，直接使用传入的ID
         targetId = originalId
         actualSource = 'user'
       }
       else {
-        // 自动加载，优先使用缓存
         const resolved = resolveTemplateId(originalId, currentCategory, currentDevice)
         targetId = resolved.finalId
         actualSource = loadSource || resolved.resolvedSource
       }
 
-      // 解析最终模板名称
       const { name: finalName } = parseTemplateId(targetId)
-
-      // 获取管理器
       const manager = getTemplateManager()
 
-      // 1. 从注册表获取元数据
       const meta = manager.resolveTemplate(targetId)
       if (!meta) {
         throw new Error(`模板未找到: ${targetId}`)
       }
 
-      // 保存上一个模板
       previousTemplate = template.value
-
       template.value = meta
 
-      // 2. 动态加载组件
       if (meta.loader) {
         const module = await meta.loader()
         component.value = markRaw(module.default)
         onLoad?.(meta)
 
-        // 3. 缓存模板选择（仅用户手动选择时）
         if (actualSource === 'user') {
           cacheTemplateSelection(currentCategory, currentDevice, finalName)
         }
 
-        // 4. 触发切换回调
         const changeInfo: TemplateChangeInfo = {
           category: currentCategory,
           device: currentDevice,
@@ -350,10 +330,7 @@ export function useTemplate(
           source: actualSource,
         }
 
-        // 触发本地回调
         onChange?.(changeInfo)
-
-        // 触发全局回调
         await triggerTemplateChange(changeInfo)
       }
       else {
@@ -396,21 +373,15 @@ export function useTemplate(
 
       const newDeviceType = calculateDeviceType(window.innerWidth)
       if (newDeviceType !== deviceType.value) {
-        const oldDeviceType = deviceType.value
         deviceType.value = newDeviceType
-
-        // 触发设备变化回调
         onDeviceChange?.(newDeviceType)
 
-        // 自动加载新设备类型的模板
         const currentId = typeof templateId === 'string' ? templateId : templateId.value
         if (currentId) {
-          // 如果是简化模式，直接使用分类名重新加载
           if (isSimplifiedId(currentId)) {
             load(currentId)
           }
           else {
-            // 完整模式：替换设备类型部分
             const { category, name } = parseTemplateId(currentId)
             load(`${category}:${newDeviceType}:${name}`)
           }
@@ -420,24 +391,38 @@ export function useTemplate(
     }, 100)
   }
 
-  // 设置自动设备检测
-  if (shouldAutoDetect) {
-    onMounted(() => {
-      if (typeof window !== 'undefined') {
-        window.addEventListener('resize', handleResize)
-      }
-    })
-
-    onUnmounted(() => {
-      if (resizeDebounceTimer) {
-        clearTimeout(resizeDebounceTimer)
-        resizeDebounceTimer = null
-      }
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('resize', handleResize)
-      }
-    })
+  /**
+   * 处理全局模板变化事件
+   * 当其他 useTemplate 实例切换了同一分类的模板时，自动重新加载
+   */
+  function handleGlobalTemplateChange(info: TemplateChangeInfo): void {
+    const currentCat = optCategory || (typeof templateId === 'string' ? (isSimplifiedId(templateId) ? templateId : parseTemplateId(templateId).category) : '')
+    if (info.category === currentCat && info.source === 'user') {
+      load(undefined, 'cache')
+    }
   }
+
+  // 设置事件监听
+  onMounted(() => {
+    if (shouldAutoDetect && typeof window !== 'undefined') {
+      window.addEventListener('resize', handleResize)
+    }
+    unsubscribeTemplateChange = onTemplateChange(handleGlobalTemplateChange)
+  })
+
+  onUnmounted(() => {
+    if (resizeDebounceTimer) {
+      clearTimeout(resizeDebounceTimer)
+      resizeDebounceTimer = null
+    }
+    if (shouldAutoDetect && typeof window !== 'undefined') {
+      window.removeEventListener('resize', handleResize)
+    }
+    if (unsubscribeTemplateChange) {
+      unsubscribeTemplateChange()
+      unsubscribeTemplateChange = null
+    }
+  })
 
   // 响应式ID变化
   if (typeof templateId !== 'string') {
@@ -455,7 +440,6 @@ export function useTemplate(
     )
   }
   else if (immediate) {
-    // 延迟到下一个 tick 执行，给插件安装时间
     nextTick(() => load(templateId))
   }
 

@@ -24,6 +24,9 @@ let currentCategory: string | undefined
 /** 分类变化监听器 */
 const categoryChangeListeners = new Set<(category: string | undefined) => void>()
 
+/** 模板变化监听器（用于通知所有 useTemplate 实例） */
+const templateChangeListeners = new Set<(info: TemplateChangeInfo) => void>()
+
 /** 默认断点配置 */
 const DEFAULT_BREAKPOINTS: Required<BreakpointConfig> = {
   mobile: 768,
@@ -171,8 +174,32 @@ export async function triggerTemplateChange(info: TemplateChangeInfo): Promise<v
     })
   }
 
+  // 通知所有模板变化监听器
+  templateChangeListeners.forEach((listener) => {
+    try {
+      listener(info)
+    }
+    catch (e) {
+      console.error('[Template] Template change listener error:', e)
+    }
+  })
+
   if (globalConfig?.onTemplateChange) {
     await globalConfig.onTemplateChange(info)
+  }
+}
+
+/**
+ * 订阅模板变化事件
+ * @param listener - 监听器函数
+ * @returns 取消订阅函数
+ */
+export function onTemplateChange(
+  listener: (info: TemplateChangeInfo) => void,
+): () => void {
+  templateChangeListeners.add(listener)
+  return () => {
+    templateChangeListeners.delete(listener)
   }
 }
 
