@@ -86,6 +86,32 @@ interface Plugin {
 }
 
 /**
+ * Template 插件上下文（用于 onReady 回调）
+ */
+export interface TemplatePluginContext {
+  /** 获取模板 */
+  getTemplate: (id: string) => TemplateMetadata | undefined
+  /** 获取分类下的模板 */
+  getTemplatesByCategory: (category: string) => TemplateMetadata[]
+  /** 获取设备下的模板 */
+  getTemplatesByDevice: (device: string) => TemplateMetadata[]
+  /** 获取分类和设备下的模板 */
+  getTemplatesByCategoryAndDevice: (category: string, device: string) => TemplateMetadata[]
+  /** 获取默认模板 */
+  getDefaultTemplate: (category: string, device: string) => TemplateMetadata | undefined
+  /** 获取模板数量 */
+  getTemplateCount: () => number
+  /** 获取所有模板 */
+  getAllTemplates: () => TemplateMetadata[]
+  /** 模板管理器 */
+  manager: TemplateManager
+  /** 模板注册表 */
+  registry: TemplateRegistry
+  /** 模板配置 */
+  config: TemplateConfig
+}
+
+/**
  * Template Engine 插件选项
  *
  * 继承自 TemplateConfig，支持完整的模板配置能力
@@ -103,6 +129,8 @@ export interface TemplateEnginePluginOptions extends TemplateConfig {
   debug?: boolean
   /** 全局属性名 @default '$templates' */
   globalPropertyName?: string
+  /** 初始化完成回调 */
+  onReady?: (context: TemplatePluginContext) => void | Promise<void>
 }
 
 /**
@@ -373,6 +401,32 @@ export function createTemplateEnginePlugin(
         })
         if (debug) {
           console.log('[Template Plugin] 已集成外部 i18n')
+        }
+      }
+
+      // 触发 onReady 回调
+      if (options.onReady) {
+        const pluginContext: TemplatePluginContext = {
+          getTemplate: (id: string) => manager.getTemplate(id),
+          getTemplatesByCategory: (category: string) => manager.getTemplatesByCategory(category),
+          getTemplatesByDevice: (device: string) => manager.getTemplatesByDevice(device as any),
+          getTemplatesByCategoryAndDevice: (category: string, device: string) =>
+            manager.getTemplatesByCategoryAndDevice(category, device as any),
+          getDefaultTemplate: (category: string, device: string) =>
+            (manager as any).getDefaultTemplate?.(category, device),
+          getTemplateCount: () => manager.getTemplateCount(),
+          getAllTemplates: () => manager.getAllTemplates(),
+          manager,
+          registry,
+          config: templateConfig,
+        }
+        try {
+          await options.onReady(pluginContext)
+          if (debug) {
+            console.log('[Template Plugin] onReady 回调执行完成')
+          }
+        } catch (e) {
+          console.error('[Template Plugin] onReady 回调执行错误:', e)
         }
       }
     },

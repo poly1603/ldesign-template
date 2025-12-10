@@ -1,9 +1,7 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 /**
  * DualColumn 双栏布局模板
- *
- * 左侧窄图标栏 + 次级菜单栏 + 顶栏 + 内容区
- * 类似 VS Code 风格，适用于功能模块多、需要快速切换的系统
+ * VS Code 风格：左侧图标栏 + 次级菜单栏 + 内容区
  */
 import { computed, ref, watch } from 'vue'
 import { LayoutHeader, LayoutContent, LayoutFooter } from '../../../../components/layout'
@@ -11,39 +9,29 @@ import { ChromeTabs } from '@ldesign/bookmark-vue'
 import { useAutoDevice } from '../../../../composables/useAutoDevice'
 
 interface Props {
-  /** 图标栏宽度 @default 64 */
   iconBarWidth?: number
-  /** 次级菜单栏宽度 @default 200 */
   siderWidth?: number
-  /** 次级菜单栏折叠后宽度 @default 0 */
   siderCollapsedWidth?: number
-  /** 顶栏高度 @default 56 */
   headerHeight?: number
-  /** 标签栏高度 @default 40 */
   tabsHeight?: number
-  /** 是否显示标签栏 @default true */
   showTabs?: boolean
-  /** 是否固定顶栏 @default true */
   fixedHeader?: boolean
-  /** 次级菜单栏初始折叠状态 @default false */
   defaultCollapsed?: boolean
-  /** 是否显示页脚 @default false */
   showFooter?: boolean
-  /** 页脚高度 @default 48 */
   footerHeight?: number
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  iconBarWidth: 64,
-  siderWidth: 200,
+  iconBarWidth: 52,
+  siderWidth: 240,
   siderCollapsedWidth: 0,
-  headerHeight: 56,
-  tabsHeight: 40,
+  headerHeight: 48,
+  tabsHeight: 38,
   showTabs: true,
   fixedHeader: true,
   defaultCollapsed: false,
-  showFooter: false,
-  footerHeight: 48,
+  showFooter: true,
+  footerHeight: 28,
 })
 
 const { isMobile } = useAutoDevice()
@@ -73,12 +61,7 @@ watch(isMobile, (mobile) => {
 })
 
 function handleToggleSider() {
-  if (isMobile.value) {
-    siderVisible.value = !siderVisible.value
-  }
-  else {
-    siderCollapsed.value = !siderCollapsed.value
-  }
+  siderCollapsed.value = !siderCollapsed.value
 }
 
 function handleCloseSider() {
@@ -87,36 +70,41 @@ function handleCloseSider() {
 </script>
 
 <template>
-  <div class="dual-column-layout">
-    <aside class="dual-column-layout__icon-bar" :style="{ width: iconBarWidth + 'px' }">
-      <div class="dual-column-layout__logo">
+  <div class="layout-dual" :class="{ 'is-collapsed': siderCollapsed }">
+    <!-- 图标栏 -->
+    <aside class="layout-dual__icon-bar" :style="{ width: iconBarWidth + 'px' }">
+      <div class="icon-bar-logo">
         <slot name="logo" />
       </div>
-      <nav class="dual-column-layout__icons">
+      <nav class="icon-bar-nav">
         <slot name="icon-bar" />
       </nav>
-      <div class="dual-column-layout__icon-bar-footer">
+      <div class="icon-bar-footer">
         <slot name="icon-bar-footer" />
       </div>
     </aside>
 
-    <aside v-show="!siderCollapsed || isMobile" class="dual-column-layout__sider"
-      :class="{ 'dual-column-layout__sider--drawer': isMobile, 'dual-column-layout__sider--visible': siderVisible }"
+    <!-- 次级侧边栏 -->
+    <aside v-show="!siderCollapsed" class="layout-dual__sider"
       :style="{ left: iconBarWidth + 'px', width: siderWidth + 'px' }">
-      <div class="dual-column-layout__sider-header">
-        <slot name="sider-header" />
+      <div class="sider-header">
+        <slot name="sider-header">
+          <span class="sider-title">资源管理器</span>
+        </slot>
       </div>
-      <nav class="dual-column-layout__sider-menu">
+      <nav class="sider-menu">
         <slot name="sider" :collapsed="siderCollapsed" />
       </nav>
     </aside>
 
-    <div v-if="isMobile && siderVisible" class="dual-column-layout__mask" @click="handleCloseSider" />
+    <!-- 遮罩层 -->
+    <div v-if="isMobile && siderVisible" class="layout-dual__mask" @click="handleCloseSider" />
 
-    <div class="dual-column-layout__main" :style="{ marginLeft: totalLeftWidth + 'px' }">
+    <!-- 主区域 -->
+    <div class="layout-dual__main" :style="{ marginLeft: totalLeftWidth + 'px' }">
+      <!-- 顶栏 -->
       <LayoutHeader :height="headerHeight" :fixed="fixedHeader" :left-offset="totalLeftWidth"
-        class="dual-column-layout__header" @toggle-sider="handleToggleSider">
-        <template #menuButton><span class="dual-column-layout__menu-icon"></span></template>
+        class="layout-dual__header" @toggle-sider="handleToggleSider">
         <template #left>
           <slot name="header-left" />
         </template>
@@ -126,128 +114,216 @@ function handleCloseSider() {
       </LayoutHeader>
 
       <!-- 标签栏 -->
-      <div v-if="showTabs" class="dual-column-layout__tabs"
+      <div v-if="showTabs" class="layout-dual__tabs"
         :style="{ top: fixedHeader ? `${headerHeight}px` : undefined, left: `${totalLeftWidth}px` }">
         <slot name="tabs">
           <ChromeTabs :height="tabsHeight" />
         </slot>
       </div>
 
-      <LayoutContent class="dual-column-layout__content" :style="{ paddingTop: contentTopOffset + 'px' }">
+      <!-- 内容区 -->
+      <LayoutContent class="layout-dual__content" :style="{ paddingTop: contentTopOffset + 'px' }">
         <slot />
       </LayoutContent>
 
-      <LayoutFooter v-if="showFooter" :height="footerHeight">
-        <slot name="footer" />
+      <!-- 页脚状态栏 -->
+      <LayoutFooter v-if="showFooter" :height="footerHeight" class="layout-dual__footer">
+        <slot name="footer">
+          <div class="status-bar">
+            <span class="status-item">LDesign</span>
+            <span class="status-item">UTF-8</span>
+            <span class="status-item">Vue 3</span>
+          </div>
+        </slot>
       </LayoutFooter>
     </div>
   </div>
 </template>
 
 <style scoped>
-.dual-column-layout {
+.layout-dual {
   display: flex;
   min-height: 100vh;
-  background-color: var(--layout-bg, #f0f2f5);
+  background: var(--color-bg-layout, #1e1e1e);
 }
 
-.dual-column-layout__icon-bar {
+/* 图标栏 */
+.layout-dual__icon-bar {
   position: fixed;
   top: 0;
   left: 0;
   bottom: 0;
   display: flex;
   flex-direction: column;
-  background-color: var(--layout-icon-bar-bg, #1f1f1f);
-  color: var(--layout-icon-bar-color, rgba(255, 255, 255, 0.85));
-  z-index: 102;
+  background: var(--color-bg-container-dark, #333333);
+  z-index: 1002;
 }
 
-.dual-column-layout__logo {
-  height: 56px;
+.icon-bar-logo {
+  height: 48px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.dual-column-layout__icons {
+.icon-bar-nav {
   flex: 1;
-  padding: 8px 0;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
 }
 
-.dual-column-layout__icon-bar-footer {
+.icon-bar-footer {
   padding: 8px 0;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.dual-column-layout__sider {
+/* 次级侧边栏 */
+.layout-dual__sider {
   position: fixed;
   top: 0;
   bottom: 0;
-  background-color: var(--layout-sider-bg, #fff);
-  border-right: 1px solid var(--color-border, #e5e7eb);
-  z-index: 101;
-  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-container, #252526);
+  border-right: 1px solid var(--color-border-secondary, #3c3c3c);
+  z-index: 1001;
+  transition: transform 0.2s ease;
 }
 
-.dual-column-layout__sider--drawer {
-  transform: translateX(-100%);
-}
-
-.dual-column-layout__sider--drawer.dual-column-layout__sider--visible {
-  transform: translateX(0);
-}
-
-.dual-column-layout__sider-header {
-  height: 56px;
-  padding: 0 16px;
+.sider-header {
+  height: 36px;
   display: flex;
   align-items: center;
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
+  padding: 0 16px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--color-text-secondary, #cccccc);
 }
 
-.dual-column-layout__sider-menu {
+.sider-title {
+  opacity: 0.8;
+}
+
+.sider-menu {
   flex: 1;
   overflow-y: auto;
-  padding: 8px;
+  padding: 4px 0;
 }
 
-.dual-column-layout__mask {
+.sider-menu::-webkit-scrollbar {
+  width: 10px;
+}
+
+.sider-menu::-webkit-scrollbar-thumb {
+  background: rgba(121, 121, 121, 0.4);
+}
+
+.sider-menu::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 100, 100, 0.7);
+}
+
+/* 遮罩 */
+.layout-dual__mask {
   position: fixed;
   inset: 0;
-  background-color: rgba(0, 0, 0, 0.45);
-  z-index: 100;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1000;
 }
 
-.dual-column-layout__main {
+/* 主区域 */
+.layout-dual__main {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-width: 0;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.2s ease;
 }
 
-.dual-column-layout__header {
-  background-color: var(--layout-header-bg, #fff);
-  border-bottom: 1px solid var(--color-border, #e5e7eb);
+/* 顶栏 */
+.layout-dual__header {
+  background: var(--color-bg-container, #3c3c3c);
+  border-bottom: 1px solid var(--color-border-secondary, #454545);
 }
 
-.dual-column-layout__tabs {
+/* 标签栏 */
+.layout-dual__tabs {
   position: fixed;
   right: 0;
-  z-index: 99;
-  background-color: var(--layout-tabs-bg, #fff);
+  z-index: 999;
+  background: var(--color-bg-container, #252526);
+  border-bottom: 1px solid var(--color-border-secondary, #3c3c3c);
+  transition: left 0.2s ease;
 }
 
-.dual-column-layout__menu-icon {
-  font-size: 20px;
-  cursor: pointer;
-}
-
-.dual-column-layout__content {
+/* 内容区 */
+.layout-dual__content {
   flex: 1;
-  padding: 16px;
+  background: var(--color-bg-layout, #1e1e1e);
+  padding: 0;
+}
+
+/* 状态栏页脚 */
+.layout-dual__footer {
+  background: var(--color-primary-default, #007acc);
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 12px;
+  font-size: 12px;
+  color: #fff;
+}
+
+.status-item {
+  padding: 0 8px;
+  opacity: 0.9;
+}
+
+.status-item:not(:last-child) {
+  border-right: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+/* 亮色模式 */
+:root:not([data-theme-mode="dark"]) .layout-dual,
+.light .layout-dual {
+  background: var(--color-bg-layout, #f3f3f3);
+}
+
+:root:not([data-theme-mode="dark"]) .layout-dual__icon-bar,
+.light .layout-dual__icon-bar {
+  background: var(--color-bg-container, #2c2c2c);
+}
+
+:root:not([data-theme-mode="dark"]) .layout-dual__sider,
+.light .layout-dual__sider {
+  background: var(--color-bg-container, #f3f3f3);
+  border-right-color: var(--color-border-secondary, #e0e0e0);
+}
+
+:root:not([data-theme-mode="dark"]) .sider-header,
+.light .sider-header {
+  color: var(--color-text-secondary, #616161);
+}
+
+:root:not([data-theme-mode="dark"]) .layout-dual__header,
+.light .layout-dual__header {
+  background: var(--color-bg-container, #dddddd);
+  border-bottom-color: var(--color-border-secondary, #c8c8c8);
+}
+
+:root:not([data-theme-mode="dark"]) .layout-dual__tabs,
+.light .layout-dual__tabs {
+  background: var(--color-bg-container, #ececec);
+  border-bottom-color: var(--color-border-secondary, #d4d4d4);
+}
+
+:root:not([data-theme-mode="dark"]) .layout-dual__content,
+.light .layout-dual__content {
+  background: var(--color-bg-layout, #ffffff);
 }
 </style>

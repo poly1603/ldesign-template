@@ -1,123 +1,291 @@
 /**
  * TemplateSwitcher 组件样式
- * 卡片网格布局样式
+ * 参考 ThemeColorPicker 设计风格
  */
-.ld-template-switcher {
+
+/* ==================== 容器 ==================== */
+.ldesign-template-switcher {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
 }
 
-/* 模板按钮 - 仅显示图标 */
-.template-button {
+.ldesign-template-switcher--disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* ==================== 触发按钮 ==================== */
+.ldesign-template-switcher__trigger {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--size-10, 40px);
-  height: var(--size-10, 40px);
-  padding: 0;
-  border: 1px solid var(--color-border, #d9d9d9);
-  border-radius: var(--size-2, 8px);
-  background: var(--color-bg-container, #ffffff);
+  gap: 8px;
+  padding: 8px;
+  min-width: 36px;
+  min-height: 36px;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #ffffff;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  color: var(--color-text-secondary, #666);
+  transition: all 150ms ease-out;
+  color: #6b7280;
 }
 
-.template-button:hover {
-  border-color: var(--color-primary-default, #1890ff);
-  background: var(--color-bg-component-hover, #f5f5f5);
-  color: var(--color-primary-default, #1890ff);
+.ldesign-template-switcher__trigger:hover {
+  border-color: var(--color-primary-400, #60a5fa);
+  background: var(--color-primary-50, #eff6ff);
+  color: var(--color-primary-500, #3b82f6);
 }
 
-/* 下拉面板 */
-.template-dropdown {
+.ldesign-template-switcher__trigger--small {
+  min-width: 28px;
+  min-height: 28px;
+  padding: 4px;
+}
+
+.ldesign-template-switcher__trigger--large {
+  min-width: 40px;
+  min-height: 40px;
+  padding: 12px;
+}
+
+/* ==================== 下拉面板 ==================== */
+.ldesign-template-switcher__dropdown {
   position: absolute;
-  top: calc(100% + var(--size-2, 8px));
+  top: calc(100% + 12px);
   right: 0;
-  width: 480px;
-  max-width: 90vw;
-  background: var(--color-bg-container, #ffffff);
-  border: 1px solid var(--color-gray-200, #e5e7eb);
-  border-radius: var(--size-radius-md, 8px);
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+  width: 340px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 20px 25px -5px rgba(0, 0, 0, 0.1);
   z-index: 1000;
-  overflow: hidden;
+  overflow: visible;
 }
 
-/* 下拉头部 */
-.dropdown-header {
+/* ==================== 箭头 ==================== */
+.ldesign-template-switcher__arrow {
+  position: absolute;
+  top: -6px;
+  right: 12px;
+  width: 12px;
+  height: 12px;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-right: none;
+  border-bottom: none;
+  transform: rotate(45deg);
+  z-index: 10;
+}
+
+/* ==================== 头部 ==================== */
+.ldesign-template-switcher__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--size-4, 16px) var(--size-5, 20px);
-  border-bottom: 1px solid var(--color-border, #e8e8e8);
-  background: var(--color-bg-container, #ffffff);
+  padding: 14px 16px;
+  border-bottom: 1px solid #f3f4f6;
+  background: #f9fafb;
+  border-radius: 12px 12px 0 0;
 }
 
-.dropdown-title {
-  font-size: var(--size-font-md, 16px);
+.ldesign-template-switcher__title {
+  font-size: 14px;
   font-weight: 600;
-  color: var(--color-text-primary, #333);
+  color: #1f2937;
+  margin: 0;
 }
 
-/* 下拉内容 */
-.dropdown-content {
-  padding: var(--size-5, 20px);
-  max-height: 500px;
+/* ==================== 列表 ==================== */
+.ldesign-template-switcher__list {
+  max-height: 400px;
   overflow-y: auto;
+  padding: 8px;
 }
 
-/* Vue Transition 动画 - 打开和关闭 */
-.dropdown-enter-active {
-  transition: all 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+.ldesign-template-switcher__list::-webkit-scrollbar {
+  width: 6px;
 }
 
-.dropdown-leave-active {
-  transition: all 0.2s cubic-bezier(0.4, 0, 1, 1);
+.ldesign-template-switcher__list::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 3px;
 }
 
-.dropdown-enter-from {
+/* ==================== 模板项 ==================== */
+.ldesign-template-switcher__item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 150ms ease-out;
+}
+
+.ldesign-template-switcher__item:hover {
+  background: #f3f4f6;
+}
+
+.ldesign-template-switcher__item--active {
+  background: var(--color-primary-50, #eff6ff);
+}
+
+/* ==================== 模板图标 ==================== */
+.ldesign-template-switcher__item-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  color: #6b7280;
+  background: #f3f4f6;
+  border-radius: 8px;
+  flex-shrink: 0;
+  transition: all 150ms ease-out;
+}
+
+.ldesign-template-switcher__item--active .ldesign-template-switcher__item-icon {
+  color: #ffffff;
+  background: var(--color-primary-500, #3b82f6);
+}
+
+/* ==================== 模板信息 ==================== */
+.ldesign-template-switcher__item-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ldesign-template-switcher__item-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+  line-height: 1.4;
+}
+
+.ldesign-template-switcher__item-desc {
+  font-size: 12px;
+  color: #6b7280;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ldesign-template-switcher__item--active .ldesign-template-switcher__item-label {
+  color: var(--color-primary-600, #2563eb);
+}
+
+/* ==================== 选中图标 ==================== */
+.ldesign-template-switcher__check {
+  color: var(--color-primary-500, #3b82f6);
+  flex-shrink: 0;
+}
+
+/* ==================== 空状态 ==================== */
+.ldesign-template-switcher__empty {
+  padding: 24px 16px;
+  text-align: center;
+  color: #9ca3af;
+  font-size: 13px;
+}
+
+/* ==================== 动画 ==================== */
+.ldesign-dropdown-enter-active {
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.ldesign-dropdown-leave-active {
+  transition: all 0.15s cubic-bezier(0.4, 0, 1, 1);
+}
+
+.ldesign-dropdown-enter-from,
+.ldesign-dropdown-leave-to {
   opacity: 0;
-  transform: translateY(-12px) scale(0.92);
+  transform: translateY(-8px) scale(0.96);
 }
 
-.dropdown-leave-to {
-  opacity: 0;
-  transform: translateY(-8px) scale(0.95);
+/* ==================== 暗色主题 ==================== */
+[data-theme-mode="dark"] .ldesign-template-switcher__trigger,
+[data-theme="dark"] .ldesign-template-switcher__trigger,
+.dark .ldesign-template-switcher__trigger {
+  background: #374151;
+  border-color: #4b5563;
+  color: #e5e7eb;
 }
 
-/* 暗色主题适配 */
-@media (prefers-color-scheme: dark) {
-  .template-button {
-    background: var(--color-bg-container);
-    border-color: var(--color-border);
-    color: var(--color-text-primary);
-  }
+[data-theme-mode="dark"] .ldesign-template-switcher__trigger:hover,
+[data-theme="dark"] .ldesign-template-switcher__trigger:hover,
+.dark .ldesign-template-switcher__trigger:hover {
+  background: #4b5563;
+  border-color: var(--color-primary-400, #60a5fa);
+}
 
-  .template-button:hover {
-    background: var(--color-bg-hover);
-  }
+[data-theme-mode="dark"] .ldesign-template-switcher__dropdown,
+[data-theme="dark"] .ldesign-template-switcher__dropdown,
+.dark .ldesign-template-switcher__dropdown {
+  background: #1f2937;
+  border-color: #374151;
+}
 
-  .template-dropdown {
-    background: var(--color-bg-container);
-    border-color: var(--color-border);
-    box-shadow: 0 var(--size-space-xs) var(--size-space-lg) var(--color-shadow-large);
-  }
+[data-theme-mode="dark"] .ldesign-template-switcher__arrow,
+[data-theme="dark"] .ldesign-template-switcher__arrow,
+.dark .ldesign-template-switcher__arrow {
+  background: #111827;
+  border-color: #374151;
+}
 
-  .dropdown-header {
-    border-bottom-color: var(--color-border);
-  }
+[data-theme-mode="dark"] .ldesign-template-switcher__header,
+[data-theme="dark"] .ldesign-template-switcher__header,
+.dark .ldesign-template-switcher__header {
+  background: #111827;
+  border-color: #374151;
+}
 
-  .dropdown-title {
-    color: var(--color-text-primary);
-  }
+[data-theme-mode="dark"] .ldesign-template-switcher__title,
+[data-theme="dark"] .ldesign-template-switcher__title,
+.dark .ldesign-template-switcher__title {
+  color: #f3f4f6;
+}
 
-  .close-btn {
-    color: var(--color-text-secondary);
-  }
+[data-theme-mode="dark"] .ldesign-template-switcher__item:hover,
+[data-theme="dark"] .ldesign-template-switcher__item:hover,
+.dark .ldesign-template-switcher__item:hover {
+  background: #374151;
+}
 
-  .close-btn:hover {
-    background: var(--color-bg-hover);
-    color: var(--color-text-primary);
-  }
+[data-theme-mode="dark"] .ldesign-template-switcher__item--active,
+[data-theme="dark"] .ldesign-template-switcher__item--active,
+.dark .ldesign-template-switcher__item--active {
+  background: var(--color-primary-900, rgba(59, 130, 246, 0.15));
+}
+
+[data-theme-mode="dark"] .ldesign-template-switcher__item-icon,
+[data-theme="dark"] .ldesign-template-switcher__item-icon,
+.dark .ldesign-template-switcher__item-icon {
+  background: #374151;
+  color: #9ca3af;
+}
+
+[data-theme-mode="dark"] .ldesign-template-switcher__item--active .ldesign-template-switcher__item-icon,
+[data-theme="dark"] .ldesign-template-switcher__item--active .ldesign-template-switcher__item-icon,
+.dark .ldesign-template-switcher__item--active .ldesign-template-switcher__item-icon {
+  background: var(--color-primary-500, #3b82f6);
+  color: #ffffff;
+}
+
+[data-theme-mode="dark"] .ldesign-template-switcher__item-label,
+[data-theme="dark"] .ldesign-template-switcher__item-label,
+.dark .ldesign-template-switcher__item-label {
+  color: #f3f4f6;
+}
+
+[data-theme-mode="dark"] .ldesign-template-switcher__item-desc,
+[data-theme="dark"] .ldesign-template-switcher__item-desc,
+.dark .ldesign-template-switcher__item-desc {
+  color: #9ca3af;
 }
