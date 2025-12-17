@@ -254,30 +254,58 @@ function handleSocialLogin(provider: string) {
 </template>
 
 <style scoped>
+/* ========== CSS Variables ========== */
+.login-glass {
+  /* Colors - Glass Theme (Dark) */
+  --glass-bg-primary: rgba(255, 255, 255, 0.08);
+  --glass-bg-secondary: rgba(255, 255, 255, 0.05);
+  --glass-bg-input: rgba(255, 255, 255, 0.05);
+  --glass-bg-input-focus: rgba(255, 255, 255, 0.08);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-border-hover: rgba(255, 255, 255, 0.2);
+  --glass-text-primary: #ffffff;
+  --glass-text-secondary: rgba(255, 255, 255, 0.6);
+  --glass-text-tertiary: rgba(255, 255, 255, 0.4);
+  --glass-text-placeholder: rgba(255, 255, 255, 0.3);
+
+  /* Theme Colors */
+  --color-primary: var(--color-primary-500, #8b5cf6);
+  --color-primary-hover: var(--color-primary-600, #7c3aed);
+  --color-primary-alpha: var(--color-primary-500, rgba(139, 92, 246, 0.5));
+
+  /* Shadows */
+  --shadow-glass: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  --shadow-glass-hover: 0 8px 24px -8px rgba(0, 0, 0, 0.3);
+
+  font-family: var(--size-font-family);
+  color: var(--glass-text-primary);
+}
+
 .login-glass {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: 24px;
+  padding: var(--size-spacing-2xl);
   overflow: hidden;
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
 }
 
 .login-toolbar {
   position: fixed;
-  top: 16px;
-  right: 16px;
+  top: var(--size-spacing-xl);
+  right: var(--size-spacing-xl);
   z-index: 100;
   display: flex;
-  gap: 8px;
+  gap: var(--size-spacing-md);
 }
 
 /* 背景 */
 .glass-background {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+  z-index: 0;
 }
 
 .bg-gradient {
@@ -286,6 +314,7 @@ function handleSocialLogin(provider: string) {
   filter: blur(100px);
   opacity: 0.5;
   animation: gradient-float 20s ease-in-out infinite;
+  will-change: transform;
 }
 
 .bg-gradient-1 {
@@ -339,6 +368,7 @@ function handleSocialLogin(provider: string) {
     linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
   background-size: 60px 60px;
   animation: grid-move 30s linear infinite;
+  will-change: transform;
 }
 
 @keyframes grid-move {
@@ -363,6 +393,7 @@ function handleSocialLogin(provider: string) {
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
   animation: orb-float 15s ease-in-out infinite;
+  will-change: transform;
 }
 
 .orb-1 {
@@ -402,22 +433,24 @@ function handleSocialLogin(provider: string) {
   }
 }
 
-/* 卡片 - 加宽 */
+/* 卡片 */
 .glass-card {
   position: relative;
   z-index: 1;
   width: 100%;
   max-width: 440px;
-  padding: 40px;
-  background: rgba(255, 255, 255, 0.08);
+  padding: var(--size-spacing-3xl);
+  /* 32px or 40px */
+  background: var(--glass-bg-primary);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
-  border-radius: 24px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border-radius: var(--size-radius-2xl);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow-glass);
   opacity: 0;
   transform: translateY(30px) scale(0.95);
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
 }
 
 .glass-card.is-mounted {
@@ -429,13 +462,13 @@ function handleSocialLogin(provider: string) {
 .card-logo {
   display: flex;
   justify-content: center;
-  margin-bottom: 20px;
+  margin-bottom: var(--size-spacing-xl);
 }
 
 .logo-img {
   width: 60px;
   height: 60px;
-  border-radius: 16px;
+  border-radius: var(--size-radius-lg);
 }
 
 .logo-default {
@@ -445,27 +478,27 @@ function handleSocialLogin(provider: string) {
   width: 60px;
   height: 60px;
   background: linear-gradient(135deg, var(--color-primary-500, #8b5cf6), var(--color-primary-700, #6d28d9));
-  border-radius: 16px;
-  box-shadow: 0 8px 24px -8px var(--color-primary-500, rgba(139, 92, 246, 0.5));
+  border-radius: var(--size-radius-lg);
+  box-shadow: var(--shadow-glass-hover);
   color: #fff;
 }
 
 /* Header */
 .card-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--size-spacing-2xl);
 }
 
 .card-title {
-  font-size: 26px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 8px;
+  font-size: var(--size-font-2xl);
+  font-weight: var(--size-font-weight-bold);
+  color: var(--glass-text-primary);
+  margin: 0 0 var(--size-spacing-sm);
 }
 
 .card-subtitle {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.6);
+  font-size: var(--size-font-base);
+  color: var(--glass-text-secondary);
   margin: 0;
 }
 
@@ -473,10 +506,10 @@ function handleSocialLogin(provider: string) {
 .login-tabs {
   position: relative;
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
+  background: var(--glass-bg-secondary);
+  border-radius: var(--size-radius-lg);
   padding: 4px;
-  margin-bottom: 24px;
+  margin-bottom: var(--size-spacing-2xl);
 }
 
 .tab-indicator {
@@ -486,39 +519,39 @@ function handleSocialLogin(provider: string) {
   width: calc(50% - 4px);
   height: calc(100% - 8px);
   background: rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  transition: transform 0.3s ease;
+  border-radius: var(--size-radius-md);
+  transition: transform var(--size-duration-normal) var(--size-ease-in-out);
 }
 
 .tab-btn {
   flex: 1;
   position: relative;
   z-index: 1;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: rgba(255, 255, 255, 0.5);
+  padding: 10px 16px;
+  font-size: var(--size-font-sm);
+  font-weight: var(--size-font-weight-medium);
+  color: var(--glass-text-secondary);
   background: none;
   border: none;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: color var(--size-duration-normal);
 }
 
 .tab-btn.active {
-  color: #fff;
+  color: var(--glass-text-primary);
 }
 
 /* Form */
 .glass-form {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--size-spacing-lg);
 }
 
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--size-spacing-lg);
 }
 
 .tab-fade-enter-active,
@@ -543,19 +576,20 @@ function handleSocialLogin(provider: string) {
 .field-input {
   width: 100%;
   height: 52px;
+  /* var(--size-btn-height-large)? */
   padding: 22px 16px 8px;
-  font-size: 15px;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  font-size: var(--size-font-base);
+  color: var(--glass-text-primary);
+  background: var(--glass-bg-input);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--size-radius-lg);
   outline: none;
   transition: all 0.2s;
 }
 
 .field-input:focus {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--color-primary-400, #a78bfa);
+  background: var(--glass-bg-input-focus);
+  border-color: var(--color-primary);
 }
 
 .field-label {
@@ -563,8 +597,8 @@ function handleSocialLogin(provider: string) {
   left: 16px;
   top: 50%;
   transform: translateY(-50%);
-  font-size: 15px;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: var(--size-font-base);
+  color: var(--glass-text-tertiary);
   pointer-events: none;
   transition: all 0.2s;
 }
@@ -572,8 +606,8 @@ function handleSocialLogin(provider: string) {
 .form-field.is-focused .field-label,
 .form-field.has-value .field-label {
   top: 14px;
-  font-size: 11px;
-  color: var(--color-primary-400, #a78bfa);
+  font-size: var(--size-font-xs);
+  color: var(--color-primary);
 }
 
 .field-line {
@@ -582,7 +616,7 @@ function handleSocialLogin(provider: string) {
   left: 50%;
   width: 0;
   height: 2px;
-  background: linear-gradient(90deg, var(--color-primary-400, #a78bfa), var(--color-info-400, #22d3ee));
+  background: linear-gradient(90deg, var(--color-primary), var(--color-info-400, #22d3ee));
   transform: translateX(-50%);
   transition: width 0.3s;
 }
@@ -601,27 +635,28 @@ function handleSocialLogin(provider: string) {
   right: 8px;
   top: 50%;
   transform: translateY(-50%);
-  padding: 8px 14px;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--color-primary-400, #a78bfa);
+  padding: 6px 12px;
+  font-size: var(--size-font-xs);
+  font-weight: var(--size-font-weight-medium);
+  color: var(--color-primary);
   background: rgba(139, 92, 246, 0.15);
+  /* Keep generic or use theme var? */
   border: none;
-  border-radius: 8px;
+  border-radius: var(--size-radius-md);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .sms-btn:disabled {
-  color: rgba(255, 255, 255, 0.3);
-  background: rgba(255, 255, 255, 0.05);
+  color: var(--glass-text-placeholder);
+  background: var(--glass-bg-secondary);
   cursor: not-allowed;
 }
 
 /* Captcha */
 .captcha-row {
   display: flex;
-  gap: 12px;
+  gap: var(--size-spacing-md);
 }
 
 .captcha-field {
@@ -633,7 +668,7 @@ function handleSocialLogin(provider: string) {
   height: 52px;
   display: flex;
   align-items: center;
-  border-radius: 12px;
+  border-radius: var(--size-radius-lg);
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.2s;
@@ -648,22 +683,22 @@ function handleSocialLogin(provider: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: var(--size-spacing-sm);
   height: 52px;
-  margin-top: 8px;
-  font-size: 16px;
-  font-weight: 600;
+  margin-top: var(--size-spacing-sm);
+  font-size: var(--size-font-md);
+  font-weight: var(--size-font-weight-bold);
   color: #fff;
   background: linear-gradient(135deg, var(--color-primary-500, #8b5cf6), var(--color-primary-600, #7c3aed));
   border: none;
-  border-radius: 12px;
+  border-radius: var(--size-radius-lg);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .glass-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -10px var(--color-primary-500, rgba(139, 92, 246, 0.6));
+  box-shadow: 0 10px 25px -10px var(--color-primary-alpha);
 }
 
 .glass-btn:disabled {
@@ -688,14 +723,14 @@ function handleSocialLogin(provider: string) {
 
 /* Social */
 .social-section {
-  margin-top: 24px;
+  margin-top: var(--size-spacing-2xl);
 }
 
 .social-divider {
   display: flex;
   align-items: center;
-  gap: 14px;
-  margin-bottom: 18px;
+  gap: var(--size-spacing-md);
+  margin-bottom: var(--size-spacing-lg);
 }
 
 .social-divider::before,
@@ -703,18 +738,18 @@ function handleSocialLogin(provider: string) {
   content: '';
   flex: 1;
   height: 1px;
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--glass-border);
 }
 
 .social-divider span {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.4);
+  font-size: var(--size-font-xs);
+  color: var(--glass-text-tertiary);
 }
 
 .social-btns {
   display: flex;
   justify-content: center;
-  gap: 14px;
+  gap: var(--size-spacing-md);
 }
 
 .social-btn {
@@ -723,17 +758,19 @@ function handleSocialLogin(provider: string) {
   justify-content: center;
   width: 46px;
   height: 46px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  color: rgba(255, 255, 255, 0.7);
+  background: var(--glass-bg-secondary);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--size-radius-lg);
+  color: var(--glass-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .social-btn:hover {
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--glass-bg-primary);
   transform: translateY(-2px);
+  color: var(--glass-text-primary);
+  border-color: var(--glass-border-hover);
 }
 
 /* Footer */
@@ -741,35 +778,36 @@ function handleSocialLogin(provider: string) {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 14px;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  gap: var(--size-spacing-md);
+  margin-top: var(--size-spacing-2xl);
+  padding-top: var(--size-spacing-lg);
+  border-top: 1px solid var(--glass-border);
 }
 
 .footer-link {
-  font-size: 13px;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: var(--size-font-sm);
+  color: var(--glass-text-secondary);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .footer-link:hover {
-  color: #fff;
+  color: var(--glass-text-primary);
+  text-decoration: underline;
 }
 
 .footer-dot {
-  color: rgba(255, 255, 255, 0.2);
+  color: var(--glass-border);
 }
 
 @media (max-width: 480px) {
   .glass-card {
-    padding: 28px;
+    padding: var(--size-spacing-xl);
     max-width: 100%;
   }
 
   .card-title {
-    font-size: 22px;
+    font-size: var(--size-font-xl);
   }
 }
 </style>

@@ -114,35 +114,62 @@ const tabBarStyle = computed(() => ({
 
 <style scoped>
 .mobile-tab-bar {
+  /* Semantic Colors Mapping */
+  --color-bg-page: var(--color-gray-50, #f8fafc);
+  --color-bg-container: var(--color-gray-0, #ffffff);
+  --color-border-light: var(--color-gray-200, #e2e8f0);
+  --color-text-primary: var(--color-gray-900, #0f172a);
+  --color-text-tertiary: var(--color-gray-400, #94a3b8);
+  --color-primary-default: var(--color-primary-500, #3b82f6);
+  --color-primary-lighter: var(--color-primary-50, #eff6ff);
+  --color-primary-light: var(--color-primary-100, #dbeafe);
+
+  /* Shadows */
+  --shadow-sm: 0 -1px 2px 0 rgba(0, 0, 0, 0.05);
+
   display: flex;
   flex-direction: column;
   min-height: 100vh;
   min-height: 100dvh;
-  background: var(--color-bg-layout, #f5f7fa);
+  background: var(--color-bg-page);
+  font-family: var(--size-font-family);
+}
+
+/* Dark Mode */
+:root[data-theme-mode="dark"] .mobile-tab-bar,
+.dark .mobile-tab-bar {
+  --color-bg-page: var(--color-gray-950, #020617);
+  --color-bg-container: var(--color-gray-900, #0f172a);
+  --color-border-light: var(--color-gray-800, #1e293b);
+  --color-text-primary: var(--color-gray-50, #f8fafc);
+  --color-text-tertiary: var(--color-gray-500, #64748b);
+  --color-primary-default: var(--color-primary-500, #3b82f6);
+  --color-primary-lighter: var(--color-primary-900, #1e3a8a);
+  --color-primary-light: var(--color-primary-800, #1e40af);
 }
 
 /* 顶栏 */
 .mobile-tab-bar__header {
-  background: var(--color-bg-container, #fff);
-  border-bottom: 1px solid var(--color-border-secondary, #eef0f3);
+  background: var(--color-bg-container);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .header-title {
-  font-size: 17px;
-  font-weight: 600;
-  color: var(--color-text-primary, #1f2937);
+  font-size: var(--size-font-large);
+  font-weight: var(--size-font-weight-semibold);
+  color: var(--color-text-primary);
   text-align: center;
 }
 
 /* 内容区 */
 .mobile-tab-bar__content {
   flex: 1;
-  background: var(--color-bg-layout, #f5f7fa);
+  background: var(--color-bg-page);
   -webkit-overflow-scrolling: touch;
 }
 
 .content-inner {
-  padding: 16px;
+  padding: var(--size-space-giant);
   min-height: 100%;
 }
 
@@ -150,9 +177,9 @@ const tabBarStyle = computed(() => ({
 .mobile-tab-bar__nav {
   display: flex;
   align-items: flex-start;
-  background: var(--color-bg-container, #fff);
-  border-top: 1px solid var(--color-border-secondary, #eef0f3);
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.03);
+  background: var(--color-bg-container);
+  border-top: 1px solid var(--color-border-light);
+  box-shadow: var(--shadow-sm);
 }
 
 .mobile-tab-bar__nav.is-fixed {
@@ -180,14 +207,14 @@ const tabBarStyle = computed(() => ({
   padding: 6px 0;
   background: transparent;
   border: none;
-  color: var(--color-text-tertiary, #8c8c8c);
+  color: var(--color-text-tertiary);
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
-  transition: all 0.2s ease;
+  transition: all 0.2s var(--size-ease-in-out);
 }
 
 .tab-item.is-active {
-  color: var(--color-primary-default, #6366f1);
+  color: var(--color-primary-default);
 }
 
 .tab-item:active {
@@ -200,34 +227,35 @@ const tabBarStyle = computed(() => ({
   justify-content: center;
   width: 28px;
   height: 28px;
-  border-radius: 8px;
-  transition: all 0.2s ease;
+  border-radius: var(--size-radius-medium);
+  transition: all 0.2s var(--size-ease-in-out);
 }
 
 .tab-item.is-active .tab-icon {
-  background: var(--color-primary-50, #eef2ff);
+  background: var(--color-primary-lighter);
 }
 
 .tab-label {
-  font-size: 10px;
-  font-weight: 500;
+  font-size: var(--size-font-tiny);
+  font-weight: var(--size-font-weight-medium);
 }
 
 /* 深色模式 */
 :root[data-theme-mode="dark"] .mobile-tab-bar__header,
 .dark .mobile-tab-bar__header {
-  background: var(--color-bg-container, #1f1f1f);
-  border-bottom-color: var(--color-border-secondary, #303030);
+  background: var(--color-bg-container);
+  border-bottom-color: var(--color-border-light);
 }
 
 :root[data-theme-mode="dark"] .mobile-tab-bar__nav,
 .dark .mobile-tab-bar__nav {
-  background: var(--color-bg-container, #1f1f1f);
-  border-top-color: var(--color-border-secondary, #303030);
+  background: var(--color-bg-container);
+  border-top-color: var(--color-border-light);
 }
 
 :root[data-theme-mode="dark"] .tab-item.is-active .tab-icon,
 .dark .tab-item.is-active .tab-icon {
-  background: rgba(99, 102, 241, 0.15);
+  background: var(--color-primary-light);
+  opacity: 0.2;
 }
 </style>

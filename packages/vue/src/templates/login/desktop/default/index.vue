@@ -375,19 +375,61 @@ function handleSocialLogin(provider: string) {
 <style scoped>
 /* 基础布局 */
 .login-split {
+  /* Semantic Colors Mapping */
+  --color-bg-page: var(--color-gray-50, #f8fafc);
+  --color-bg-container: var(--color-gray-0, #ffffff);
+  --color-bg-container-secondary: var(--color-gray-50, #f9fafb);
+  --color-text-primary: var(--color-gray-900, #0f172a);
+  --color-text-secondary: var(--color-gray-600, #475569);
+  --color-text-tertiary: var(--color-gray-400, #94a3b8);
+  --color-text-quaternary: var(--color-gray-300, #cbd5e1);
+  --color-text-placeholder: var(--color-gray-400, #9ca3af);
+  --color-text-inverse: var(--color-gray-0, #ffffff);
+  --color-border-light: var(--color-gray-200, #e2e8f0);
+  --color-border: var(--color-gray-300, #cbd5e1);
+
+  --color-fill-tertiary: var(--color-gray-100, #f3f4f6);
+  --color-fill-quaternary: var(--color-gray-50, #f9fafb);
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+
   position: relative;
   display: flex;
   min-height: 100vh;
-  background-color: var(--color-bg-layout, #f5f7fa);
+  background-color: var(--color-bg-page);
+  color: var(--color-text-primary);
+  font-family: var(--size-font-family);
+}
+
+/* Dark Mode */
+:root[data-theme-mode="dark"] .login-split,
+.dark .login-split {
+  --color-bg-page: var(--color-gray-950, #020617);
+  --color-bg-container: var(--color-gray-900, #0f172a);
+  --color-bg-container-secondary: var(--color-gray-800, #1e293b);
+  --color-text-primary: var(--color-gray-50, #f8fafc);
+  --color-text-secondary: var(--color-gray-300, #cbd5e1);
+  --color-text-tertiary: var(--color-gray-500, #64748b);
+  --color-text-quaternary: var(--color-gray-600, #475569);
+  --color-text-placeholder: var(--color-gray-500, #64748b);
+  --color-text-inverse: var(--color-gray-50, #f8fafc);
+  --color-border-light: var(--color-gray-700, #334155);
+  --color-border: var(--color-gray-600, #475569);
+
+  --color-fill-tertiary: var(--color-gray-800, #1e293b);
+  --color-fill-quaternary: var(--color-gray-900, #0f172a);
 }
 
 .login-toolbar {
   position: fixed;
-  top: var(--size-space-md, 16px);
-  right: var(--size-space-md, 16px);
+  top: var(--size-space-huge);
+  right: var(--size-space-huge);
   z-index: 100;
   display: flex;
-  gap: var(--size-space-sm, 8px);
+  gap: var(--size-space-medium);
 }
 
 /* 左侧品牌区 */
@@ -397,7 +439,7 @@ function handleSocialLogin(provider: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary-600, #4f46e5) 0%, var(--color-primary-800, #3730a3) 100%);
+  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-800) 100%);
   overflow: hidden;
 }
 
@@ -409,10 +451,10 @@ function handleSocialLogin(provider: string) {
 
 .particle {
   position: absolute;
-  width: var(--size, 8px);
-  height: var(--size, 8px);
+  width: var(--size);
+  height: var(--size);
   background: rgba(255, 255, 255, 0.15);
-  border-radius: 50%;
+  border-radius: var(--size-radius-circle);
   animation: particle-float 12s ease-in-out infinite;
   animation-delay: var(--delay);
 }
@@ -476,8 +518,8 @@ function handleSocialLogin(provider: string) {
   position: relative;
   z-index: 2;
   text-align: center;
-  color: #fff;
-  padding: var(--size-space-xl, 32px);
+  color: var(--color-text-inverse);
+  padding: var(--size-space-massive);
   opacity: 0;
   transform: translateY(30px);
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
@@ -489,13 +531,14 @@ function handleSocialLogin(provider: string) {
 }
 
 .brand-logo {
-  margin-bottom: var(--size-space-lg, 24px);
+  margin-bottom: var(--size-space-giant);
 }
 
 .logo-image {
   width: 80px;
   height: 80px;
-  border-radius: 20px;
+  border-radius: var(--size-radius-large);
+  box-shadow: var(--shadow-lg);
 }
 
 .logo-placeholder {
@@ -506,28 +549,29 @@ function handleSocialLogin(provider: string) {
   height: 80px;
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
-  border-radius: 20px;
+  border-radius: var(--size-radius-large);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-lg);
 }
 
 .brand-title {
-  font-size: 42px;
-  font-weight: 700;
-  margin: 0 0 12px;
+  font-size: var(--size-font-display2);
+  font-weight: var(--size-font-weight-bold);
+  margin: 0 0 var(--size-space-large);
   letter-spacing: -0.02em;
 }
 
 .brand-slogan {
-  font-size: 16px;
+  font-size: var(--size-font-large);
   opacity: 0.85;
-  margin: 0 0 40px;
+  margin: 0 0 var(--size-space-colossal);
 }
 
-/* 特性 */
+/* 特性展示 */
 .brand-features {
   display: flex;
-  gap: 20px;
+  gap: var(--size-space-giant);
   justify-content: center;
 }
 
@@ -535,18 +579,19 @@ function handleSocialLogin(provider: string) {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 16px 20px;
+  gap: var(--size-space-medium);
+  padding: var(--size-space-huge) var(--size-space-giant);
   background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  border-radius: 14px;
+  border-radius: var(--size-radius-large);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  transition: all 0.3s;
+  transition: all 0.3s var(--size-ease-out);
 }
 
 .feature-item:hover {
   transform: translateY(-4px);
   background: rgba(255, 255, 255, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .feature-icon {
@@ -554,7 +599,7 @@ function handleSocialLogin(provider: string) {
 }
 
 .feature-text {
-  font-size: 13px;
+  font-size: var(--size-font-small);
   opacity: 0.85;
 }
 
@@ -568,7 +613,7 @@ function handleSocialLogin(provider: string) {
 .ring {
   position: absolute;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 50%;
+  border-radius: var(--size-radius-circle);
   animation: ring-pulse 8s ease-in-out infinite;
 }
 
@@ -616,8 +661,8 @@ function handleSocialLogin(provider: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--size-space-xl, 32px);
-  background: var(--color-bg-container, #fff);
+  padding: var(--size-space-massive);
+  background: var(--color-bg-container);
 }
 
 .form-wrapper {
@@ -636,19 +681,19 @@ function handleSocialLogin(provider: string) {
 
 /* 表单头部 */
 .form-header {
-  margin-bottom: var(--size-space-xl, 28px);
+  margin-bottom: var(--size-space-giant);
 }
 
 .form-title {
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--color-text-primary, #1f2937);
-  margin: 0 0 8px;
+  font-size: var(--size-font-h2);
+  font-weight: var(--size-font-weight-bold);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--size-space-medium);
 }
 
 .form-subtitle {
-  font-size: 15px;
-  color: var(--color-text-tertiary, #6b7280);
+  font-size: var(--size-font-medium);
+  color: var(--color-text-tertiary);
   margin: 0;
 }
 
@@ -656,10 +701,10 @@ function handleSocialLogin(provider: string) {
 .login-tabs {
   position: relative;
   display: flex;
-  background: var(--color-fill-quaternary, #f3f4f6);
-  border-radius: 10px;
+  background: var(--color-bg-container-secondary);
+  border-radius: var(--size-radius-medium);
   padding: 4px;
-  margin-bottom: var(--size-space-lg, 22px);
+  margin-bottom: var(--size-space-giant);
 }
 
 .tab-indicator {
@@ -668,10 +713,10 @@ function handleSocialLogin(provider: string) {
   left: 4px;
   width: calc(50% - 4px);
   height: calc(100% - 8px);
-  background: var(--color-bg-container, #fff);
-  border-radius: 8px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--color-bg-container);
+  border-radius: var(--size-radius-small);
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s var(--size-ease-in-out);
 }
 
 .tab-btn {
@@ -681,11 +726,11 @@ function handleSocialLogin(provider: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  padding: 10px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: var(--color-text-tertiary, #6b7280);
+  gap: var(--size-space-small);
+  padding: var(--size-space-medium) var(--size-space-huge);
+  font-size: var(--size-font-medium);
+  font-weight: var(--size-font-weight-medium);
+  color: var(--color-text-tertiary);
   background: none;
   border: none;
   cursor: pointer;
@@ -693,20 +738,20 @@ function handleSocialLogin(provider: string) {
 }
 
 .tab-btn.active {
-  color: var(--color-primary-default, #6366f1);
+  color: var(--color-primary-default);
 }
 
 /* 表单 */
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--size-space-huge);
 }
 
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--size-space-huge);
 }
 
 .tab-fade-enter-active,
@@ -732,78 +777,87 @@ function handleSocialLogin(provider: string) {
 
 .input-icon {
   position: absolute;
-  left: 14px;
-  color: var(--color-text-quaternary, #9ca3af);
+  left: var(--size-space-large);
+  color: var(--color-text-quaternary);
   pointer-events: none;
   transition: color 0.2s;
+  width: var(--size-icon-medium);
+  height: var(--size-icon-medium);
 }
 
 .form-input {
   width: 100%;
-  height: 48px;
-  padding: 0 14px 0 44px;
-  font-size: 15px;
-  color: var(--color-text-primary, #1f2937);
-  background: var(--color-fill-quaternary, #f9fafb);
+  height: var(--size-btn-large-height);
+  padding: 0 var(--size-space-large) 0 44px;
+  font-size: var(--size-font-medium);
+  color: var(--color-text-primary);
+  background: var(--color-bg-container-secondary);
   border: 2px solid transparent;
-  border-radius: 10px;
+  border-radius: var(--size-radius-medium);
   outline: none;
   transition: all 0.2s;
 }
 
 .form-input::placeholder {
-  color: var(--color-text-placeholder, #9ca3af);
+  color: var(--color-text-placeholder);
 }
 
 .form-input:focus {
-  background: var(--color-bg-container, #fff);
-  border-color: var(--color-primary-default, #6366f1);
-  box-shadow: 0 0 0 4px var(--color-primary-100, rgba(99, 102, 241, 0.1));
+  background: var(--color-bg-container);
+  border-color: var(--color-primary-default);
+  box-shadow: 0 0 0 4px var(--color-primary-lighter);
 }
 
 .form-input:focus~.input-icon {
-  color: var(--color-primary-default, #6366f1);
+  color: var(--color-primary-default);
 }
 
 .input-suffix {
   position: absolute;
-  right: 12px;
-  padding: 6px;
-  color: var(--color-text-quaternary, #9ca3af);
+  right: var(--size-space-large);
+  padding: 4px;
+  color: var(--color-text-quaternary);
   background: none;
   border: none;
   cursor: pointer;
   transition: color 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .input-suffix:hover {
-  color: var(--color-text-secondary, #6b7280);
+  color: var(--color-text-secondary);
 }
 
 .sms-btn {
   position: absolute;
   right: 6px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-primary-default, #6366f1);
-  background: var(--color-primary-50, #eef2ff);
+  padding: 6px 12px;
+  font-size: var(--size-font-small);
+  font-weight: var(--size-font-weight-medium);
+  color: var(--color-primary-default);
+  background: var(--color-primary-lighter);
   border: none;
-  border-radius: 8px;
+  border-radius: var(--size-radius-small);
   cursor: pointer;
   transition: all 0.2s;
 }
 
+.sms-btn:hover:not(:disabled) {
+  background: var(--color-primary-light);
+}
+
 .sms-btn:disabled {
-  color: var(--color-text-quaternary, #9ca3af);
-  background: var(--color-fill-quaternary, #f3f4f6);
+  color: var(--color-text-disabled);
+  background: var(--color-bg-component-disabled);
   cursor: not-allowed;
 }
 
 /* 验证码 */
 .captcha-group {
   flex-direction: row;
-  gap: 12px;
+  gap: var(--size-space-large);
 }
 
 .captcha-group .input-wrapper {
@@ -812,17 +866,19 @@ function handleSocialLogin(provider: string) {
 
 .captcha-img {
   flex-shrink: 0;
-  height: 48px;
+  height: var(--size-btn-large-height);
   display: flex;
   align-items: center;
-  border-radius: 8px;
+  border-radius: var(--size-radius-medium);
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.2s;
+  box-shadow: var(--shadow-sm);
 }
 
 .captcha-img:hover {
   transform: scale(1.02);
+  box-shadow: var(--shadow-md);
 }
 
 .captcha-img:active {
@@ -840,7 +896,7 @@ function handleSocialLogin(provider: string) {
 .remember-me {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--size-space-medium);
   cursor: pointer;
 }
 
@@ -852,15 +908,16 @@ function handleSocialLogin(provider: string) {
 .checkbox-custom {
   width: 18px;
   height: 18px;
-  border: 2px solid var(--color-border, #d1d5db);
-  border-radius: 5px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--size-radius-small);
   transition: all 0.2s;
   position: relative;
+  background: var(--color-bg-container);
 }
 
 .checkbox:checked+.checkbox-custom {
-  background: var(--color-primary-default, #6366f1);
-  border-color: var(--color-primary-default, #6366f1);
+  background: var(--color-primary-default);
+  border-color: var(--color-primary-default);
 }
 
 .checkbox:checked+.checkbox-custom::after {
@@ -876,17 +933,19 @@ function handleSocialLogin(provider: string) {
 }
 
 .checkbox-label {
-  font-size: 14px;
-  color: var(--color-text-secondary, #6b7280);
+  font-size: var(--size-font-medium);
+  color: var(--color-text-secondary);
 }
 
 .forgot-link {
-  font-size: 14px;
-  color: var(--color-primary-default, #6366f1);
+  font-size: var(--size-font-medium);
+  color: var(--color-primary-default);
   text-decoration: none;
+  transition: color 0.2s;
 }
 
 .forgot-link:hover {
+  color: var(--color-primary-hover);
   text-decoration: underline;
 }
 
@@ -895,27 +954,32 @@ function handleSocialLogin(provider: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 48px;
-  margin-top: 6px;
-  font-size: 16px;
-  font-weight: 600;
+  gap: var(--size-space-medium);
+  height: var(--size-btn-large-height);
+  margin-top: var(--size-space-medium);
+  font-size: var(--size-font-large);
+  font-weight: var(--size-font-weight-semibold);
   color: #fff;
-  background: linear-gradient(135deg, var(--color-primary-default, #6366f1) 0%, var(--color-primary-600, #4f46e5) 100%);
+  background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-hover) 100%);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--size-radius-medium);
   cursor: pointer;
   transition: all 0.3s;
+  box-shadow: var(--shadow-md);
 }
 
 .submit-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px -10px var(--color-primary-500, rgba(99, 102, 241, 0.5));
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary-active) 100%);
 }
 
 .submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  background: var(--color-bg-component-disabled);
+  color: var(--color-text-disabled);
+  box-shadow: none;
 }
 
 .loading-spinner {
@@ -923,7 +987,7 @@ function handleSocialLogin(provider: string) {
   height: 18px;
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-top-color: #fff;
-  border-radius: 50%;
+  border-radius: var(--size-radius-circle);
   animation: spin 0.8s linear infinite;
 }
 
@@ -937,7 +1001,7 @@ function handleSocialLogin(provider: string) {
 .divider {
   display: flex;
   align-items: center;
-  margin: 22px 0;
+  margin: var(--size-space-giant) 0;
 }
 
 .divider::before,
@@ -945,20 +1009,20 @@ function handleSocialLogin(provider: string) {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--color-border-secondary, #e5e7eb);
+  background: var(--color-border-light);
 }
 
 .divider-text {
-  padding: 0 16px;
-  font-size: 13px;
-  color: var(--color-text-quaternary, #9ca3af);
+  padding: 0 var(--size-space-huge);
+  font-size: var(--size-font-small);
+  color: var(--color-text-quaternary);
 }
 
 /* 社交登录 */
 .social-login {
   display: flex;
   justify-content: center;
-  gap: 14px;
+  gap: var(--size-space-huge);
 }
 
 .social-btn {
@@ -967,16 +1031,19 @@ function handleSocialLogin(provider: string) {
   justify-content: center;
   width: 46px;
   height: 46px;
-  background: var(--color-fill-quaternary, #f9fafb);
-  border: 1px solid var(--color-border-secondary, #e5e7eb);
-  border-radius: 12px;
+  background: var(--color-bg-container-secondary);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--size-radius-medium);
   cursor: pointer;
   transition: all 0.2s;
+  color: var(--color-text-secondary);
 }
 
 .social-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-md);
+  color: var(--color-text-primary);
+  background: var(--color-bg-container);
 }
 
 .social-btn.github:hover {
@@ -1011,18 +1078,20 @@ function handleSocialLogin(provider: string) {
 /* 注册 */
 .signup-hint {
   text-align: center;
-  margin-top: 22px;
-  font-size: 14px;
-  color: var(--color-text-tertiary, #9ca3af);
+  margin-top: var(--size-space-giant);
+  font-size: var(--size-font-medium);
+  color: var(--color-text-tertiary);
 }
 
 .signup-link {
-  color: var(--color-primary-default, #6366f1);
+  color: var(--color-primary-default);
   text-decoration: none;
-  font-weight: 500;
+  font-weight: var(--size-font-weight-medium);
+  transition: color 0.2s;
 }
 
 .signup-link:hover {
+  color: var(--color-primary-hover);
   text-decoration: underline;
 }
 

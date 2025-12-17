@@ -254,33 +254,37 @@ async function handleSubmit() {
 
 <style scoped>
 .login-mobile {
+  /* Semantic Colors Mapping */
+  --color-text-inverse: var(--color-gray-0, #ffffff);
+
   position: relative;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
-  padding: env(safe-area-inset-top) 20px env(safe-area-inset-bottom);
+  padding: env(safe-area-inset-top) var(--size-space-giant) env(safe-area-inset-bottom);
+  font-family: var(--size-font-family);
 }
 
 .login-toolbar {
   position: fixed;
-  top: calc(env(safe-area-inset-top) + 10px);
-  right: 14px;
+  top: calc(env(safe-area-inset-top) + var(--size-space-huge));
+  right: var(--size-space-giant);
   z-index: 100;
   display: flex;
-  gap: 6px;
+  gap: var(--size-space-medium);
 }
 
 /* 背景 */
 .bg-gradient {
   position: fixed;
   inset: 0;
-  background: linear-gradient(160deg, var(--color-primary-600, #4f46e5) 0%, var(--color-primary-800, #3730a3) 50%, var(--color-primary-900, #312e81) 100%);
+  background: linear-gradient(160deg, var(--color-primary-600) 0%, var(--color-primary-800) 50%, var(--color-primary-900) 100%);
 }
 
 .bg-orb {
   position: absolute;
-  border-radius: 50%;
+  border-radius: var(--size-radius-circle);
   filter: blur(80px);
   opacity: 0.4;
   animation: orb-float 20s ease-in-out infinite;
@@ -291,7 +295,7 @@ async function handleSubmit() {
   height: 300px;
   top: -100px;
   right: -80px;
-  background: var(--color-info-400, #22d3ee);
+  background: var(--color-info-400);
 }
 
 .bg-orb-2 {
@@ -299,7 +303,7 @@ async function handleSubmit() {
   height: 250px;
   bottom: -80px;
   left: -60px;
-  background: var(--color-success-400, #4ade80);
+  background: var(--color-success-400);
   animation-delay: -10s;
 }
 
@@ -322,10 +326,10 @@ async function handleSubmit() {
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 32px 0;
+  padding: var(--size-space-giant) 0;
   opacity: 0;
   transform: translateY(20px);
-  transition: all 0.4s ease;
+  transition: all 0.4s var(--size-ease-out);
 }
 
 .login-content.is-mounted {
@@ -336,7 +340,7 @@ async function handleSubmit() {
 /* Header */
 .login-header {
   text-align: center;
-  margin-bottom: 28px;
+  margin-bottom: var(--size-space-massive);
 }
 
 .logo {
@@ -345,29 +349,30 @@ async function handleSubmit() {
   justify-content: center;
   width: 64px;
   height: 64px;
-  margin-bottom: 14px;
+  margin-bottom: var(--size-space-huge);
   background: rgba(255, 255, 255, 0.15);
   backdrop-filter: blur(10px);
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.2);
-  color: #fff;
+  color: var(--color-text-inverse);
+  box-shadow: var(--shadow-md);
 }
 
 .logo img {
   width: 40px;
   height: 40px;
-  border-radius: 10px;
+  border-radius: var(--size-radius-medium);
 }
 
 .title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 6px;
+  font-size: var(--size-font-h1);
+  font-weight: var(--size-font-weight-bold);
+  color: var(--color-text-inverse);
+  margin: 0 0 var(--size-space-medium);
 }
 
 .subtitle {
-  font-size: 15px;
+  font-size: var(--size-font-medium);
   color: rgba(255, 255, 255, 0.7);
   margin: 0;
 }
@@ -377,9 +382,9 @@ async function handleSubmit() {
   position: relative;
   display: flex;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 14px;
+  border-radius: var(--size-radius-huge);
   padding: 4px;
-  margin-bottom: 22px;
+  margin-bottom: var(--size-space-giant);
 }
 
 .tab-bg {
@@ -389,17 +394,17 @@ async function handleSubmit() {
   width: calc(50% - 4px);
   height: calc(100% - 8px);
   background: rgba(255, 255, 255, 0.2);
-  border-radius: 12px;
-  transition: transform 0.3s ease;
+  border-radius: var(--size-radius-large);
+  transition: transform 0.3s var(--size-ease-out);
 }
 
 .tab {
   flex: 1;
   position: relative;
   z-index: 1;
-  padding: 14px;
-  font-size: 15px;
-  font-weight: 500;
+  padding: var(--size-space-huge);
+  font-size: var(--size-font-medium);
+  font-weight: var(--size-font-weight-medium);
   color: rgba(255, 255, 255, 0.6);
   background: none;
   border: none;
@@ -408,20 +413,20 @@ async function handleSubmit() {
 }
 
 .tab.active {
-  color: #fff;
+  color: var(--color-text-inverse);
 }
 
 /* Form */
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--size-space-huge);
 }
 
 .fields {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: var(--size-space-huge);
 }
 
 .slide-enter-active,
@@ -447,20 +452,22 @@ async function handleSubmit() {
 
 .field-icon {
   position: absolute;
-  left: 14px;
+  left: var(--size-space-huge);
   color: rgba(255, 255, 255, 0.5);
   pointer-events: none;
+  width: var(--size-icon-medium);
+  height: var(--size-icon-medium);
 }
 
 .field input {
   width: 100%;
-  height: 52px;
-  padding: 0 16px 0 48px;
-  font-size: 16px;
-  color: #fff;
+  height: var(--size-btn-large-height);
+  padding: 0 var(--size-space-huge) 0 48px;
+  font-size: var(--size-font-medium);
+  color: var(--color-text-inverse);
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 14px;
+  border-radius: var(--size-radius-huge);
   outline: none;
   transition: all 0.2s;
   appearance: none;
@@ -479,8 +486,8 @@ async function handleSubmit() {
 /* Eye */
 .eye {
   position: absolute;
-  right: 12px;
-  padding: 8px;
+  right: var(--size-space-huge);
+  padding: var(--size-space-medium);
   color: rgba(255, 255, 255, 0.5);
   background: none;
   border: none;
@@ -494,14 +501,14 @@ async function handleSubmit() {
 
 .sms-btn {
   position: absolute;
-  right: 8px;
-  padding: 12px 16px;
-  font-size: 14px;
-  font-weight: 500;
-  color: #fff;
+  right: var(--size-space-medium);
+  padding: var(--size-space-large) var(--size-space-huge);
+  font-size: var(--size-font-small);
+  font-weight: var(--size-font-weight-medium);
+  color: var(--color-text-inverse);
   background: rgba(255, 255, 255, 0.15);
   border: none;
-  border-radius: 10px;
+  border-radius: var(--size-radius-large);
   cursor: pointer;
 }
 
@@ -514,7 +521,7 @@ async function handleSubmit() {
 /* Captcha */
 .captcha-row {
   display: flex;
-  gap: 12px;
+  gap: var(--size-space-huge);
 }
 
 .captcha-field {
@@ -523,10 +530,10 @@ async function handleSubmit() {
 
 .captcha-img {
   flex-shrink: 0;
-  height: 52px;
+  height: var(--size-btn-large-height);
   display: flex;
   align-items: center;
-  border-radius: 14px;
+  border-radius: var(--size-radius-huge);
   overflow: hidden;
   cursor: pointer;
 }
@@ -538,7 +545,7 @@ async function handleSubmit() {
 }
 
 .options a {
-  font-size: 14px;
+  font-size: var(--size-font-medium);
   color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
 }
@@ -548,17 +555,18 @@ async function handleSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  height: 52px;
-  margin-top: 8px;
-  font-size: 16px;
-  font-weight: 600;
-  color: var(--color-primary-700, #4338ca);
+  gap: var(--size-space-medium);
+  height: var(--size-btn-large-height);
+  margin-top: var(--size-space-medium);
+  font-size: var(--size-font-large);
+  font-weight: var(--size-font-weight-semibold);
+  color: var(--color-primary-700);
   background: #fff;
   border: none;
-  border-radius: 14px;
+  border-radius: var(--size-radius-huge);
   cursor: pointer;
   transition: all 0.2s;
+  box-shadow: var(--shadow-md);
 }
 
 .submit-btn:active {
@@ -568,14 +576,15 @@ async function handleSubmit() {
 .submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .loader {
   width: 18px;
   height: 18px;
   border: 2px solid rgba(79, 70, 229, 0.3);
-  border-top-color: var(--color-primary-600, #4f46e5);
-  border-radius: 50%;
+  border-top-color: var(--color-primary-600);
+  border-radius: var(--size-radius-circle);
   animation: spin 0.8s linear infinite;
 }
 
@@ -587,20 +596,20 @@ async function handleSubmit() {
 
 /* Social */
 .social-section {
-  margin-top: 28px;
+  margin-top: var(--size-space-massive);
   text-align: center;
 }
 
 .social-title {
-  font-size: 13px;
+  font-size: var(--size-font-small);
   color: rgba(255, 255, 255, 0.5);
-  margin-bottom: 16px;
+  margin-bottom: var(--size-space-huge);
 }
 
 .social-btns {
   display: flex;
   justify-content: center;
-  gap: 20px;
+  gap: var(--size-space-giant);
 }
 
 .social-btn {
@@ -611,7 +620,7 @@ async function handleSubmit() {
   height: 54px;
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 16px;
+  border-radius: var(--size-radius-huge);
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -624,13 +633,13 @@ async function handleSubmit() {
 .register {
   text-align: center;
   margin-top: 22px;
-  font-size: 14px;
+  font-size: var(--size-font-medium);
   color: rgba(255, 255, 255, 0.6);
 }
 
 .register a {
-  color: #fff;
-  font-weight: 500;
+  color: var(--color-text-inverse);
+  font-weight: var(--size-font-weight-medium);
   text-decoration: none;
 }
 </style>
