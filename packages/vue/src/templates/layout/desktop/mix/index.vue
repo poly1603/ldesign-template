@@ -26,7 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
   siderWidth: 220,
   siderCollapsedWidth: 56,
   headerHeight: 56,
-  tabsHeight: 40,
+  tabsHeight: 44,
   showTabs: true,
   fixedHeader: true,
   fixedSider: true,
@@ -115,10 +115,10 @@ function handleCloseSider() {
       <template #footer>
         <div class="layout-mix__sider-footer">
           <button class="sider-collapse-btn" @click="handleToggleSider" :title="siderCollapsed ? '展开菜单' : '收起菜单'">
-            <svg :class="{ 'is-collapsed': siderCollapsed }" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            <svg :class="{ 'is-collapsed': siderCollapsed }" width="18" height="18" viewBox="0 0 24 24" fill="none"
               stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="11 17 6 12 11 7" />
-              <polyline points="18 17 13 12 18 7" />
+              <path d="M11 17l-5-5 5-5" />
+              <path d="M18 17l-5-5 5-5" />
             </svg>
           </button>
         </div>
@@ -145,7 +145,7 @@ function handleCloseSider() {
       <!-- 页脚 -->
       <LayoutFooter v-if="showFooter" :height="footerHeight" class="layout-mix__footer">
         <slot name="footer">
-          <div class="footer-inner">© 2024 LDesign</div>
+          <div class="footer-inner">© 2024 LDesign. All rights reserved.</div>
         </slot>
       </LayoutFooter>
     </div>
@@ -153,36 +153,108 @@ function handleCloseSider() {
 </template>
 
 <style scoped>
-/* ========== 主容器 ========== */
+/* ========== CSS Variables Mapping ========== */
+.layout-mix {
+  /* Colors - Modern Theme */
+  --color-bg-layout: #f8fafc; /* Slate-50 */
+  --color-bg-container: #ffffff;
+  
+  --color-border: rgba(226, 232, 240, 0.8); /* Slate-200 */
+  
+  --color-text-primary: #0f172a; /* Slate-900 */
+  --color-text-secondary: #475569; /* Slate-600 */
+  --color-text-tertiary: #94a3b8; /* Slate-400 */
+  --color-text-quaternary: #cbd5e1; /* Slate-300 */
+  
+  /* Use System Primary Color */
+  --color-primary: var(--color-primary-500, #3b82f6);
+  --color-primary-active: #2563eb;
+  
+  --color-fill-hover: #f1f5f9; /* Slate-100 */
+  
+  /* Header Specific (Primary Color) */
+  --header-bg: var(--color-primary);
+  --header-text: #ffffff;
+  --header-text-secondary: rgba(255, 255, 255, 0.8);
+  --header-border: rgba(255, 255, 255, 0.1);
+  --header-hover: rgba(255, 255, 255, 0.1);
+  
+  /* Shadows */
+  --shadow-header: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --shadow-sider: 4px 0 24px 0 rgba(0, 0, 0, 0.05);
+  --shadow-tabs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  /* Sizes */
+  --header-height: v-bind('props.headerHeight + "px"');
+  --sider-width: v-bind('props.siderWidth + "px"');
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Dark Mode Overrides */
+:root[data-theme-mode="dark"] .layout-mix,
+.dark .layout-mix {
+  --color-bg-layout: #020617; /* Slate-950 */
+  --color-bg-container: #0f172a; /* Slate-900 */
+  
+  --color-border: #1e293b; /* Slate-800 */
+  
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-tertiary: #64748b;
+  --color-text-quaternary: #475569;
+  
+  --color-fill-hover: #1e293b;
+  
+  /* Dark Header */
+  --header-bg: #0f172a;
+  --header-text: #f8fafc;
+  --header-border: #1e293b;
+  --header-hover: #1e293b;
+  
+  --shadow-header: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+  --shadow-sider: 4px 0 24px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* ========== Main Layout Container ========== */
 .layout-mix {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--color-bg-layout, #f5f7fa);
+  background: var(--color-bg-layout);
+  color: var(--color-text-primary);
+  font-family: var(--size-font-family, system-ui, -apple-system, sans-serif);
 }
 
-/* ========== 顶栏 ========== */
+/* ========== Header ========== */
 .layout-mix__header {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  z-index: 1001;
-  background: linear-gradient(135deg, var(--color-primary-700, #1e3a5f) 0%, var(--color-primary-900, #0d1f33) 100%);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1020;
+  background: var(--header-bg);
+  color: var(--header-text);
+  border-bottom: 1px solid var(--header-border);
+  box-shadow: var(--shadow-header);
+  /* Override menu colors for primary header */
+  --color-text-primary: var(--header-text);
+  --color-text-secondary: var(--header-text-secondary);
+  --color-fill-hover: var(--header-hover);
 }
 
 .layout-mix__brand {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 48px;
   height: 100%;
 }
 
 .layout-mix__logo {
   display: flex;
   align-items: center;
-  padding-left: 16px;
+  padding-left: 24px;
+  min-width: 200px;
+  color: var(--header-text);
 }
 
 .layout-mix__top-menu {
@@ -194,26 +266,38 @@ function handleCloseSider() {
 .layout-mix__header-right {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding-right: 16px;
+  gap: 16px;
+  padding-right: 24px;
 }
 
-/* ========== 侧边栏 ========== */
+/* ========== Sider ========== */
 .layout-mix__sider {
-  background: var(--color-bg-container, #fff);
-  border-right: 1px solid var(--color-border-secondary, #eef0f3);
-  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
+  background: var(--color-bg-container) !important;
+  border-right: 1px solid var(--color-border);
+  box-shadow: var(--shadow-sider);
+  z-index: 1010;
+  /* Reset text colors for white background sidebar */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-fill-hover: #f1f5f9;
+}
+
+:root[data-theme-mode="dark"] .layout-mix__sider,
+.dark .layout-mix__sider {
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-fill-hover: #1e293b;
 }
 
 .layout-mix__sider-title {
-  padding: 16px 20px 12px;
-  border-bottom: 1px solid var(--color-border-secondary, #eef0f3);
+  padding: 24px 20px 12px;
+  /* border-bottom: 1px solid var(--color-border); */
 }
 
 .sider-title-text {
   font-size: 12px;
   font-weight: 600;
-  color: var(--color-text-quaternary, #bfbfbf);
+  color: var(--color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -222,6 +306,7 @@ function handleCloseSider() {
   flex: 1;
   padding: 12px 8px;
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .layout-mix__sider-menu::-webkit-scrollbar {
@@ -229,7 +314,7 @@ function handleCloseSider() {
 }
 
 .layout-mix__sider-menu::-webkit-scrollbar-thumb {
-  background: var(--color-border-secondary, #e0e0e0);
+  background: var(--color-border);
   border-radius: 4px;
 }
 
@@ -237,7 +322,7 @@ function handleCloseSider() {
   display: flex;
   justify-content: center;
   padding: 12px;
-  border-top: 1px solid var(--color-border-secondary, #eef0f3);
+  border-top: 1px solid var(--color-border);
 }
 
 .sider-collapse-btn {
@@ -246,17 +331,17 @@ function handleCloseSider() {
   justify-content: center;
   width: 32px;
   height: 32px;
-  background: var(--color-fill-quaternary, #f5f5f5);
+  background: transparent;
   border: none;
-  border-radius: 8px;
-  color: var(--color-text-tertiary, #8c8c8c);
+  border-radius: 6px;
+  color: var(--color-text-tertiary);
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s;
 }
 
 .sider-collapse-btn:hover {
-  background: var(--color-fill-tertiary, #e8e8e8);
-  color: var(--color-text-secondary, #595959);
+  background: var(--color-fill-hover);
+  color: var(--color-text-primary);
 }
 
 .sider-collapse-btn svg {
@@ -267,53 +352,53 @@ function handleCloseSider() {
   transform: rotate(180deg);
 }
 
-/* ========== 主区域 ========== */
+/* ========== Main Content Area ========== */
 .layout-mix__main {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-width: 0;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all var(--transition-normal);
 }
 
-/* ========== 标签栏 ========== */
+/* ========== Tabs ========== */
 .layout-mix__tabs {
   position: fixed;
   right: 0;
-  z-index: 999;
-  background: var(--color-bg-container, #fff);
-  border-bottom: 1px solid var(--color-border-secondary, #eef0f3);
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1005;
+  background: var(--color-bg-container);
+  border-bottom: 1px solid var(--color-border);
+  box-shadow: var(--shadow-tabs);
+  transition: left var(--transition-normal);
 }
 
-/* ========== 内容区 ========== */
+/* ========== Content ========== */
 .layout-mix__content {
   flex: 1;
-  background: var(--color-bg-layout, #f5f7fa);
+  background: var(--color-bg-layout);
 }
 
 .content-inner {
-  padding: 20px;
+  padding: 24px;
   min-height: calc(100vh - 200px);
-  animation: contentFadeIn 0.4s ease;
+  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-@keyframes contentFadeIn {
+@keyframes slideUpFade {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
-
   to {
     opacity: 1;
     transform: translateY(0);
   }
 }
 
-/* ========== 页脚 ========== */
+/* ========== Footer ========== */
 .layout-mix__footer {
-  background: var(--color-bg-container, #fff);
-  border-top: 1px solid var(--color-border-secondary, #eef0f3);
+  background: var(--color-bg-container);
+  border-top: 1px solid var(--color-border);
 }
 
 .footer-inner {
@@ -322,24 +407,22 @@ function handleCloseSider() {
   justify-content: center;
   height: 100%;
   font-size: 13px;
-  color: var(--color-text-quaternary, #bfbfbf);
+  color: var(--color-text-tertiary);
 }
 
-/* ========== 深色模式 ========== */
-:root[data-theme-mode="dark"] .layout-mix__header,
-.dark .layout-mix__header {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-}
-
-:root[data-theme-mode="dark"] .layout-mix__sider,
-.dark .layout-mix__sider {
-  background: var(--color-bg-container, #1f1f1f);
-  border-right-color: var(--color-border-secondary, #303030);
-}
-
-:root[data-theme-mode="dark"] .layout-mix__tabs,
-.dark .layout-mix__tabs {
-  background: var(--color-bg-container, #1f1f1f);
-  border-bottom-color: var(--color-border-secondary, #303030);
+/* ========== Responsive ========== */
+@media (max-width: 768px) {
+  .content-inner {
+    padding: 16px;
+  }
+  
+  .layout-mix__brand {
+    gap: 16px;
+  }
+  
+  .layout-mix__logo {
+    min-width: auto;
+    padding-left: 16px;
+  }
 }
 </style>

@@ -24,8 +24,8 @@ interface Props {
 const props = withDefaults(defineProps<Props>(), {
   siderWidth: 240,
   siderCollapsedWidth: 64,
-  headerHeight: 64,
-  tabsHeight: 40,
+  headerHeight: 60,
+  tabsHeight: 44,
   showTabs: true,
   showFooter: true,
   footerHeight: 48,
@@ -108,10 +108,8 @@ function handleCloseSider() {
             <button class="collapse-btn" @click="handleToggleSider" :title="siderCollapsed ? '展开菜单' : '收起菜单'">
               <svg :class="{ 'is-collapsed': siderCollapsed }" width="18" height="18" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="11 17 6 12 11 7" />
-                <polyline points="18 17 13 12 18 7" />
+                <path d="M15 18l-6-6 6-6" />
               </svg>
-              <span class="collapse-text" :class="{ 'is-hidden': siderCollapsed }">收起菜单</span>
             </button>
           </slot>
         </div>
@@ -128,9 +126,9 @@ function handleCloseSider() {
             <button class="menu-toggle-btn" @click="handleToggleSider">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
-                <line x1="4" y1="6" x2="20" y2="6" />
-                <line x1="4" y1="12" x2="20" y2="12" />
-                <line x1="4" y1="18" x2="20" y2="18" />
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
             </button>
           </slot>
@@ -165,7 +163,7 @@ function handleCloseSider() {
       <LayoutFooter v-if="showFooter" :height="footerHeight" class="layout-sidebar__footer">
         <slot name="footer">
           <div class="footer-content">
-            <span> 2024 LDesign. All rights reserved.</span>
+            <span>© 2024 LDesign. All rights reserved.</span>
           </div>
         </slot>
       </LayoutFooter>
@@ -176,45 +174,61 @@ function handleCloseSider() {
 <style scoped>
 /* ========== CSS Variables Mapping ========== */
 .layout-sidebar {
-  /* Semantic Colors Mapping to @ldesign/color tokens */
-  --color-bg-layout: var(--color-gray-50, #f8fafc);
-  --color-bg-container: var(--color-gray-0, #ffffff);
-  --color-bg-elevated: var(--color-gray-0, #ffffff);
-  --color-border-secondary: var(--color-gray-100, #e2e8f0);
-  --color-border-default: var(--color-gray-200, #cbd5e1);
-  --color-text-primary: var(--color-gray-900, #0f172a);
-  --color-text-secondary: var(--color-gray-600, #475569);
-  --color-text-tertiary: var(--color-gray-400, #94a3b8);
-  --color-text-quaternary: var(--color-gray-300, #cbd5e1);
-  --color-fill-secondary: var(--color-gray-100, #f1f5f9);
-  --color-fill-tertiary: var(--color-gray-200, #e2e8f0);
-  --color-fill-quaternary: var(--color-gray-50, #f8fafc);
+  /* Colors - Modern Theme with Primary Sider */
+  --color-bg-layout: #f8fafc; /* Slate-50 */
+  --color-bg-container: #ffffff;
+  
+  --color-border: rgba(226, 232, 240, 0.8); /* Slate-200 */
+  
+  --color-text-primary: #0f172a; /* Slate-900 */
+  --color-text-secondary: #475569; /* Slate-600 */
+  --color-text-tertiary: #94a3b8; /* Slate-400 */
+  
+  /* Use System Primary Color */
+  --color-primary: var(--color-primary-500, #3b82f6);
+  
+  /* Sider Specific */
+  --sider-bg: var(--color-primary);
+  --sider-text: #ffffff;
+  --sider-text-secondary: rgba(255, 255, 255, 0.85); /* Increased opacity for better readability */
+  --sider-border: rgba(255, 255, 255, 0.08); /* Very subtle or none */
+  --sider-hover: rgba(255, 255, 255, 0.15);
+  --sider-active: rgba(255, 255, 255, 0.25);
+  
+  --color-fill-hover: #f1f5f9; /* Slate-100 */
 
-  /* Shadow */
-  --shadow-sider: 2px 0 8px rgba(0, 0, 0, 0.02);
-  --shadow-sider-hover: 4px 0 16px rgba(0, 0, 0, 0.04);
-  --shadow-header: 0 1px 4px rgba(0, 0, 0, 0.02);
-  --shadow-tabs: 0 2px 8px rgba(0, 0, 0, 0.02);
+  /* Shadows */
+  --shadow-header: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-sider: 4px 0 24px 0 rgba(0, 0, 0, 0.1);
+  --shadow-tabs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+
+  /* Sizes */
+  --header-height: v-bind('props.headerHeight + "px"');
+  --sider-width: v-bind('props.siderWidth + "px"');
+  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --glass-blur: 12px;
 }
 
 /* Dark Mode Overrides */
 :root[data-theme-mode="dark"] .layout-sidebar,
 .dark .layout-sidebar {
-  --color-bg-layout: var(--color-gray-950, #020617);
-  --color-bg-container: var(--color-gray-900, #0f172a);
-  --color-bg-elevated: var(--color-gray-800, #1e293b);
-  --color-border-secondary: var(--color-gray-800, #1e293b);
-  --color-border-default: var(--color-gray-700, #334155);
-  --color-text-primary: var(--color-gray-50, #f8fafc);
-  --color-text-secondary: var(--color-gray-300, #cbd5e1);
-  --color-text-tertiary: var(--color-gray-500, #64748b);
-  --color-text-quaternary: var(--color-gray-600, #475569);
-  --color-fill-secondary: var(--color-gray-800, #1e293b);
-  --color-fill-tertiary: var(--color-gray-700, #334155);
-  --color-fill-quaternary: var(--color-gray-900, #0f172a);
-
-  --shadow-sider: 2px 0 8px rgba(0, 0, 0, 0.2);
-  --shadow-sider-hover: 4px 0 16px rgba(0, 0, 0, 0.4);
+  --color-bg-layout: #020617;
+  --color-bg-container: #0f172a;
+  
+  --color-border: #1e293b;
+  
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --color-text-tertiary: #64748b;
+  
+  --color-fill-hover: #1e293b;
+  
+  /* In dark mode, sidebar can still be primary or switch to dark primary */
+  --sider-bg: var(--color-primary-950, #172554);
+  --sider-text: #f8fafc;
+  --sider-text-secondary: #94a3b8;
+  
+  --shadow-header: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* ========== Main Layout Container ========== */
@@ -223,36 +237,30 @@ function handleCloseSider() {
   min-height: 100vh;
   background: var(--color-bg-layout);
   color: var(--color-text-primary);
-  font-family: var(--size-font-family);
-  line-height: var(--size-line-normal);
+  font-family: var(--size-font-family, system-ui, -apple-system, sans-serif);
 }
 
 /* ========== Sider ========== */
 .layout-sidebar__sider {
-  background: linear-gradient(180deg, var(--color-bg-elevated) 0%, var(--color-bg-container) 100%);
-  border-right: 1px solid var(--color-border-secondary);
+  background: var(--sider-bg) !important;
+  color: var(--sider-text);
+  border-right: none;
   box-shadow: var(--shadow-sider);
-  transition: all var(--size-duration-normal) var(--size-ease-in-out);
+  transition: all var(--transition-normal);
   z-index: var(--size-z-fixed, 1030);
-  will-change: width, transform;
-}
-
-.layout-sidebar__sider:hover {
-  box-shadow: var(--shadow-sider-hover);
 }
 
 /* Logo Area */
 .layout-sidebar__logo {
-  height: v-bind('props.headerHeight + "px"');
+  height: var(--header-height);
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  padding: 0 var(--size-spacing-xl);
-  border-bottom: 1px solid var(--color-border-secondary);
-  background: var(--color-bg-container);
-  transition: all var(--size-duration-normal) var(--size-ease-in-out);
+  padding: 0 20px;
+  background: transparent;
+  color: var(--sider-text);
   overflow: hidden;
-  white-space: nowrap;
+  /* Removed border for seamless look */
+  border-bottom: none; 
 }
 
 .layout-sidebar__logo.is-collapsed {
@@ -263,11 +271,15 @@ function handleCloseSider() {
 /* Menu Area */
 .layout-sidebar__menu {
   flex: 1;
-  padding: var(--size-spacing-md) var(--size-spacing-xs);
+  padding: 12px;
   overflow-y: auto;
   overflow-x: hidden;
-  scrollbar-width: thin;
-  scrollbar-color: var(--color-border-secondary) transparent;
+  /* Override menu text colors for dark background */
+  --color-text-primary: var(--sider-text);
+  --color-text-secondary: var(--sider-text-secondary);
+  --color-fill-hover: var(--sider-hover);
+  --color-primary-active: var(--sider-active); 
+  --color-fill-active: var(--sider-active);
 }
 
 .layout-sidebar__menu::-webkit-scrollbar {
@@ -275,69 +287,46 @@ function handleCloseSider() {
 }
 
 .layout-sidebar__menu::-webkit-scrollbar-thumb {
-  background: var(--color-border-secondary);
-  border-radius: var(--size-radius-full);
-}
-
-.layout-sidebar__menu::-webkit-scrollbar-thumb:hover {
-  background: var(--color-border-default);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
 }
 
 /* Sider Footer */
 .layout-sidebar__sider-footer {
-  padding: var(--size-spacing-md);
-  border-top: 1px solid var(--color-border-secondary);
-  background: var(--color-bg-container);
-}
-
-/* Collapse Button */
-.collapse-btn {
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--size-spacing-sm);
-  width: 100%;
-  height: var(--size-comp-size-m);
-  padding: 0 var(--size-spacing-sm);
-  background: var(--color-fill-quaternary);
-  border: 1px solid transparent;
-  border-radius: var(--size-radius-lg);
-  color: var(--color-text-tertiary);
-  font-size: var(--size-font-sm);
+  /* Removed border for seamless look */
+  border-top: none; 
+  background: transparent;
+}
+
+.collapse-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--sider-text-secondary);
+  border-radius: 6px;
   cursor: pointer;
-  transition: all var(--size-duration-fast) var(--size-ease-in-out);
-  overflow: hidden;
+  transition: all 0.2s;
 }
 
 .collapse-btn:hover {
-  background: var(--color-fill-tertiary);
-  color: var(--color-text-secondary);
-}
-
-.collapse-btn:focus-visible {
-  outline: 2px solid var(--color-primary-default);
-  outline-offset: 2px;
+  background: var(--sider-hover);
+  color: var(--sider-text);
 }
 
 .collapse-btn svg {
-  flex-shrink: 0;
-  transition: transform var(--size-duration-normal) var(--size-ease-in-out);
+  transition: transform 0.3s ease;
 }
 
 .collapse-btn svg.is-collapsed {
   transform: rotate(180deg);
-}
-
-.collapse-text {
-  white-space: nowrap;
-  opacity: 1;
-  transition: opacity var(--size-duration-normal), width var(--size-duration-normal);
-}
-
-.collapse-text.is-hidden {
-  opacity: 0;
-  width: 0;
-  display: none;
 }
 
 /* ========== Main Content Area ========== */
@@ -346,16 +335,15 @@ function handleCloseSider() {
   flex-direction: column;
   flex: 1;
   min-width: 0;
-  transition: margin-left var(--size-duration-normal) var(--size-ease-in-out);
-  will-change: margin-left;
+  transition: margin-left var(--transition-normal);
 }
 
 /* ========== Header ========== */
 .layout-sidebar__header {
   background: var(--color-bg-container);
-  border-bottom: 1px solid var(--color-border-secondary);
+  border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-header);
-  padding: 0 var(--size-spacing-lg);
+  padding: 0 20px;
   z-index: var(--size-z-sticky, 1020);
 }
 
@@ -363,66 +351,56 @@ function handleCloseSider() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--size-comp-size-m);
-  height: var(--size-comp-size-m);
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
   background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--size-radius-md);
   color: var(--color-text-secondary);
   cursor: pointer;
-  transition: all var(--size-duration-fast);
+  transition: all 0.2s;
 }
 
 .menu-toggle-btn:hover {
-  background: var(--color-fill-secondary);
+  background: var(--color-fill-hover);
   color: var(--color-text-primary);
-}
-
-.menu-toggle-btn:active {
-  transform: scale(0.95);
 }
 
 /* ========== Tabs ========== */
 .layout-sidebar__tabs {
   position: fixed;
   right: 0;
-  z-index: var(--size-z-sticky, 1020);
+  z-index: 1010;
   background: var(--color-bg-container);
-  border-bottom: 1px solid var(--color-border-secondary);
+  border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-tabs);
-  transition: left var(--size-duration-normal) var(--size-ease-in-out), top var(--size-duration-normal) var(--size-ease-in-out);
+  transition: left var(--transition-normal), top var(--transition-normal);
 }
 
 /* ========== Content ========== */
 .layout-sidebar__content {
   flex: 1;
   background: var(--color-bg-layout);
-  transition: padding-top var(--size-duration-normal) var(--size-ease-in-out);
+  transition: padding-top var(--transition-normal);
 }
 
 .content-wrapper {
-  padding: var(--size-spacing-lg);
+  padding: 24px;
   min-height: calc(100vh - 200px);
-  animation: fadeIn var(--size-duration-normal) var(--size-ease-out);
+  animation: fadeIn 0.5s ease-out;
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(var(--size-spacing-sm));
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ========== Footer ========== */
 .layout-sidebar__footer {
   background: var(--color-bg-container);
-  border-top: 1px solid var(--color-border-secondary);
-  padding: 0 var(--size-spacing-lg);
+  border-top: 1px solid var(--color-border);
+  padding: 0 24px;
 }
 
 .footer-content {
@@ -430,14 +408,14 @@ function handleCloseSider() {
   align-items: center;
   justify-content: center;
   height: 100%;
-  font-size: var(--size-font-sm);
-  color: var(--color-text-quaternary);
+  font-size: 13px;
+  color: var(--color-text-tertiary);
 }
 
-/* ========== Responsive ========== */
+/* ========== Mobile Response ========== */
 @media (max-width: 768px) {
   .content-wrapper {
-    padding: var(--size-spacing-md);
+    padding: 16px;
   }
 }
 </style>

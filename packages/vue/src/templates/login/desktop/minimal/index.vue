@@ -256,28 +256,57 @@ function handleSocialLogin(provider: string) {
 <style scoped>
 /* ========== CSS Variables ========== */
 .login-glass {
-  /* Colors - Glass Theme (Dark) */
-  --glass-bg-primary: rgba(255, 255, 255, 0.08);
-  --glass-bg-secondary: rgba(255, 255, 255, 0.05);
-  --glass-bg-input: rgba(255, 255, 255, 0.05);
-  --glass-bg-input-focus: rgba(255, 255, 255, 0.08);
-  --glass-border: rgba(255, 255, 255, 0.1);
-  --glass-border-hover: rgba(255, 255, 255, 0.2);
+  /* Sizes Mapping (Compatibility for space/spacing) */
+  --size-space-xs: var(--size-space-xs, 4px);
+  --size-space-sm: var(--size-space-sm, 8px);
+  --size-space-md: var(--size-space-md, 16px);
+  --size-space-lg: var(--size-space-lg, 24px);
+  --size-space-xl: var(--size-space-xl, 32px);
+  --size-space-2xl: var(--size-space-2xl, 40px);
+  --size-space-3xl: var(--size-space-3xl, 64px);
+
+  /* Font Sizes */
+  --size-font-xs: 12px;
+  --size-font-sm: 14px;
+  --size-font-base: 16px;
+  --size-font-lg: 18px;
+  --size-font-xl: 20px;
+  --size-font-2xl: 24px;
+  --size-font-3xl: 30px;
+
+  /* Radius */
+  --size-radius-md: 6px;
+  --size-radius-lg: 8px;
+  --size-radius-xl: 12px;
+  --size-radius-2xl: 16px;
+
+  /* Colors - Glass Theme (Dark Mode Base) */
+  --glass-bg-primary: rgba(255, 255, 255, 0.05);
+  --glass-bg-secondary: rgba(255, 255, 255, 0.03);
+  --glass-bg-input: rgba(0, 0, 0, 0.2);
+  --glass-bg-input-focus: rgba(0, 0, 0, 0.3);
+  
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-border-light: rgba(255, 255, 255, 0.15);
+  
   --glass-text-primary: #ffffff;
-  --glass-text-secondary: rgba(255, 255, 255, 0.6);
-  --glass-text-tertiary: rgba(255, 255, 255, 0.4);
+  --glass-text-secondary: rgba(255, 255, 255, 0.7);
+  --glass-text-tertiary: rgba(255, 255, 255, 0.45);
   --glass-text-placeholder: rgba(255, 255, 255, 0.3);
 
-  /* Theme Colors */
+  /* Brand Colors */
   --color-primary: var(--color-primary-500, #8b5cf6);
   --color-primary-hover: var(--color-primary-600, #7c3aed);
-  --color-primary-alpha: var(--color-primary-500, rgba(139, 92, 246, 0.5));
+  --color-primary-glow: rgba(139, 92, 246, 0.5);
+  --color-success: var(--color-success-500, #10b981);
+  --color-info: var(--color-info-500, #06b6d4);
 
   /* Shadows */
-  --shadow-glass: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-  --shadow-glass-hover: 0 8px 24px -8px rgba(0, 0, 0, 0.3);
+  --shadow-glass: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  --shadow-glass-hover: 0 12px 40px 0 rgba(0, 0, 0, 0.4);
+  --shadow-glow: 0 0 20px var(--color-primary-glow);
 
-  font-family: var(--size-font-family);
+  font-family: var(--size-font-family, system-ui, sans-serif);
   color: var(--glass-text-primary);
 }
 
@@ -287,218 +316,169 @@ function handleSocialLogin(provider: string) {
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  padding: var(--size-spacing-2xl);
+  padding: var(--size-space-xl);
   overflow: hidden;
-  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+  background: #0f172a; /* Fallback */
+  background: radial-gradient(circle at top left, #1e1b4b 0%, #0f172a 40%, #020617 100%);
 }
 
 .login-toolbar {
   position: fixed;
-  top: var(--size-spacing-xl);
-  right: var(--size-spacing-xl);
+  top: var(--size-space-lg);
+  right: var(--size-space-lg);
   z-index: 100;
   display: flex;
-  gap: var(--size-spacing-md);
+  gap: var(--size-space-md);
 }
 
-/* 背景 */
+/* 动态背景 */
 .glass-background {
-  position: fixed;
+  position: absolute;
   inset: 0;
-  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .bg-gradient {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.5;
-  animation: gradient-float 20s ease-in-out infinite;
-  will-change: transform;
+  filter: blur(80px);
+  opacity: 0.4;
+  animation: float 20s ease-in-out infinite;
 }
 
 .bg-gradient-1 {
-  width: 600px;
-  height: 600px;
-  top: -150px;
-  left: -100px;
-  background: var(--color-primary-600, #7c3aed);
+  width: 50vw;
+  height: 50vw;
+  max-width: 600px;
+  max-height: 600px;
+  top: -10%;
+  left: -10%;
+  background: var(--color-primary);
+  animation-delay: 0s;
 }
 
 .bg-gradient-2 {
-  width: 500px;
-  height: 500px;
-  bottom: -150px;
-  right: -100px;
-  background: var(--color-info-500, #06b6d4);
-  animation-delay: -7s;
-}
-
-.bg-gradient-3 {
-  width: 400px;
-  height: 400px;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: var(--color-success-500, #10b981);
-  animation-delay: -14s;
-}
-
-@keyframes gradient-float {
-
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-
-  33% {
-    transform: translate(40px, -40px) scale(1.1);
-  }
-
-  66% {
-    transform: translate(-30px, 30px) scale(0.9);
-  }
-}
-
-/* 网格 */
-.bg-grid {
-  position: absolute;
-  inset: 0;
-  background-image: linear-gradient(rgba(255, 255, 255, 0.02) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
-  background-size: 60px 60px;
-  animation: grid-move 30s linear infinite;
-  will-change: transform;
-}
-
-@keyframes grid-move {
-  0% {
-    transform: translate(0, 0);
-  }
-
-  100% {
-    transform: translate(60px, 60px);
-  }
-}
-
-/* 浮动光斑 */
-.bg-orbs {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.orb {
-  position: absolute;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 70%);
-  animation: orb-float 15s ease-in-out infinite;
-  will-change: transform;
-}
-
-.orb-1 {
-  width: 200px;
-  height: 200px;
-  top: 20%;
-  left: 10%;
-}
-
-.orb-2 {
-  width: 150px;
-  height: 150px;
-  top: 60%;
-  right: 15%;
+  width: 40vw;
+  height: 40vw;
+  max-width: 500px;
+  max-height: 500px;
+  bottom: -10%;
+  right: -5%;
+  background: var(--color-info);
   animation-delay: -5s;
 }
 
-.orb-3 {
-  width: 100px;
-  height: 100px;
-  bottom: 20%;
+.bg-gradient-3 {
+  width: 30vw;
+  height: 30vw;
+  max-width: 400px;
+  max-height: 400px;
+  top: 40%;
   left: 30%;
+  background: var(--color-success);
+  opacity: 0.2;
   animation-delay: -10s;
 }
 
-@keyframes orb-float {
-
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-    opacity: 0.3;
-  }
-
-  50% {
-    transform: translateY(-30px) scale(1.1);
-    opacity: 0.6;
-  }
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -50px) scale(1.1); }
+  66% { transform: translate(-20px, 20px) scale(0.9); }
 }
 
-/* 卡片 */
+.bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 50px 50px;
+  mask-image: radial-gradient(circle at center, black 40%, transparent 100%);
+}
+
+.bg-orbs .orb {
+  position: absolute;
+  border-radius: 50%;
+  background: white;
+  opacity: 0.1;
+  filter: blur(1px);
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+.orb-1 { width: 4px; height: 4px; top: 20%; left: 20%; animation-delay: 0s; }
+.orb-2 { width: 6px; height: 6px; top: 60%; right: 25%; animation-delay: 1s; }
+.orb-3 { width: 3px; height: 3px; bottom: 30%; left: 40%; animation-delay: 2s; }
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(1.5); }
+}
+
+/* 登录卡片 */
 .glass-card {
   position: relative;
-  z-index: 1;
+  z-index: 10;
   width: 100%;
-  max-width: 440px;
-  padding: var(--size-spacing-3xl);
-  /* 32px or 40px */
+  max-width: 420px;
+  padding: 40px;
   background: var(--glass-bg-primary);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-radius: var(--size-radius-2xl);
   border: 1px solid var(--glass-border);
+  border-top-color: var(--glass-border-light);
+  border-radius: var(--size-radius-2xl);
+  backdrop-filter: blur(20px);
   box-shadow: var(--shadow-glass);
   opacity: 0;
-  transform: translateY(30px) scale(0.95);
+  transform: translateY(20px);
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-  will-change: transform, opacity;
 }
 
 .glass-card.is-mounted {
   opacity: 1;
-  transform: translateY(0) scale(1);
+  transform: translateY(0);
 }
 
-/* Logo */
 .card-logo {
   display: flex;
   justify-content: center;
-  margin-bottom: var(--size-spacing-xl);
+  margin-bottom: var(--size-space-lg);
 }
 
 .logo-img {
-  width: 60px;
-  height: 60px;
-  border-radius: var(--size-radius-lg);
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
 }
 
 .logo-default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 60px;
-  height: 60px;
-  background: linear-gradient(135deg, var(--color-primary-500, #8b5cf6), var(--color-primary-700, #6d28d9));
-  border-radius: var(--size-radius-lg);
-  box-shadow: var(--shadow-glass-hover);
-  color: #fff;
+  width: 56px;
+  height: 56px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #6366f1 100%);
+  border-radius: var(--size-radius-xl);
+  box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);
+  color: white;
 }
 
-/* Header */
 .card-header {
   text-align: center;
-  margin-bottom: var(--size-spacing-2xl);
+  margin-bottom: var(--size-space-xl);
 }
 
 .card-title {
   font-size: var(--size-font-2xl);
-  font-weight: var(--size-font-weight-bold);
-  color: var(--glass-text-primary);
-  margin: 0 0 var(--size-spacing-sm);
+  font-weight: 700;
+  margin: 0 0 8px;
+  background: linear-gradient(to right, #fff, rgba(255,255,255,0.7));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .card-subtitle {
-  font-size: var(--size-font-base);
-  color: var(--glass-text-secondary);
+  font-size: var(--size-font-sm);
+  color: var(--glass-text-tertiary);
   margin: 0;
 }
 
@@ -509,7 +489,8 @@ function handleSocialLogin(provider: string) {
   background: var(--glass-bg-secondary);
   border-radius: var(--size-radius-lg);
   padding: 4px;
-  margin-bottom: var(--size-spacing-2xl);
+  margin-bottom: var(--size-space-xl);
+  border: 1px solid var(--glass-border);
 }
 
 .tab-indicator {
@@ -518,55 +499,40 @@ function handleSocialLogin(provider: string) {
   left: 4px;
   width: calc(50% - 4px);
   height: calc(100% - 8px);
-  background: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.1);
   border-radius: var(--size-radius-md);
-  transition: transform var(--size-duration-normal) var(--size-ease-in-out);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .tab-btn {
   flex: 1;
   position: relative;
   z-index: 1;
-  padding: 10px 16px;
-  font-size: var(--size-font-sm);
-  font-weight: var(--size-font-weight-medium);
-  color: var(--glass-text-secondary);
+  padding: 8px;
   background: none;
   border: none;
+  font-size: var(--size-font-sm);
+  color: var(--glass-text-secondary);
   cursor: pointer;
-  transition: color var(--size-duration-normal);
+  transition: color 0.3s;
 }
 
 .tab-btn.active {
   color: var(--glass-text-primary);
+  font-weight: 500;
 }
 
 /* Form */
 .glass-form {
   display: flex;
   flex-direction: column;
-  gap: var(--size-spacing-lg);
+  gap: var(--size-space-lg);
 }
 
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--size-spacing-lg);
-}
-
-.tab-fade-enter-active,
-.tab-fade-leave-active {
-  transition: all 0.25s ease;
-}
-
-.tab-fade-enter-from {
-  opacity: 0;
-  transform: translateX(20px);
-}
-
-.tab-fade-leave-to {
-  opacity: 0;
-  transform: translateX(-20px);
+  gap: var(--size-space-lg);
 }
 
 .form-field {
@@ -575,14 +541,13 @@ function handleSocialLogin(provider: string) {
 
 .field-input {
   width: 100%;
-  height: 52px;
-  /* var(--size-btn-height-large)? */
-  padding: 22px 16px 8px;
-  font-size: var(--size-font-base);
-  color: var(--glass-text-primary);
+  height: 48px;
+  padding: 20px 16px 4px;
   background: var(--glass-bg-input);
   border: 1px solid var(--glass-border);
   border-radius: var(--size-radius-lg);
+  font-size: var(--size-font-base);
+  color: var(--glass-text-primary);
   outline: none;
   transition: all 0.2s;
 }
@@ -590,42 +555,34 @@ function handleSocialLogin(provider: string) {
 .field-input:focus {
   background: var(--glass-bg-input-focus);
   border-color: var(--color-primary);
+  box-shadow: 0 0 0 1px var(--color-primary);
 }
 
 .field-label {
   position: absolute;
   left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 14px;
   font-size: var(--size-font-base);
   color: var(--glass-text-tertiary);
   pointer-events: none;
-  transition: all 0.2s;
+  transition: all 0.2s ease-out;
 }
 
 .form-field.is-focused .field-label,
 .form-field.has-value .field-label {
-  top: 14px;
-  font-size: var(--size-font-xs);
+  top: 6px;
+  font-size: 10px;
   color: var(--color-primary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .field-line {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  width: 0;
-  height: 2px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-info-400, #22d3ee));
-  transform: translateX(-50%);
-  transition: width 0.3s;
+  display: none; /* Removed in favor of border */
 }
 
-.form-field.is-focused .field-line {
-  width: 90%;
-}
-
-/* SMS */
+/* SMS Button */
 .sms-field .field-input {
   padding-right: 80px;
 }
@@ -633,30 +590,33 @@ function handleSocialLogin(provider: string) {
 .sms-btn {
   position: absolute;
   right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  padding: 6px 12px;
-  font-size: var(--size-font-xs);
-  font-weight: var(--size-font-weight-medium);
-  color: var(--color-primary);
-  background: rgba(139, 92, 246, 0.15);
-  /* Keep generic or use theme var? */
-  border: none;
+  top: 8px;
+  bottom: 8px;
+  padding: 0 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
   border-radius: var(--size-radius-md);
+  color: var(--color-primary);
+  font-size: var(--size-font-xs);
   cursor: pointer;
   transition: all 0.2s;
 }
 
+.sms-btn:hover:not(:disabled) {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
 .sms-btn:disabled {
-  color: var(--glass-text-placeholder);
-  background: var(--glass-bg-secondary);
+  opacity: 0.5;
   cursor: not-allowed;
 }
 
 /* Captcha */
 .captcha-row {
   display: flex;
-  gap: var(--size-spacing-md);
+  gap: 12px;
 }
 
 .captcha-field {
@@ -664,73 +624,72 @@ function handleSocialLogin(provider: string) {
 }
 
 .captcha-img {
-  flex-shrink: 0;
-  height: 52px;
-  display: flex;
-  align-items: center;
+  width: 100px;
+  height: 48px;
+  background: var(--glass-bg-input);
+  border: 1px solid var(--glass-border);
   border-radius: var(--size-radius-lg);
-  overflow: hidden;
-  cursor: pointer;
-  transition: transform 0.2s;
-}
-
-.captcha-img:hover {
-  transform: scale(1.02);
-}
-
-/* Submit */
-.glass-btn {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--size-spacing-sm);
-  height: 52px;
-  margin-top: var(--size-spacing-sm);
-  font-size: var(--size-font-md);
-  font-weight: var(--size-font-weight-bold);
-  color: #fff;
-  background: linear-gradient(135deg, var(--color-primary-500, #8b5cf6), var(--color-primary-600, #7c3aed));
-  border: none;
-  border-radius: var(--size-radius-lg);
   cursor: pointer;
   transition: all 0.2s;
 }
 
+.captcha-img:hover {
+  border-color: var(--glass-text-secondary);
+}
+
+/* Submit Button */
+.glass-btn {
+  width: 100%;
+  height: 48px;
+  margin-top: 8px;
+  background: linear-gradient(135deg, var(--color-primary) 0%, #6366f1 100%);
+  border: none;
+  border-radius: var(--size-radius-lg);
+  color: white;
+  font-size: var(--size-font-base);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
 .glass-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -10px var(--color-primary-alpha);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
 }
 
 .glass-btn:disabled {
-  opacity: 0.6;
+  opacity: 0.7;
   cursor: not-allowed;
+  filter: grayscale(0.5);
 }
 
 .btn-loader {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: #fff;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-top-color: white;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Social */
+/* Social Login */
 .social-section {
-  margin-top: var(--size-spacing-2xl);
+  margin-top: 32px;
 }
 
 .social-divider {
   display: flex;
   align-items: center;
-  gap: var(--size-spacing-md);
-  margin-bottom: var(--size-spacing-lg);
+  gap: 12px;
+  margin-bottom: 20px;
 }
 
 .social-divider::before,
@@ -749,65 +708,82 @@ function handleSocialLogin(provider: string) {
 .social-btns {
   display: flex;
   justify-content: center;
-  gap: var(--size-spacing-md);
+  gap: 16px;
 }
 
 .social-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--glass-bg-secondary);
+  border: 1px solid var(--glass-border);
+  color: var(--glass-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
-  background: var(--glass-bg-secondary);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--size-radius-lg);
-  color: var(--glass-text-secondary);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .social-btn:hover {
   background: var(--glass-bg-primary);
-  transform: translateY(-2px);
-  color: var(--glass-text-primary);
-  border-color: var(--glass-border-hover);
+  color: white;
+  transform: scale(1.1);
+  border-color: var(--glass-text-secondary);
 }
 
 /* Footer */
 .card-footer {
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--glass-border);
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: var(--size-spacing-md);
-  margin-top: var(--size-spacing-2xl);
-  padding-top: var(--size-spacing-lg);
-  border-top: 1px solid var(--glass-border);
+  gap: 8px;
+  font-size: var(--size-font-sm);
+  color: var(--glass-text-tertiary);
 }
 
 .footer-link {
-  font-size: var(--size-font-sm);
   color: var(--glass-text-secondary);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .footer-link:hover {
-  color: var(--glass-text-primary);
-  text-decoration: underline;
+  color: white;
 }
 
 .footer-dot {
-  color: var(--glass-border);
+  opacity: 0.5;
+}
+
+/* Transitions */
+.tab-fade-enter-active,
+.tab-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.tab-fade-enter-from,
+.tab-fade-leave-to {
+  opacity: 0;
+  transform: translateX(10px);
+}
+
+.tab-fade-leave-active {
+  position: absolute;
+  width: 100%;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
 
 @media (max-width: 480px) {
   .glass-card {
-    padding: var(--size-spacing-xl);
-    max-width: 100%;
-  }
-
-  .card-title {
-    font-size: var(--size-font-xl);
+    padding: 24px;
+    background: rgba(20, 20, 30, 0.8);
   }
 }
 </style>
