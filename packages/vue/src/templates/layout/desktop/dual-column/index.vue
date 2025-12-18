@@ -109,7 +109,7 @@ function handleCloseSider() {
           <slot name="header-left" />
         </template>
         <template #right>
-          <slot name="header-right" />
+          <slot name="header-right" :variant="'light'" />
         </template>
       </LayoutHeader>
 
@@ -146,28 +146,34 @@ function handleCloseSider() {
 /* ========== CSS Variables Mapping ========== */
 .layout-dual {
   /* Colors - Modern Theme */
-  --color-bg-layout: #f8fafc; /* Slate-50 */
+  --color-bg-layout: #f8fafc;
+  /* Slate-50 */
   --color-bg-container: #ffffff;
-  
-  --color-border: rgba(226, 232, 240, 0.8); /* Slate-200 */
-  
-  --color-text-primary: #0f172a; /* Slate-900 */
-  --color-text-secondary: #475569; /* Slate-600 */
-  --color-text-tertiary: #94a3b8; /* Slate-400 */
-  
+
+  --color-border: rgba(226, 232, 240, 0.8);
+  /* Slate-200 */
+
+  --color-text-primary: #0f172a;
+  /* Slate-900 */
+  --color-text-secondary: #475569;
+  /* Slate-600 */
+  --color-text-tertiary: #94a3b8;
+  /* Slate-400 */
+
   /* Use System Primary Color */
   --color-primary: var(--color-primary-500, #3b82f6);
   --color-primary-active: #2563eb;
-  
-  --color-fill-hover: #f1f5f9; /* Slate-100 */
-  
+
+  --color-fill-hover: #f1f5f9;
+  /* Slate-100 */
+
   /* Icon Bar Specific (Primary Color) */
   --icon-bar-bg: var(--color-primary);
   --icon-bar-text: rgba(255, 255, 255, 0.7);
   --icon-bar-text-active: #ffffff;
   --icon-bar-active-bg: rgba(255, 255, 255, 0.1);
   --icon-bar-hover: rgba(255, 255, 255, 0.1);
-  
+
   /* Shadows */
   --shadow-header: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-sider: 4px 0 24px 0 rgba(0, 0, 0, 0.05);
@@ -184,20 +190,23 @@ function handleCloseSider() {
 /* Dark Mode Overrides */
 :root[data-theme-mode="dark"] .layout-dual,
 .dark .layout-dual {
-  --color-bg-layout: #020617; /* Slate-950 */
-  --color-bg-container: #0f172a; /* Slate-900 */
-  
-  --color-border: #1e293b; /* Slate-800 */
-  
+  --color-bg-layout: #020617;
+  /* Slate-950 */
+  --color-bg-container: #0f172a;
+  /* Slate-900 */
+
+  --color-border: #1e293b;
+  /* Slate-800 */
+
   --color-text-primary: #f8fafc;
   --color-text-secondary: #cbd5e1;
   --color-text-tertiary: #64748b;
-  
+
   --color-fill-hover: #1e293b;
-  
+
   /* Dark Icon Bar */
   --icon-bar-bg: #0f172a;
-  
+
   --shadow-header: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
   --shadow-sider: 4px 0 24px 0 rgba(0, 0, 0, 0.3);
 }
@@ -289,6 +298,15 @@ function handleCloseSider() {
   flex: 1;
   overflow-y: auto;
   padding: 12px 8px;
+  /* 去除菜单背景色，仅保留文字/指示条 */
+  --l-menu-bg-color: transparent;
+  --l-menu-hover-bg-color: transparent;
+  --l-menu-active-bg-color: transparent;
+  --l-menu-selected-bg-color: transparent;
+  --l-menu-text-color: var(--color-text-primary);
+  --l-menu-hover-text-color: var(--color-text-primary);
+  --l-menu-selected-text-color: var(--color-text-primary);
+  --l-menu-selected-indicator-color: var(--color-primary);
 }
 
 .sider-menu::-webkit-scrollbar {
@@ -321,7 +339,8 @@ function handleCloseSider() {
 
 /* ========== Header ========== */
 .layout-dual__header {
-  background: var(--color-bg-container);
+  background: var(--layout-header-bg, var(--color-bg-container));
+  color: var(--layout-header-color, var(--color-text-primary));
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-header);
   z-index: 1010;
@@ -353,8 +372,15 @@ function handleCloseSider() {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ========== Footer Status Bar ========== */

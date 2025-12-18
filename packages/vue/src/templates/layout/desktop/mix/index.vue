@@ -95,7 +95,7 @@ function handleCloseSider() {
       </template>
       <template #right>
         <div class="layout-mix__header-right">
-          <slot name="header-right" />
+          <slot name="header-right" :variant="'primary'" />
         </div>
       </template>
     </LayoutHeader>
@@ -156,29 +156,36 @@ function handleCloseSider() {
 /* ========== CSS Variables Mapping ========== */
 .layout-mix {
   /* Colors - Modern Theme */
-  --color-bg-layout: #f8fafc; /* Slate-50 */
+  --color-bg-layout: #f8fafc;
+  /* Slate-50 */
   --color-bg-container: #ffffff;
-  
-  --color-border: rgba(226, 232, 240, 0.8); /* Slate-200 */
-  
-  --color-text-primary: #0f172a; /* Slate-900 */
-  --color-text-secondary: #475569; /* Slate-600 */
-  --color-text-tertiary: #94a3b8; /* Slate-400 */
-  --color-text-quaternary: #cbd5e1; /* Slate-300 */
-  
+
+  --color-border: rgba(226, 232, 240, 0.8);
+  /* Slate-200 */
+
+  --color-text-primary: #0f172a;
+  /* Slate-900 */
+  --color-text-secondary: #475569;
+  /* Slate-600 */
+  --color-text-tertiary: #94a3b8;
+  /* Slate-400 */
+  --color-text-quaternary: #cbd5e1;
+  /* Slate-300 */
+
   /* Use System Primary Color */
   --color-primary: var(--color-primary-500, #3b82f6);
   --color-primary-active: #2563eb;
-  
-  --color-fill-hover: #f1f5f9; /* Slate-100 */
-  
+
+  --color-fill-hover: #f1f5f9;
+  /* Slate-100 */
+
   /* Header Specific (Primary Color) */
   --header-bg: var(--color-primary);
   --header-text: #ffffff;
   --header-text-secondary: rgba(255, 255, 255, 0.8);
   --header-border: rgba(255, 255, 255, 0.1);
   --header-hover: rgba(255, 255, 255, 0.1);
-  
+
   /* Shadows */
   --shadow-header: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-sider: 4px 0 24px 0 rgba(0, 0, 0, 0.05);
@@ -193,24 +200,27 @@ function handleCloseSider() {
 /* Dark Mode Overrides */
 :root[data-theme-mode="dark"] .layout-mix,
 .dark .layout-mix {
-  --color-bg-layout: #020617; /* Slate-950 */
-  --color-bg-container: #0f172a; /* Slate-900 */
-  
-  --color-border: #1e293b; /* Slate-800 */
-  
+  --color-bg-layout: #020617;
+  /* Slate-950 */
+  --color-bg-container: #0f172a;
+  /* Slate-900 */
+
+  --color-border: #1e293b;
+  /* Slate-800 */
+
   --color-text-primary: #f8fafc;
   --color-text-secondary: #cbd5e1;
   --color-text-tertiary: #64748b;
   --color-text-quaternary: #475569;
-  
+
   --color-fill-hover: #1e293b;
-  
+
   /* Dark Header */
   --header-bg: #0f172a;
   --header-text: #f8fafc;
   --header-border: #1e293b;
   --header-hover: #1e293b;
-  
+
   --shadow-header: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
   --shadow-sider: 4px 0 24px 0 rgba(0, 0, 0, 0.3);
 }
@@ -389,6 +399,7 @@ function handleCloseSider() {
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -415,11 +426,11 @@ function handleCloseSider() {
   .content-inner {
     padding: 16px;
   }
-  
+
   .layout-mix__brand {
     gap: 16px;
   }
-  
+
   .layout-mix__logo {
     min-width: auto;
     padding-left: 16px;

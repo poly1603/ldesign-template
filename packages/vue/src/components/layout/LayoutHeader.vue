@@ -106,8 +106,8 @@ function handleToggleSider() {
 .layout-header {
   display: flex;
   align-items: center;
-  background-color: var(--color-bg-container);
-  color: var(--color-text-primary);
+  background-color: var(--layout-header-bg, var(--color-bg-container));
+  color: var(--layout-header-color, var(--color-text-primary));
   transition: all var(--size-duration-fast) ease;
   z-index: 100;
 }
@@ -139,7 +139,7 @@ function handleToggleSider() {
 .layout-header__right {
   display: flex;
   align-items: center;
-  gap: var(--size-space-xs);
+  gap: var(--size-spacing-md);
 }
 
 .layout-header__center {

@@ -140,7 +140,7 @@ function handleCloseSider() {
           <slot name="header-center" />
         </template>
         <template #right>
-          <slot name="header-right" />
+          <slot name="header-right" :variant="'light'" />
         </template>
       </LayoutHeader>
 
@@ -175,27 +175,35 @@ function handleCloseSider() {
 /* ========== CSS Variables Mapping ========== */
 .layout-sidebar {
   /* Colors - Modern Theme with Primary Sider */
-  --color-bg-layout: #f8fafc; /* Slate-50 */
+  --color-bg-layout: #f8fafc;
+  /* Slate-50 */
   --color-bg-container: #ffffff;
-  
-  --color-border: rgba(226, 232, 240, 0.8); /* Slate-200 */
-  
-  --color-text-primary: #0f172a; /* Slate-900 */
-  --color-text-secondary: #475569; /* Slate-600 */
-  --color-text-tertiary: #94a3b8; /* Slate-400 */
-  
+
+  --color-border: rgba(226, 232, 240, 0.8);
+  /* Slate-200 */
+
+  --color-text-primary: #0f172a;
+  /* Slate-900 */
+  --color-text-secondary: #475569;
+  /* Slate-600 */
+  --color-text-tertiary: #94a3b8;
+  /* Slate-400 */
+
   /* Use System Primary Color */
   --color-primary: var(--color-primary-500, #3b82f6);
-  
+
   /* Sider Specific */
   --sider-bg: var(--color-primary);
   --sider-text: #ffffff;
-  --sider-text-secondary: rgba(255, 255, 255, 0.85); /* Increased opacity for better readability */
-  --sider-border: rgba(255, 255, 255, 0.08); /* Very subtle or none */
+  --sider-text-secondary: rgba(255, 255, 255, 0.85);
+  /* Increased opacity for better readability */
+  --sider-border: rgba(255, 255, 255, 0.08);
+  /* Very subtle or none */
   --sider-hover: rgba(255, 255, 255, 0.15);
   --sider-active: rgba(255, 255, 255, 0.25);
-  
-  --color-fill-hover: #f1f5f9; /* Slate-100 */
+
+  --color-fill-hover: #f1f5f9;
+  /* Slate-100 */
 
   /* Shadows */
   --shadow-header: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
@@ -214,20 +222,20 @@ function handleCloseSider() {
 .dark .layout-sidebar {
   --color-bg-layout: #020617;
   --color-bg-container: #0f172a;
-  
+
   --color-border: #1e293b;
-  
+
   --color-text-primary: #f8fafc;
   --color-text-secondary: #cbd5e1;
   --color-text-tertiary: #64748b;
-  
+
   --color-fill-hover: #1e293b;
-  
+
   /* In dark mode, sidebar can still be primary or switch to dark primary */
   --sider-bg: var(--color-primary-950, #172554);
   --sider-text: #f8fafc;
   --sider-text-secondary: #94a3b8;
-  
+
   --shadow-header: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
 }
 
@@ -260,7 +268,7 @@ function handleCloseSider() {
   color: var(--sider-text);
   overflow: hidden;
   /* Removed border for seamless look */
-  border-bottom: none; 
+  border-bottom: none;
 }
 
 .layout-sidebar__logo.is-collapsed {
@@ -277,9 +285,19 @@ function handleCloseSider() {
   /* Override menu text colors for dark background */
   --color-text-primary: var(--sider-text);
   --color-text-secondary: var(--sider-text-secondary);
-  --color-fill-hover: var(--sider-hover);
-  --color-primary-active: var(--sider-active); 
-  --color-fill-active: var(--sider-active);
+  --color-fill-hover: transparent;
+  /* 侧栏菜单不使用块状背景 */
+  --color-primary-active: currentColor;
+  --color-fill-active: transparent;
+  /* LDesign Menu 变量覆盖，去除背景色 */
+  --l-menu-bg-color: transparent;
+  --l-menu-hover-bg-color: transparent;
+  --l-menu-active-bg-color: transparent;
+  --l-menu-selected-bg-color: transparent;
+  --l-menu-text-color: var(--sider-text);
+  --l-menu-hover-text-color: var(--sider-text);
+  --l-menu-selected-text-color: var(--sider-text);
+  --l-menu-selected-indicator-color: rgba(255, 255, 255, 0.95);
 }
 
 .layout-sidebar__menu::-webkit-scrollbar {
@@ -298,7 +316,7 @@ function handleCloseSider() {
   align-items: center;
   justify-content: center;
   /* Removed border for seamless look */
-  border-top: none; 
+  border-top: none;
   background: transparent;
 }
 
@@ -392,8 +410,15 @@ function handleCloseSider() {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ========== Footer ========== */

@@ -72,6 +72,11 @@ export const TemplateSwitcher = defineComponent({
     locale: {
       type: [String, Object] as PropType<string | Ref<string>>,
       default: undefined
+    },
+    /** 头部背景变体 */
+    variant: {
+      type: String as PropType<'light' | 'primary'>,
+      default: 'light'
     }
   },
 
@@ -165,6 +170,22 @@ export const TemplateSwitcher = defineComponent({
       return classes.join(' ')
     })
 
+    // Inline fallback style based on variant
+    const triggerStyle = computed(() => {
+      if ((props as any).variant === 'primary') {
+        return {
+          background: 'rgba(255, 255, 255, 0.12)',
+          borderColor: 'rgba(255, 255, 255, 0.18)',
+          color: 'var(--color-text-inverse, #ffffff)'
+        }
+      }
+      return {
+        background: 'var(--color-bg-hover, #f3f4f6)',
+        borderColor: 'var(--color-border, #e5e7eb)',
+        color: '#6b7280'
+      }
+    })
+
     // 获取模板标签
     const getTemplateLabel = (tpl: any): string => {
       // 提取模板名称
@@ -238,10 +259,11 @@ export const TemplateSwitcher = defineComponent({
     })
 
     return () => (
-      <div ref={containerRef} class={containerClass.value}>
+      <div ref={containerRef} class={containerClass.value} data-variant={props.variant || 'light'}>
         <button
           type="button"
           class={triggerClass.value}
+          style={triggerStyle.value}
           disabled={props.disabled}
           title={tooltip.value}
           onClick={() => isOpen.value = !isOpen.value}

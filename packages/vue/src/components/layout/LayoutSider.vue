@@ -147,8 +147,8 @@ function handleCollapseClick() {
   display: flex;
   flex-direction: column;
   height: 100%;
-  background-color: var(--color-bg-container-secondary);
-  color: var(--color-text-primary);
+  background-color: var(--layout-sider-bg, var(--color-bg-container-secondary));
+  color: var(--layout-sider-color, var(--color-text-primary));
   transition: width var(--size-duration-fast) ease, transform var(--size-duration-fast) ease;
   overflow: hidden;
   z-index: 101;

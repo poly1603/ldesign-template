@@ -61,7 +61,7 @@ const contentStyle = computed(() => ({
       </template>
       <template #right>
         <div class="header-right">
-          <slot name="header-right" />
+          <slot name="header-right" :variant="'primary'" />
         </div>
       </template>
     </LayoutHeader>
@@ -95,26 +95,31 @@ const contentStyle = computed(() => ({
 /* ========== CSS Variables Mapping ========== */
 .layout-top-menu {
   /* Colors - Modern Theme */
-  --color-bg-layout: #f8fafc; /* Slate-50 */
+  --color-bg-layout: #f8fafc;
+  /* Slate-50 */
   --color-bg-container: #ffffff;
-  
-  --color-border: rgba(226, 232, 240, 0.8); /* Slate-200 */
-  
-  --color-text-primary: #0f172a; /* Slate-900 */
-  --color-text-secondary: #475569; /* Slate-600 */
-  --color-text-tertiary: #94a3b8; /* Slate-400 */
-  
+
+  --color-border: rgba(226, 232, 240, 0.8);
+  /* Slate-200 */
+
+  --color-text-primary: #0f172a;
+  /* Slate-900 */
+  --color-text-secondary: #475569;
+  /* Slate-600 */
+  --color-text-tertiary: #94a3b8;
+  /* Slate-400 */
+
   /* Use System Primary Color */
   --color-primary: var(--color-primary-500, #3b82f6);
   --color-primary-active: #2563eb;
-  
+
   /* Header Specific (Primary Color) */
   --header-bg: var(--color-primary);
   --header-text: #ffffff;
   --header-text-secondary: rgba(255, 255, 255, 0.8);
   --header-border: rgba(255, 255, 255, 0.1);
   --header-hover: rgba(255, 255, 255, 0.1);
-  
+
   /* Shadows */
   --shadow-header: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-tabs: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
@@ -127,21 +132,24 @@ const contentStyle = computed(() => ({
 /* Dark Mode Overrides */
 :root[data-theme-mode="dark"] .layout-top-menu,
 .dark .layout-top-menu {
-  --color-bg-layout: #020617; /* Slate-950 */
-  --color-bg-container: #0f172a; /* Slate-900 */
-  
-  --color-border: #1e293b; /* Slate-800 */
-  
+  --color-bg-layout: #020617;
+  /* Slate-950 */
+  --color-bg-container: #0f172a;
+  /* Slate-900 */
+
+  --color-border: #1e293b;
+  /* Slate-800 */
+
   --color-text-primary: #f8fafc;
   --color-text-secondary: #cbd5e1;
   --color-text-tertiary: #64748b;
-  
+
   /* Dark Header */
   --header-bg: #0f172a;
   --header-text: #f8fafc;
   --header-border: #1e293b;
   --header-hover: #1e293b;
-  
+
   --shadow-header: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
   --shadow-tabs: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
@@ -167,6 +175,9 @@ const contentStyle = computed(() => ({
   --color-text-primary: var(--header-text);
   --color-text-secondary: var(--header-text-secondary);
   --color-fill-hover: var(--header-hover);
+  /* 为统一的头部变量赋值，便于全局样式自适配 */
+  --layout-header-bg: var(--header-bg);
+  --layout-header-color: var(--header-text);
 }
 
 .header-left {
@@ -235,6 +246,7 @@ const contentStyle = computed(() => ({
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -262,11 +274,11 @@ const contentStyle = computed(() => ({
     gap: 16px;
     padding-left: 16px;
   }
-  
+
   .header-right {
     padding-right: 16px;
   }
-  
+
   .content-wrapper {
     padding: 16px;
   }
