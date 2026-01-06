@@ -181,7 +181,7 @@ defineExpose({ openDrawer, closeDrawer, toggleDrawer })
 }
 
 .drawer-close:active {
-  transform: scale(0.95);
+  transform: scale(0.9);
   background: var(--color-fill-tertiary, #e8e8e8);
 }
 
@@ -221,7 +221,7 @@ defineExpose({ openDrawer, closeDrawer, toggleDrawer })
 
 .menu-btn:active {
   background: var(--color-fill-secondary, #f0f0f0);
-  transform: scale(0.95);
+  transform: scale(0.9);
 }
 
 /* 内容区 */
@@ -256,7 +256,7 @@ defineExpose({ openDrawer, closeDrawer, toggleDrawer })
 .drawer-slide-left-leave-active,
 .drawer-slide-right-enter-active,
 .drawer-slide-right-leave-active {
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .drawer-slide-left-enter-from,

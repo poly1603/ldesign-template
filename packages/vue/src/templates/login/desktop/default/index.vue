@@ -1,8 +1,9 @@
 <script setup lang="ts">
 /**
  * 桌面端登录模板 - 经典双栏风格
+ * 深度优化版: 粒子背景、3D效果、弹性动画
  */
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 
 interface LoginData {
   loginType: 'username' | 'phone'
@@ -47,13 +48,50 @@ const loading = ref(false)
 const showPassword = ref(false)
 const mounted = ref(false)
 
+// 展示卡片3D倾斜效果
+const cardRef = ref<HTMLElement | null>(null)
+const cardTransform = ref('perspective(1000px) rotateY(-5deg) rotateX(5deg)')
+
+function handleCardMouseMove(e: MouseEvent) {
+  if (!cardRef.value) return
+  const rect = cardRef.value.getBoundingClientRect()
+  const x = (e.clientX - rect.left) / rect.width
+  const y = (e.clientY - rect.top) / rect.height
+  const rotateY = (x - 0.5) * 15
+  const rotateX = (0.5 - y) * 15
+  cardTransform.value = `perspective(1000px) rotateY(${rotateY}deg) rotateX(${rotateX}deg)`
+}
+
+function handleCardMouseLeave() {
+  cardTransform.value = 'perspective(1000px) rotateY(-5deg) rotateX(5deg)'
+}
+
 const captchaCode = ref('')
 const smsCountdown = ref(0)
 let smsTimer: ReturnType<typeof setInterval> | null = null
 
+// 粒子系统
+const particles = ref<{ id: number; x: number; y: number; size: number; duration: number; delay: number }[]>([])
+
+function initParticles() {
+  particles.value = Array.from({ length: 30 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 3 + 1,
+    duration: Math.random() * 20 + 10,
+    delay: Math.random() * -20,
+  }))
+}
+
 onMounted(() => {
   setTimeout(() => mounted.value = true, 100)
   refreshCaptcha()
+  initParticles()
+})
+
+onUnmounted(() => {
+  if (smsTimer) clearInterval(smsTimer)
 })
 
 function refreshCaptcha() {
@@ -110,6 +148,25 @@ function handleSocialLogin(provider: string) {
       <div class="brand-bg">
         <div class="bg-shape shape-1"></div>
         <div class="bg-shape shape-2"></div>
+        <div class="bg-shape shape-3"></div>
+        <!-- 粒子效果 -->
+        <div class="particles-container">
+          <div 
+            v-for="p in particles" 
+            :key="p.id" 
+            class="particle"
+            :style="{
+              left: `${p.x}%`,
+              top: `${p.y}%`,
+              width: `${p.size}px`,
+              height: `${p.size}px`,
+              animationDuration: `${p.duration}s`,
+              animationDelay: `${p.delay}s`,
+            }"
+          />
+        </div>
+        <!-- 光线射线 -->
+        <div class="light-rays"></div>
       </div>
       
       <div class="brand-content" :class="{ 'is-mounted': mounted }">
@@ -127,7 +184,13 @@ function handleSocialLogin(provider: string) {
         <p class="brand-slogan">{{ brandSlogan }}</p>
         
         <div class="brand-showcase">
-          <div class="showcase-card">
+          <div 
+            ref="cardRef"
+            class="showcase-card"
+            :style="{ transform: cardTransform }"
+            @mousemove="handleCardMouseMove"
+            @mouseleave="handleCardMouseLeave"
+          >
             <div class="card-header">
               <div class="dot red"></div>
               <div class="dot yellow"></div>
@@ -403,6 +466,50 @@ function handleSocialLogin(provider: string) {
   gap: var(--size-space-medium);
 }
 
+/* 工具栏按钮样式 */
+.login-toolbar :deep(button),
+.login-toolbar :deep([class*="picker"]),
+.login-toolbar :deep([class*="trigger"]) {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  border-radius: 8px !important;
+}
+
+.login-toolbar :deep(button:hover),
+.login-toolbar :deep([class*="picker"]:hover),
+.login-toolbar :deep([class*="trigger"]:hover) {
+  background: rgba(255, 255, 255, 0.25) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+/* 工具栏下拉弹窗样式 */
+.login-toolbar :deep([class*="dropdown"]),
+.login-toolbar :deep([class*="menu"]),
+.login-toolbar :deep([class*="panel"]),
+.login-toolbar :deep([class*="popover"]),
+.login-toolbar :deep([class*="content"]) {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.login-toolbar :deep([class*="dropdown"] *),
+.login-toolbar :deep([class*="menu"] *),
+.login-toolbar :deep([class*="panel"] *),
+.login-toolbar :deep([class*="popover"] *) {
+  color: var(--color-text-primary) !important;
+}
+
+.login-toolbar :deep([class*="item"]:hover),
+.login-toolbar :deep([class*="option"]:hover) {
+  background: var(--color-primary-lighter) !important;
+}
+
 /* 左侧品牌区 */
 .login-brand {
   position: relative;
@@ -410,8 +517,210 @@ function handleSocialLogin(provider: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, var(--color-primary-600) 0%, var(--color-primary-800) 100%);
+  background: linear-gradient(135deg, var(--color-primary-600, #2563eb) 0%, var(--color-primary-800, #1e40af) 100%);
   overflow: hidden;
+}
+
+/* 背景装饰动画 */
+.bg-shape {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  opacity: 0.4;
+  animation: float 20s ease-in-out infinite;
+}
+
+.shape-1 {
+  width: 500px;
+  height: 500px;
+  top: -100px;
+  right: -100px;
+  background: var(--color-primary-400, #60a5fa);
+}
+
+.shape-2 {
+  width: 400px;
+  height: 400px;
+  bottom: -80px;
+  left: -80px;
+  background: var(--color-primary-300, #93c5fd);
+  animation-delay: -7s;
+}
+
+.shape-3 {
+  width: 300px;
+  height: 300px;
+  top: 40%;
+  left: 50%;
+  background: var(--color-info-400, #38bdf8);
+  animation-delay: -14s;
+  opacity: 0.25;
+}
+
+/* 粒子效果 */
+.particles-container {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: particleFloat 20s ease-in-out infinite;
+}
+
+@keyframes particleFloat {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate(20px, -30px) scale(1.2);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-10px, 20px) scale(0.8);
+    opacity: 0.4;
+  }
+  75% {
+    transform: translate(30px, 10px) scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* 光线射线 */
+.light-rays {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200%;
+  height: 200%;
+  transform: translate(-50%, -50%);
+  background: conic-gradient(
+    from 0deg at 50% 50%,
+    transparent 0deg,
+    rgba(255, 255, 255, 0.03) 10deg,
+    transparent 20deg,
+    transparent 45deg,
+    rgba(255, 255, 255, 0.05) 55deg,
+    transparent 65deg,
+    transparent 90deg,
+    rgba(255, 255, 255, 0.02) 100deg,
+    transparent 110deg,
+    transparent 135deg,
+    rgba(255, 255, 255, 0.04) 145deg,
+    transparent 155deg,
+    transparent 180deg,
+    rgba(255, 255, 255, 0.03) 190deg,
+    transparent 200deg,
+    transparent 225deg,
+    rgba(255, 255, 255, 0.05) 235deg,
+    transparent 245deg,
+    transparent 270deg,
+    rgba(255, 255, 255, 0.02) 280deg,
+    transparent 290deg,
+    transparent 315deg,
+    rgba(255, 255, 255, 0.04) 325deg,
+    transparent 335deg,
+    transparent 360deg
+  );
+  animation: rotateRays 60s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes rotateRays {
+  from { transform: translate(-50%, -50%) rotate(0deg); }
+  to { transform: translate(-50%, -50%) rotate(360deg); }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(30px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-20px, 30px) scale(0.95);
+  }
+}
+
+/* 品牌展示卡片 */
+.brand-showcase {
+  margin-top: var(--size-space-colossal);
+}
+
+.showcase-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 0;
+  overflow: hidden;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.showcase-card:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.dot.red { background: #ff5f57; }
+.dot.yellow { background: #febc2e; }
+.dot.green { background: #28c840; }
+
+.card-body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.skeleton-line {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+.skeleton-line.w-75 { width: 75%; }
+.skeleton-line.w-50 { width: 50%; }
+
+.skeleton-row {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.skeleton-box {
+  flex: 1;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  animation: shimmer 2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
 }
 
 /* 品牌内容 */
@@ -433,6 +742,13 @@ function handleSocialLogin(provider: string) {
 
 .brand-logo {
   margin-bottom: var(--size-space-giant);
+  perspective: 500px;
+}
+
+.brand-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .logo-image {
@@ -440,6 +756,11 @@ function handleSocialLogin(provider: string) {
   height: 80px;
   border-radius: var(--size-radius-large);
   box-shadow: var(--shadow-lg);
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.logo-image:hover {
+  transform: rotateY(15deg) rotateX(-10deg) scale(1.05);
 }
 
 .logo-placeholder {
@@ -453,7 +774,23 @@ function handleSocialLogin(provider: string) {
   border-radius: var(--size-radius-large);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--color-text-inverse);
-  box-shadow: var(--shadow-lg);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: logoPulse 3s ease-in-out infinite;
+}
+
+.logo-placeholder:hover {
+  transform: rotateY(15deg) rotateX(-10deg) scale(1.1);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3), 0 0 40px rgba(255, 255, 255, 0.2);
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2), 0 0 0 rgba(255, 255, 255, 0);
+  }
+  50% {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), 0 0 30px rgba(255, 255, 255, 0.15);
+  }
 }
 
 .brand-title {
@@ -479,16 +816,16 @@ function handleSocialLogin(provider: string) {
   background: var(--color-bg-container);
 }
 
-.form-wrapper {
+.form-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   opacity: 0;
   transform: translateX(30px);
   transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
   transition-delay: 0.2s;
 }
 
-.form-wrapper.is-mounted {
+.form-container.is-mounted {
   opacity: 1;
   transform: translateX(0);
 }
@@ -516,9 +853,10 @@ function handleSocialLogin(provider: string) {
   position: relative;
   display: flex;
   background: var(--color-bg-container-secondary);
-  border-radius: var(--size-radius-medium);
+  border-radius: 12px;
   padding: 4px;
-  margin-bottom: var(--size-space-giant);
+  margin-bottom: 28px;
+  border: 1px solid var(--color-border);
 }
 
 .tab-btn {
@@ -528,15 +866,24 @@ function handleSocialLogin(provider: string) {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--size-space-small);
-  padding: var(--size-space-medium) var(--size-space-huge);
-  font-size: var(--size-font-medium);
-  font-weight: var(--size-font-weight-medium);
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 500;
   color: var(--color-text-tertiary);
   background: none;
   border: none;
+  border-radius: 10px;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: all 0.25s ease;
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--color-text-secondary);
+  transform: scale(1.02);
+}
+
+.tab-btn:active {
+  transform: scale(0.98);
 }
 
 .tab-btn.active {
@@ -547,56 +894,78 @@ function handleSocialLogin(provider: string) {
 .login-form {
   display: flex;
   flex-direction: column;
-  gap: var(--size-space-huge);
 }
 
-.form-fields {
+.form-group {
   display: flex;
   flex-direction: column;
-  gap: var(--size-space-huge);
+  gap: 20px;
 }
 
 .input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
+  background: var(--color-bg-container-secondary);
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  transition: all 0.25s ease;
+}
+
+.input-wrapper:hover {
+  border-color: var(--color-text-quaternary);
+  background: var(--color-bg-container);
+}
+
+.input-wrapper:focus-within {
+  border-color: var(--color-primary-default);
+  box-shadow: 0 0 0 3px var(--color-primary-lighter);
+  background: var(--color-bg-container);
 }
 
 .input-icon {
   position: absolute;
-  left: var(--size-space-large);
+  left: 16px;
   color: var(--color-text-quaternary);
   pointer-events: none;
-  transition: color 0.2s;
-  width: var(--size-icon-medium);
-  height: var(--size-icon-medium);
+  transition: color 0.25s ease;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: var(--color-primary-default);
 }
 
 .form-input {
   width: 100%;
-  height: var(--size-btn-large-height);
-  padding: 0 var(--size-space-large) 0 44px;
-  font-size: var(--size-font-medium);
+  height: 52px;
+  padding: 0 16px 0 48px;
+  font-size: 15px;
   color: var(--color-text-primary);
-  background: var(--color-bg-container-secondary);
-  border: 2px solid transparent;
-  border-radius: var(--size-radius-medium);
+  background: transparent;
+  border: none;
+  border-radius: 12px;
   outline: none;
-  transition: all 0.2s;
 }
 
 .form-input::placeholder {
   color: var(--color-text-placeholder);
 }
 
-.form-input:focus {
-  background: var(--color-bg-container);
-  border-color: var(--color-primary-default);
-  box-shadow: 0 0 0 4px var(--color-primary-lighter);
-}
-
-.form-input:focus~.input-icon {
-  color: var(--color-primary-default);
+/* 浏览器自动填充样式 */
+.form-input:-webkit-autofill,
+.form-input:-webkit-autofill:hover,
+.form-input:-webkit-autofill:focus,
+.form-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--color-bg-container-secondary) inset !important;
+  -webkit-text-fill-color: var(--color-text-primary) !important;
+  background-color: var(--color-bg-container-secondary) !important;
+  caret-color: var(--color-text-primary);
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .input-suffix {
@@ -628,11 +997,16 @@ function handleSocialLogin(provider: string) {
   border: none;
   border-radius: var(--size-radius-small);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .sms-btn:hover:not(:disabled) {
   background: var(--color-primary-light);
+  transform: scale(1.05);
+}
+
+.sms-btn:active:not(:disabled) {
+  transform: scale(0.95);
 }
 
 .sms-btn:disabled {
@@ -672,42 +1046,48 @@ function handleSocialLogin(provider: string) {
   transform: scale(0.98);
 }
 
-/* 选项 */
-.form-options {
+/* 表单底部选项 */
+.form-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 2px;
+  margin-top: 20px;
 }
 
-.remember-me {
+.checkbox-label {
   display: flex;
   align-items: center;
-  gap: var(--size-space-medium);
+  gap: 8px;
+  font-size: var(--size-font-medium);
+  color: var(--color-text-secondary);
   cursor: pointer;
+  user-select: none;
 }
 
-.checkbox {
+.checkbox-input {
   position: absolute;
   opacity: 0;
+  width: 0;
+  height: 0;
 }
 
 .checkbox-custom {
   width: 18px;
   height: 18px;
   border: 2px solid var(--color-border);
-  border-radius: var(--size-radius-small);
-  transition: all 0.2s;
+  border-radius: 4px;
+  transition: all 0.2s ease;
   position: relative;
+  flex-shrink: 0;
   background: var(--color-bg-container);
 }
 
-.checkbox:checked+.checkbox-custom {
+.checkbox-input:checked + .checkbox-custom {
   background: var(--color-primary-default);
   border-color: var(--color-primary-default);
 }
 
-.checkbox:checked+.checkbox-custom::after {
+.checkbox-input:checked + .checkbox-custom::after {
   content: '';
   position: absolute;
   left: 5px;
@@ -719,46 +1099,64 @@ function handleSocialLogin(provider: string) {
   transform: rotate(45deg);
 }
 
-.checkbox-label {
-  font-size: var(--size-font-medium);
-  color: var(--color-text-secondary);
-}
-
-.forgot-link {
+.link-btn {
   font-size: var(--size-font-medium);
   color: var(--color-primary-default);
   text-decoration: none;
   transition: color 0.2s;
 }
 
-.forgot-link:hover {
+.link-btn:hover {
   color: var(--color-primary-hover);
-  text-decoration: underline;
 }
 
 /* 提交按钮 */
 .submit-btn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--size-space-medium);
-  height: var(--size-btn-large-height);
-  margin-top: var(--size-space-medium);
-  font-size: var(--size-font-large);
-  font-weight: var(--size-font-weight-semibold);
+  gap: 8px;
+  width: 100%;
+  height: 52px;
+  margin-top: 28px;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: 2px;
   color: #fff;
   background: linear-gradient(135deg, var(--color-primary-default) 0%, var(--color-primary-hover) 100%);
   border: none;
-  border-radius: var(--size-radius-medium);
+  border-radius: 12px;
   cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.35);
+  overflow: hidden;
+}
+
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.submit-btn:hover:not(:disabled)::before {
+  left: 100%;
 }
 
 .submit-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-lg);
   background: linear-gradient(135deg, var(--color-primary-hover) 0%, var(--color-primary-active) 100%);
+  box-shadow: 0 6px 24px rgba(37, 99, 235, 0.45);
+  transform: translateY(-2px);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 .submit-btn:disabled {
@@ -788,7 +1186,8 @@ function handleSocialLogin(provider: string) {
 .divider {
   display: flex;
   align-items: center;
-  margin: var(--size-space-giant) 0;
+  gap: 16px;
+  margin: 28px 0 20px;
 }
 
 .divider::before,
@@ -796,85 +1195,140 @@ function handleSocialLogin(provider: string) {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--color-border-light);
+  background: var(--color-border);
 }
 
-.divider-text {
-  padding: 0 var(--size-space-huge);
-  font-size: var(--size-font-small);
+.divider span {
+  font-size: 13px;
   color: var(--color-text-quaternary);
 }
 
 /* 社交登录 */
 .social-login {
   display: flex;
-  justify-content: center;
-  gap: var(--size-space-huge);
+  flex-direction: column;
+  align-items: center;
 }
 
-.social-btn {
+.social-icons {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}
+
+.social-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
+  width: 44px;
+  height: 44px;
   background: var(--color-bg-container-secondary);
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--size-radius-medium);
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   color: var(--color-text-secondary);
 }
 
-.social-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-md);
+.social-icon:hover {
+  border-color: var(--color-text-quaternary);
   color: var(--color-text-primary);
   background: var(--color-bg-container);
 }
 
-.social-btn.github:hover {
-  background: #24292e;
-  color: #fff;
-  border-color: #24292e;
+.social-icon:active {
+  transform: scale(0.95);
 }
 
-.social-btn.wechat:hover {
-  background: #07C160;
-  border-color: #07C160;
-}
-
-.social-btn.wechat:hover svg {
-  fill: #fff;
-}
-
-.social-btn.qq:hover {
-  background: #12B7F5;
-  border-color: #12B7F5;
-}
-
-.social-btn.qq:hover svg {
-  fill: #fff;
-}
-
-/* 注册 */
-.signup-hint {
+/* 注册链接 */
+.register-link {
   text-align: center;
-  margin-top: var(--size-space-giant);
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--color-border);
   font-size: var(--size-font-medium);
   color: var(--color-text-tertiary);
 }
 
-.signup-link {
+.register-link a {
   color: var(--color-primary-default);
   text-decoration: none;
-  font-weight: var(--size-font-weight-medium);
-  transition: color 0.2s;
+  font-weight: 500;
+  margin-left: 4px;
 }
 
-.signup-link:hover {
+.register-link a:hover {
   color: var(--color-primary-hover);
-  text-decoration: underline;
+}
+
+/* 表单切换动画 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fade-slide-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
+.fade-slide-leave-to {
+  opacity: 0;
+  transform: translateX(-20px);
+}
+
+/* Tab 指示器 */
+.tab-ink {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  background: var(--color-bg-container);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* 验证码样式 */
+.captcha-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.captcha-wrapper .form-input {
+  flex: 1;
+  padding-right: 16px;
+}
+
+.captcha-img {
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.captcha-text {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 120px;
+  height: 52px;
+  padding: 0 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 20px;
+  font-weight: bold;
+  letter-spacing: 4px;
+  color: var(--color-primary-default);
+  background: linear-gradient(135deg, var(--color-primary-lighter) 0%, var(--color-primary-light) 100%);
+  border-radius: 12px;
+  user-select: none;
+  transition: all 0.25s ease;
+}
+
+.captcha-text:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
 }
 
 /* 响应式 */
@@ -882,5 +1336,56 @@ function handleSocialLogin(provider: string) {
   .login-brand {
     display: none;
   }
+}
+
+/* 深色模式支持 */
+:root[data-theme-mode="dark"] .login-split,
+.dark .login-split {
+  --color-bg-container: #0f172a;
+  --color-bg-container-secondary: #1e293b;
+  --color-text-primary: #f1f5f9;
+  --color-text-secondary: #cbd5e1;
+  --color-text-tertiary: #94a3b8;
+  --color-border: #334155;
+}
+
+:root[data-theme-mode="dark"] .login-brand,
+.dark .login-brand {
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 50%, #1a1a2e 100%);
+}
+
+:root[data-theme-mode="dark"] .login-form-area,
+.dark .login-form-area {
+  background: var(--color-bg-container);
+  position: relative;
+}
+
+:root[data-theme-mode="dark"] .login-form-area::before,
+.dark .login-form-area::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at 30% 20%, rgba(37, 99, 235, 0.08) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+:root[data-theme-mode="dark"] .form-container,
+.dark .form-container {
+  background: transparent;
+}
+
+:root[data-theme-mode="dark"] .form-input:focus,
+.dark .form-input:focus {
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2), 0 0 30px rgba(37, 99, 235, 0.1);
+}
+
+:root[data-theme-mode="dark"] .tab-ink,
+.dark .tab-ink {
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(59, 130, 246, 0.2);
+}
+
+:root[data-theme-mode="dark"] .social-icon:hover,
+.dark .social-icon:hover {
+  box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.4);
 }
 </style>

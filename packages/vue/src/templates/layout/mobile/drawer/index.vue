@@ -177,7 +177,7 @@ defineExpose({ openDrawer, closeDrawer, toggleDrawer })
 }
 
 .drawer-close:active {
-  transform: scale(0.92);
+  transform: scale(0.9);
   background: var(--color-fill-tertiary, #e8e8e8);
 }
 
@@ -216,7 +216,7 @@ defineExpose({ openDrawer, closeDrawer, toggleDrawer })
 
 .menu-btn:active {
   background: var(--color-fill-secondary, #f0f0f0);
-  transform: scale(0.92);
+  transform: scale(0.9);
 }
 
 .header-title {
@@ -251,12 +251,28 @@ defineExpose({ openDrawer, closeDrawer, toggleDrawer })
 
 .drawer-slide-enter-active,
 .drawer-slide-leave-active {
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .drawer-slide-enter-from,
 .drawer-slide-leave-to {
   transform: translateX(-100%);
+}
+
+/* 抽屉内容动画 */
+.drawer-body :deep(> *) {
+  animation: drawerContentFade 0.3s ease 0.1s both;
+}
+
+@keyframes drawerContentFade {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 /* 深色模式 */
@@ -269,5 +285,185 @@ defineExpose({ openDrawer, closeDrawer, toggleDrawer })
 .dark .mobile-drawer__header {
   background: var(--color-bg-container, #141414);
   border-bottom-color: var(--color-border-secondary, #303030);
+}
+
+/* ========== 高级动画优化 ========== */
+
+/* 抽屉面板光晕效果 */
+.drawer-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -100px;
+  width: 100px;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.05));
+  pointer-events: none;
+}
+
+/* 抽屉关闭按钮动画 */
+.drawer-close::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--color-primary, #3b82f6), transparent);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s;
+}
+
+.drawer-close {
+  position: relative;
+}
+
+.drawer-close:active::before {
+  opacity: 0.3;
+}
+
+.drawer-close svg {
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.drawer-close:active svg {
+  transform: rotate(90deg) scale(0.9);
+}
+
+/* 菜单按钮波纹效果 */
+.menu-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.4s ease;
+}
+
+.menu-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-btn:active::after {
+  opacity: 1;
+  transform: scale(2);
+}
+
+.menu-btn svg line {
+  transition: all 0.3s ease;
+  transform-origin: center;
+}
+
+.menu-btn:active svg line:nth-child(1) {
+  transform: translateY(6px) rotate(45deg);
+}
+
+.menu-btn:active svg line:nth-child(2) {
+  opacity: 0;
+}
+
+.menu-btn:active svg line:nth-child(3) {
+  transform: translateY(-6px) rotate(-45deg);
+}
+
+/* 抽屉内容交错动画 */
+.drawer-body :deep(> *:nth-child(1)) { animation-delay: 0.05s; }
+.drawer-body :deep(> *:nth-child(2)) { animation-delay: 0.1s; }
+.drawer-body :deep(> *:nth-child(3)) { animation-delay: 0.15s; }
+.drawer-body :deep(> *:nth-child(4)) { animation-delay: 0.2s; }
+.drawer-body :deep(> *:nth-child(5)) { animation-delay: 0.25s; }
+
+/* 内容区域加载动画 */
+.content-inner {
+  animation: contentFadeIn 0.5s ease;
+}
+
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 遮罩层模糊效果增强 */
+.drawer-overlay {
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* 抽屉面板圆角阴影 */
+.drawer-panel {
+  box-shadow: 
+    8px 0 32px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+}
+
+/* 抽屉头部渐变边框 */
+.drawer-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 16px;
+  right: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-secondary, #eef0f3), transparent);
+}
+
+.drawer-header {
+  position: relative;
+}
+
+/* 抽屉底部渐变边框 */
+.drawer-footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 16px;
+  right: 16px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-border-secondary, #eef0f3), transparent);
+}
+
+.drawer-footer {
+  position: relative;
+}
+
+/* 标题渐变效果 */
+.header-title {
+  background: linear-gradient(135deg, var(--color-text-primary, #1f2937), var(--color-primary, #3b82f6));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: titleFlow 4s ease-in-out infinite;
+}
+
+@keyframes titleFlow {
+  0%, 100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 200% center;
+  }
+}
+
+/* 滚动条美化 */
+.drawer-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.drawer-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.drawer-body::-webkit-scrollbar-thumb {
+  background: var(--color-border-secondary, #e5e5e5);
+  border-radius: 2px;
 }
 </style>

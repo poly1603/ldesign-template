@@ -185,12 +185,12 @@ function handleToggleSider() {
 }
 
 .collapse-toggle:active {
-  transform: scale(0.95);
+  transform: scale(0.9);
   background: var(--color-fill-tertiary, #e8e8e8);
 }
 
 .collapse-toggle svg {
-  transition: transform 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .collapse-toggle svg.is-collapsed {
@@ -230,7 +230,7 @@ function handleToggleSider() {
 
 .menu-btn:active {
   background: var(--color-fill-secondary, #f0f0f0);
-  transform: scale(0.95);
+  transform: scale(0.9);
 }
 
 /* 内容区 */
@@ -261,5 +261,220 @@ function handleToggleSider() {
 .dark .tablet-sidebar__header {
   background: var(--color-bg-container, #141414);
   border-bottom-color: var(--color-border-secondary, #303030);
+}
+
+/* ========== 高级动画优化 ========== */
+
+/* 侧边栏光晕效果 */
+.tablet-sidebar__sider::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(59, 130, 246, 0.03) 0%,
+    transparent 50%,
+    rgba(59, 130, 246, 0.02) 100%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.tablet-sidebar__sider:hover::before {
+  opacity: 1;
+}
+
+/* Logo 悬停动画 */
+.sider-logo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(59, 130, 246, 0.05), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.sider-logo {
+  position: relative;
+  overflow: hidden;
+}
+
+.sider-logo:hover::after {
+  transform: translateX(100%);
+}
+
+/* 折叠按钮光环 */
+.collapse-toggle::before {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 15px;
+  background: linear-gradient(135deg, var(--color-primary-500, #3b82f6), transparent);
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s, transform 0.3s;
+}
+
+.collapse-toggle {
+  position: relative;
+}
+
+.collapse-toggle:hover::before {
+  opacity: 0.2;
+  animation: toggleGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes toggleGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.25;
+  }
+}
+
+/* 菜单按钮旋转动画 */
+.menu-btn svg {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.menu-btn:active svg {
+  transform: rotate(90deg);
+}
+
+/* 菜单按钮波纹 */
+.menu-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: radial-gradient(circle, var(--color-primary-500, #3b82f6) 0%, transparent 70%);
+  opacity: 0;
+  transform: scale(0);
+  transition: all 0.4s ease;
+}
+
+.menu-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.menu-btn:active::after {
+  opacity: 0.15;
+  transform: scale(2);
+}
+
+/* 内容区域动画 */
+.content-inner {
+  animation: contentFadeIn 0.5s ease;
+}
+
+@keyframes contentFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 头部边框渐变线 */
+.tablet-sidebar__header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-primary-500, #3b82f6), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tablet-sidebar__header {
+  position: relative;
+}
+
+.tablet-sidebar__header:hover::after {
+  opacity: 0.3;
+}
+
+/* 侧边栏边框渐变线 */
+.tablet-sidebar__sider::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, transparent, var(--color-primary-500, #3b82f6), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.tablet-sidebar__sider:hover::after {
+  opacity: 0.2;
+}
+
+/* 菜单项悬停效果 */
+.sider-menu :deep(.menu-item),
+.sider-menu :deep(.l-menu-item) {
+  transition: all 0.25s ease;
+}
+
+.sider-menu :deep(.menu-item:hover),
+.sider-menu :deep(.l-menu-item:hover) {
+  transform: translateX(4px);
+}
+
+/* 滚动条美化 */
+.sider-menu::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sider-menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sider-menu::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 2px;
+  transition: background 0.3s;
+}
+
+.sider-menu:hover::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+:root[data-theme-mode="dark"] .sider-menu::-webkit-scrollbar-thumb,
+.dark .sider-menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+:root[data-theme-mode="dark"] .sider-menu:hover::-webkit-scrollbar-thumb,
+.dark .sider-menu:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 侧边栏展开/收起动画 */
+.tablet-sidebar__sider {
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Logo 文字渐隐动画 */
+.sider-logo :deep(.logo-text) {
+  transition: opacity 0.2s ease, width 0.25s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.sider-logo.is-collapsed :deep(.logo-text) {
+  opacity: 0;
+  width: 0;
 }
 </style>

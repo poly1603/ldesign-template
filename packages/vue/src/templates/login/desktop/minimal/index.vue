@@ -1,8 +1,9 @@
 <script setup lang="ts">
 /**
  * 桌面端登录模板 - 极简毛玻璃风格
+ * 深度优化版: 彩虹光斑、噪点纹理、3D卡片、翻转验证码
  */
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 
 interface LoginData {
   loginType: 'username' | 'phone'
@@ -42,17 +43,62 @@ const loading = ref(false)
 const mounted = ref(false)
 const focused = ref<string | null>(null)
 
+// 3D卡片效果
+const cardRef = ref<HTMLElement | null>(null)
+const cardStyle = ref({})
+
+function handleCardMouseMove(e: MouseEvent) {
+  if (!cardRef.value) return
+  const rect = cardRef.value.getBoundingClientRect()
+  const x = (e.clientX - rect.left) / rect.width
+  const y = (e.clientY - rect.top) / rect.height
+  const rotateX = (0.5 - y) * 8
+  const rotateY = (x - 0.5) * 8
+  cardStyle.value = {
+    transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) translateY(0) scale(1)`,
+  }
+}
+
+function handleCardMouseLeave() {
+  cardStyle.value = {}
+}
+
+// 翻转验证码
+const captchaFlipped = ref(false)
+
 const captchaCode = ref('')
 const smsCountdown = ref(0)
 let smsTimer: ReturnType<typeof setInterval> | null = null
 
+// 星点动画
+const stars = ref<{ id: number; x: number; y: number; size: number; delay: number }[]>([])
+
+function initStars() {
+  stars.value = Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2 + 1,
+    delay: Math.random() * 5,
+  }))
+}
+
 onMounted(() => {
   setTimeout(() => mounted.value = true, 100)
   refreshCaptcha()
+  initStars()
+})
+
+onUnmounted(() => {
+  if (smsTimer) clearInterval(smsTimer)
 })
 
 function refreshCaptcha() {
-  captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+  captchaFlipped.value = true
+  setTimeout(() => {
+    captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+    captchaFlipped.value = false
+  }, 300)
 }
 
 function sendSmsCode() {
@@ -105,8 +151,26 @@ function handleSocialLogin(provider: string) {
       <div class="bg-gradient bg-gradient-1" />
       <div class="bg-gradient bg-gradient-2" />
       <div class="bg-gradient bg-gradient-3" />
+      <div class="bg-gradient bg-gradient-4" />
+      <!-- 噪点纹理 -->
+      <div class="bg-noise" />
       <!-- 网格装饰 -->
       <div class="bg-grid" />
+      <!-- 星点闪烁 -->
+      <div class="bg-stars">
+        <div 
+          v-for="star in stars" 
+          :key="star.id" 
+          class="star"
+          :style="{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            animationDelay: `${star.delay}s`,
+          }"
+        />
+      </div>
       <!-- 浮动光斑 -->
       <div class="bg-orbs">
         <div class="orb orb-1" />
@@ -116,7 +180,14 @@ function handleSocialLogin(provider: string) {
     </div>
 
     <!-- 登录卡片 -->
-    <div class="glass-card" :class="{ 'is-mounted': mounted }">
+    <div 
+      ref="cardRef"
+      class="glass-card" 
+      :class="{ 'is-mounted': mounted }"
+      :style="cardStyle"
+      @mousemove="handleCardMouseMove"
+      @mouseleave="handleCardMouseLeave"
+    >
       <!-- Logo -->
       <div class="card-logo">
         <img v-if="logo" :src="logo" alt="Logo" class="logo-img" />
@@ -150,54 +221,50 @@ function handleSocialLogin(provider: string) {
         <Transition name="tab-fade" mode="out-in">
           <!-- 账号登录 -->
           <div v-if="loginType === 'username'" key="username" class="form-fields">
-            <div class="form-field" :class="{ 'is-focused': focused === 'username', 'has-value': username }">
-              <input v-model="username" type="text" class="field-input" placeholder=" " :disabled="loading"
-                @focus="focused = 'username'" @blur="focused = null" />
-              <label class="field-label">用户名 / 邮箱</label>
-              <span class="field-line" />
+            <div class="form-field">
+              <input v-model="username" type="text" class="field-input" placeholder="用户名 / 邮箱" :disabled="loading" />
             </div>
-            <div class="form-field" :class="{ 'is-focused': focused === 'password', 'has-value': password }">
-              <input v-model="password" type="password" class="field-input" placeholder=" " :disabled="loading"
-                @focus="focused = 'password'" @blur="focused = null" />
-              <label class="field-label">密码</label>
-              <span class="field-line" />
+            <div class="form-field">
+              <input v-model="password" type="password" class="field-input" placeholder="密码" :disabled="loading" />
             </div>
           </div>
 
           <!-- 手机登录 -->
           <div v-else key="phone" class="form-fields">
-            <div class="form-field" :class="{ 'is-focused': focused === 'phone', 'has-value': phone }">
-              <input v-model="phone" type="tel" class="field-input" placeholder=" " :disabled="loading" maxlength="11"
-                @focus="focused = 'phone'" @blur="focused = null" />
-              <label class="field-label">手机号</label>
-              <span class="field-line" />
+            <div class="form-field">
+              <input v-model="phone" type="tel" class="field-input" placeholder="手机号" :disabled="loading" maxlength="11" />
             </div>
-            <div class="form-field sms-field" :class="{ 'is-focused': focused === 'sms', 'has-value': smsCode }">
-              <input v-model="smsCode" type="text" class="field-input" placeholder=" " :disabled="loading" maxlength="6"
-                @focus="focused = 'sms'" @blur="focused = null" />
-              <label class="field-label">验证码</label>
+            <div class="form-field sms-field">
+              <input v-model="smsCode" type="text" class="field-input" placeholder="验证码" :disabled="loading" maxlength="6" />
               <button type="button" class="sms-btn" :disabled="smsCountdown > 0 || !phone" @click="sendSmsCode">
                 {{ smsCountdown > 0 ? `${smsCountdown}s` : '获取' }}
               </button>
-              <span class="field-line" />
             </div>
           </div>
         </Transition>
 
         <!-- 图片验证码 -->
         <div class="captcha-row">
-          <div class="form-field captcha-field" :class="{ 'is-focused': focused === 'captcha', 'has-value': captcha }">
-            <input v-model="captcha" type="text" class="field-input" placeholder=" " :disabled="loading" maxlength="4"
-              @focus="focused = 'captcha'" @blur="focused = null" />
-            <label class="field-label">验证码</label>
-            <span class="field-line" />
+          <div class="form-field captcha-field">
+            <input v-model="captcha" type="text" class="field-input" placeholder="验证码" :disabled="loading" maxlength="4" />
           </div>
-          <div class="captcha-img" @click="refreshCaptcha">
-            <svg width="100" height="48" viewBox="0 0 100 48">
-              <rect fill="rgba(255,255,255,0.1)" width="100" height="48" rx="10" />
-              <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace"
-                font-size="20" font-weight="bold" fill="var(--color-primary-400, #a78bfa)">{{ captchaCode }}</text>
-            </svg>
+          <div class="captcha-img" :class="{ 'is-flipped': captchaFlipped }" @click="refreshCaptcha">
+            <div class="captcha-inner">
+              <div class="captcha-front">
+                <svg width="100" height="48" viewBox="0 0 100 48">
+                  <rect fill="rgba(255,255,255,0.1)" width="100" height="48" rx="10" />
+                  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace"
+                    font-size="20" font-weight="bold" fill="var(--color-primary-400, #a78bfa)">{{ captchaCode }}</text>
+                </svg>
+              </div>
+              <div class="captcha-back">
+                <svg width="100" height="48" viewBox="0 0 100 48">
+                  <rect fill="rgba(139, 92, 246, 0.2)" width="100" height="48" rx="10" />
+                  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace"
+                    font-size="14" fill="rgba(255,255,255,0.6)">刷新中...</text>
+                </svg>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -322,13 +389,137 @@ function handleSocialLogin(provider: string) {
   background: radial-gradient(circle at top left, #1e1b4b 0%, #0f172a 40%, #020617 100%);
 }
 
+/* 工具栏 - 右下角垂直圆形按钮 */
 .login-toolbar {
   position: fixed;
-  top: var(--size-space-lg);
-  right: var(--size-space-lg);
+  bottom: 32px;
+  right: 32px;
   z-index: 100;
   display: flex;
-  gap: var(--size-space-md);
+  flex-direction: column;
+  gap: 12px;
+}
+
+.login-toolbar :deep(button),
+.login-toolbar :deep(a),
+.login-toolbar :deep(.toolbar-btn) {
+  width: 44px !important;
+  height: 44px !important;
+  min-width: 44px !important;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+  backdrop-filter: blur(12px) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: all 0.25s ease !important;
+}
+
+.login-toolbar :deep(button):hover,
+.login-toolbar :deep(a):hover,
+.login-toolbar :deep(.toolbar-btn):hover {
+  background: rgba(255, 255, 255, 0.15) !important;
+  border-color: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
+  transform: scale(1.08) !important;
+}
+
+.login-toolbar :deep(span),
+.login-toolbar :deep(.btn-text) {
+  display: none !important;
+}
+
+/* 工具栏弹窗样式 - 深色主题适配 */
+.login-toolbar :deep(.dropdown),
+.login-toolbar :deep(.popup),
+.login-toolbar :deep(.popover),
+.login-toolbar :deep([class*="dropdown"]),
+.login-toolbar :deep([class*="popup"]),
+.login-toolbar :deep([class*="popover"]),
+.login-toolbar :deep([class*="menu"]),
+.login-toolbar :deep([class*="panel"]) {
+  position: fixed !important;
+  right: 80px !important;
+  bottom: auto !important;
+  top: auto !important;
+  left: auto !important;
+  background: rgba(15, 23, 42, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4) !important;
+  color: #ffffff !important;
+  min-width: 120px !important;
+  padding: 8px !important;
+}
+
+/* 弹窗内文字 */
+.login-toolbar :deep(.dropdown) *,
+.login-toolbar :deep(.popup) *,
+.login-toolbar :deep(.popover) *,
+.login-toolbar :deep([class*="dropdown"]) *,
+.login-toolbar :deep([class*="popup"]) *,
+.login-toolbar :deep([class*="popover"]) *,
+.login-toolbar :deep([class*="menu"]) *,
+.login-toolbar :deep([class*="panel"]) * {
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+/* 弹窗内按钮/选项 */
+.login-toolbar :deep(.dropdown) button,
+.login-toolbar :deep(.popup) button,
+.login-toolbar :deep([class*="dropdown"]) button,
+.login-toolbar :deep([class*="menu"]) button,
+.login-toolbar :deep([class*="option"]),
+.login-toolbar :deep([class*="item"]) {
+  width: 100% !important;
+  height: auto !important;
+  min-width: auto !important;
+  padding: 10px 16px !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  border: none !important;
+  text-align: left !important;
+  justify-content: flex-start !important;
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.login-toolbar :deep(.dropdown) button:hover,
+.login-toolbar :deep(.popup) button:hover,
+.login-toolbar :deep([class*="dropdown"]) button:hover,
+.login-toolbar :deep([class*="menu"]) button:hover,
+.login-toolbar :deep([class*="option"]):hover,
+.login-toolbar :deep([class*="item"]):hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: #ffffff !important;
+  transform: none !important;
+}
+
+/* 弹窗内文字显示 */
+.login-toolbar :deep(.dropdown) span,
+.login-toolbar :deep(.popup) span,
+.login-toolbar :deep([class*="dropdown"]) span,
+.login-toolbar :deep([class*="menu"]) span {
+  display: inline !important;
+}
+
+/* 分割线 */
+.login-toolbar :deep([class*="divider"]),
+.login-toolbar :deep(hr) {
+  background: rgba(255, 255, 255, 0.1) !important;
+  border-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 标题 */
+.login-toolbar :deep([class*="title"]),
+.login-toolbar :deep([class*="header"]) {
+  color: rgba(255, 255, 255, 0.6) !important;
+  font-size: 12px !important;
+  padding: 8px 16px 4px !important;
 }
 
 /* 动态背景 */
@@ -381,10 +572,60 @@ function handleSocialLogin(provider: string) {
   animation-delay: -10s;
 }
 
+/* 彩虹渐变光球 */
+.bg-gradient-4 {
+  width: 35vw;
+  height: 35vw;
+  max-width: 450px;
+  max-height: 450px;
+  top: 60%;
+  right: 20%;
+  background: linear-gradient(135deg, #f472b6 0%, #fb923c 50%, #fbbf24 100%);
+  opacity: 0.15;
+  animation-delay: -15s;
+  filter: blur(100px);
+}
+
 @keyframes float {
   0%, 100% { transform: translate(0, 0) scale(1); }
   33% { transform: translate(30px, -50px) scale(1.1); }
   66% { transform: translate(-20px, 20px) scale(0.9); }
+}
+
+/* 噪点纹理 */
+.bg-noise {
+  position: absolute;
+  inset: 0;
+  opacity: 0.02;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  pointer-events: none;
+}
+
+/* 星点闪烁 */
+.bg-stars {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  background: #ffffff;
+  border-radius: 50%;
+  animation: starTwinkle 3s ease-in-out infinite;
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+    box-shadow: 0 0 6px 2px rgba(255, 255, 255, 0.3);
+  }
 }
 
 .bg-grid {
@@ -426,16 +667,64 @@ function handleSocialLogin(provider: string) {
   border: 1px solid var(--glass-border);
   border-top-color: var(--glass-border-light);
   border-radius: var(--size-radius-2xl);
-  backdrop-filter: blur(20px);
-  box-shadow: var(--shadow-glass);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: var(--shadow-glass), inset 0 1px 1px rgba(255, 255, 255, 0.05);
   opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(30px) scale(0.98);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .glass-card.is-mounted {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+}
+
+.glass-card:hover {
+  box-shadow: var(--shadow-glass-hover), inset 0 1px 1px rgba(255, 255, 255, 0.08);
+}
+
+/* 卡片彩虹边框效果 */
+.glass-card::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(
+    135deg,
+    rgba(139, 92, 246, 0.3) 0%,
+    rgba(6, 182, 212, 0.2) 50%,
+    rgba(16, 185, 129, 0.3) 100%
+  );
+  z-index: -1;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+
+.glass-card:hover::before {
+  opacity: 1;
+  animation: borderGlow 3s ease-in-out infinite;
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    background: linear-gradient(
+      135deg,
+      rgba(139, 92, 246, 0.3) 0%,
+      rgba(6, 182, 212, 0.2) 50%,
+      rgba(16, 185, 129, 0.3) 100%
+    );
+  }
+  50% {
+    background: linear-gradient(
+      135deg,
+      rgba(16, 185, 129, 0.3) 0%,
+      rgba(139, 92, 246, 0.2) 50%,
+      rgba(6, 182, 212, 0.3) 100%
+    );
+  }
 }
 
 .card-logo {
@@ -458,8 +747,20 @@ function handleSocialLogin(provider: string) {
   height: 56px;
   background: linear-gradient(135deg, var(--color-primary) 0%, #6366f1 100%);
   border-radius: var(--size-radius-xl);
-  box-shadow: 0 8px 16px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
   color: white;
+  animation: logoPulse 3s ease-in-out infinite;
+}
+
+@keyframes logoPulse {
+  0%, 100% {
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
+    transform: scale(1);
+  }
+  50% {
+    box-shadow: 0 12px 32px rgba(139, 92, 246, 0.6);
+    transform: scale(1.02);
+  }
 }
 
 .card-header {
@@ -500,21 +801,32 @@ function handleSocialLogin(provider: string) {
   width: calc(50% - 4px);
   height: calc(100% - 8px);
   background: rgba(255, 255, 255, 0.1);
-  border-radius: var(--size-radius-md);
-  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 10px;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
 }
 
 .tab-btn {
   flex: 1;
   position: relative;
   z-index: 1;
-  padding: 8px;
+  padding: 12px 16px;
   background: none;
   border: none;
-  font-size: var(--size-font-sm);
-  color: var(--glass-text-secondary);
+  border-radius: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.6);
   cursor: pointer;
-  transition: color 0.3s;
+  transition: all 0.25s ease;
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--glass-text-primary);
+  transform: scale(1.02);
+}
+
+.tab-btn:active {
+  transform: scale(0.98);
 }
 
 .tab-btn.active {
@@ -526,13 +838,13 @@ function handleSocialLogin(provider: string) {
 .glass-form {
   display: flex;
   flex-direction: column;
-  gap: var(--size-space-lg);
+  gap: 20px;
 }
 
 .form-fields {
   display: flex;
   flex-direction: column;
-  gap: var(--size-space-lg);
+  gap: 16px;
 }
 
 .form-field {
@@ -541,41 +853,49 @@ function handleSocialLogin(provider: string) {
 
 .field-input {
   width: 100%;
-  height: 48px;
-  padding: 20px 16px 4px;
-  background: var(--glass-bg-input);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--size-radius-lg);
-  font-size: var(--size-font-base);
-  color: var(--glass-text-primary);
+  height: 52px;
+  padding: 0 18px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  font-size: 15px;
+  color: #ffffff;
   outline: none;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.field-input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* 浏览器自动填充样式 - 保持毛玻璃效果 */
+.field-input:-webkit-autofill,
+.field-input:-webkit-autofill:hover,
+.field-input:-webkit-autofill:focus,
+.field-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px rgba(30, 27, 75, 0.95) inset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: rgba(30, 27, 75, 0.95) !important;
+  border: 1px solid rgba(139, 92, 246, 0.3) !important;
+  caret-color: #ffffff;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.field-input:hover {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 .field-input:focus {
-  background: var(--glass-bg-input-focus);
+  background: rgba(255, 255, 255, 0.1);
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 1px var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.25), 0 0 20px rgba(139, 92, 246, 0.15);
 }
 
 .field-label {
-  position: absolute;
-  left: 16px;
-  top: 14px;
-  font-size: var(--size-font-base);
-  color: var(--glass-text-tertiary);
-  pointer-events: none;
-  transition: all 0.2s ease-out;
-}
-
-.form-field.is-focused .field-label,
-.form-field.has-value .field-label {
-  top: 6px;
-  font-size: 10px;
-  color: var(--color-primary);
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  display: none;
 }
 
 .field-line {
@@ -616,6 +936,7 @@ function handleSocialLogin(provider: string) {
 /* Captcha */
 .captcha-row {
   display: flex;
+  align-items: center;
   gap: 12px;
 }
 
@@ -624,51 +945,85 @@ function handleSocialLogin(provider: string) {
 }
 
 .captcha-img {
-  width: 100px;
-  height: 48px;
-  background: var(--glass-bg-input);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--size-radius-lg);
+  width: 120px;
+  height: 52px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.captcha-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-style: preserve-3d;
+}
+
+.captcha-img.is-flipped .captcha-inner {
+  transform: rotateY(180deg);
+}
+
+.captcha-front,
+.captcha-back {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
 }
 
-.captcha-img:hover {
-  border-color: var(--glass-text-secondary);
+.captcha-back {
+  transform: rotateY(180deg);
+}
+
+.captcha-img:hover .captcha-front,
+.captcha-img:hover .captcha-back {
+  border-color: rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.08);
 }
 
 /* Submit Button */
 .glass-btn {
+  position: relative;
   width: 100%;
-  height: 48px;
-  margin-top: 8px;
+  height: 54px;
+  margin-top: 20px;
   background: linear-gradient(135deg, var(--color-primary) 0%, #6366f1 100%);
   border: none;
-  border-radius: var(--size-radius-lg);
+  border-radius: 12px;
   color: white;
-  font-size: var(--size-font-base);
+  font-size: 16px;
   font-weight: 600;
+  letter-spacing: 2px;
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
+  overflow: hidden;
 }
 
 .glass-btn:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+  background: linear-gradient(135deg, var(--color-primary-hover) 0%, #4f46e5 100%);
+  box-shadow: 0 8px 30px rgba(139, 92, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+.glass-btn:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.3);
 }
 
 .glass-btn:disabled {
   opacity: 0.7;
   cursor: not-allowed;
-  filter: grayscale(0.5);
 }
 
 .btn-loader {
@@ -682,13 +1037,13 @@ function handleSocialLogin(provider: string) {
 
 /* Social Login */
 .social-section {
-  margin-top: 32px;
+  margin-top: 28px;
 }
 
 .social-divider {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   margin-bottom: 20px;
 }
 
@@ -697,12 +1052,12 @@ function handleSocialLogin(provider: string) {
   content: '';
   flex: 1;
   height: 1px;
-  background: var(--glass-border);
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .social-divider span {
-  font-size: var(--size-font-xs);
-  color: var(--glass-text-tertiary);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .social-btns {
@@ -712,43 +1067,44 @@ function handleSocialLogin(provider: string) {
 }
 
 .social-btn {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: var(--glass-bg-secondary);
-  border: 1px solid var(--glass-border);
-  color: var(--glass-text-secondary);
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.25s ease;
 }
 
 .social-btn:hover {
-  background: var(--glass-bg-primary);
+  background: rgba(255, 255, 255, 0.1);
   color: white;
-  transform: scale(1.1);
-  border-color: var(--glass-text-secondary);
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Footer */
 .card-footer {
-  margin-top: 32px;
+  margin-top: 28px;
   padding-top: 20px;
-  border-top: 1px solid var(--glass-border);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
-  font-size: var(--size-font-sm);
-  color: var(--glass-text-tertiary);
+  gap: 12px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
 }
 
 .footer-link {
-  color: var(--glass-text-secondary);
+  color: rgba(255, 255, 255, 0.6);
   text-decoration: none;
-  transition: color 0.2s;
+  transition: color 0.2s ease;
 }
 
 .footer-link:hover {
@@ -756,19 +1112,23 @@ function handleSocialLogin(provider: string) {
 }
 
 .footer-dot {
-  opacity: 0.5;
+  opacity: 0.4;
 }
 
 /* Transitions */
 .tab-fade-enter-active,
 .tab-fade-leave-active {
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.tab-fade-enter-from,
+.tab-fade-enter-from {
+  opacity: 0;
+  transform: translateX(20px);
+}
+
 .tab-fade-leave-to {
   opacity: 0;
-  transform: translateX(10px);
+  transform: translateX(-20px);
 }
 
 .tab-fade-leave-active {
@@ -780,10 +1140,18 @@ function handleSocialLogin(provider: string) {
   to { transform: rotate(360deg); }
 }
 
+
+/* 响应式 */
 @media (max-width: 480px) {
   .glass-card {
     padding: 24px;
-    background: rgba(20, 20, 30, 0.8);
+    background: rgba(20, 20, 30, 0.85);
+    backdrop-filter: blur(20px);
+  }
+  
+  .bg-gradient {
+    filter: blur(60px);
+    opacity: 0.3;
   }
 }
 </style>

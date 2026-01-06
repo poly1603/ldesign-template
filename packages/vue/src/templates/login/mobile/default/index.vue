@@ -1,8 +1,9 @@
 <script setup lang="ts">
 /**
  * 移动端登录模板 - 全屏渐变风格
+ * 深度优化版: 自然漂浮、涟漪按钮、触摸反馈
  */
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, onUnmounted } from 'vue'
 
 interface LoginData {
   loginType: 'username' | 'phone'
@@ -46,9 +47,49 @@ const captchaCode = ref('')
 const smsCountdown = ref(0)
 let smsTimer: ReturnType<typeof setInterval> | null = null
 
+// 涟漪效果
+const ripples = ref<{ id: number; x: number; y: number }[]>([])
+let rippleId = 0
+
+function createRipple(e: MouseEvent | TouchEvent) {
+  const target = e.currentTarget as HTMLElement
+  const rect = target.getBoundingClientRect()
+  let x: number, y: number
+  if ('touches' in e) {
+    x = e.touches[0].clientX - rect.left
+    y = e.touches[0].clientY - rect.top
+  } else {
+    x = e.clientX - rect.left
+    y = e.clientY - rect.top
+  }
+  const id = rippleId++
+  ripples.value.push({ id, x, y })
+  setTimeout(() => {
+    ripples.value = ripples.value.filter(r => r.id !== id)
+  }, 600)
+}
+
+// 粒子系统
+const particles = ref<{ id: number; x: number; y: number; size: number; duration: number }[]>([])
+
+function initParticles() {
+  particles.value = Array.from({ length: 20 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2 + 1,
+    duration: Math.random() * 15 + 10,
+  }))
+}
+
 onMounted(() => {
   setTimeout(() => mounted.value = true, 50)
   refreshCaptcha()
+  initParticles()
+})
+
+onUnmounted(() => {
+  if (smsTimer) clearInterval(smsTimer)
 })
 
 function refreshCaptcha() {
@@ -100,13 +141,29 @@ async function handleSubmit() {
     <div class="bg-gradient">
       <div class="bg-orb bg-orb-1" />
       <div class="bg-orb bg-orb-2" />
+      <div class="bg-orb bg-orb-3" />
+      <!-- 粒子效果 -->
+      <div class="particles">
+        <div 
+          v-for="p in particles" 
+          :key="p.id" 
+          class="particle"
+          :style="{
+            left: `${p.x}%`,
+            top: `${p.y}%`,
+            width: `${p.size}px`,
+            height: `${p.size}px`,
+            animationDuration: `${p.duration}s`,
+          }"
+        />
+      </div>
     </div>
 
     <!-- 内容区 -->
     <div class="login-content" :class="{ 'is-mounted': mounted }">
       <!-- Logo & 标题 -->
       <div class="login-header">
-        <div class="logo">
+        <div class="logo" @touchstart.passive>
           <img v-if="logo" :src="logo" alt="Logo">
           <svg v-else width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
             stroke-linecap="round" stroke-linejoin="round">
@@ -213,9 +270,22 @@ async function handleSubmit() {
         </div>
 
         <!-- 登录按钮 -->
-        <button type="submit" class="submit-btn" :disabled="loading">
+        <button 
+          type="submit" 
+          class="submit-btn" 
+          :disabled="loading"
+          @touchstart="createRipple"
+          @mousedown="createRipple"
+        >
           <span v-if="loading" class="loader" />
-          {{ loading ? '登录中...' : '登 录' }}
+          <span class="btn-text">{{ loading ? '登录中...' : '登 录' }}</span>
+          <!-- 涟漪效果 -->
+          <span 
+            v-for="ripple in ripples" 
+            :key="ripple.id" 
+            class="ripple"
+            :style="{ left: `${ripple.x}px`, top: `${ripple.y}px` }"
+          />
         </button>
       </form>
 
@@ -275,6 +345,52 @@ async function handleSubmit() {
   gap: var(--size-space-medium);
 }
 
+/* 工具栏按钮样式 */
+.login-toolbar :deep(button),
+.login-toolbar :deep(a),
+.login-toolbar :deep([class*="picker"]),
+.login-toolbar :deep([class*="trigger"]) {
+  background: rgba(255, 255, 255, 0.15) !important;
+  backdrop-filter: blur(10px) !important;
+  -webkit-backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  color: #ffffff !important;
+  border-radius: 12px !important;
+  transition: all 0.25s ease !important;
+}
+
+.login-toolbar :deep(button:active),
+.login-toolbar :deep(a:active) {
+  transform: scale(0.95) !important;
+  background: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* 工具栏弹窗样式 */
+.login-toolbar :deep([class*="dropdown"]),
+.login-toolbar :deep([class*="menu"]),
+.login-toolbar :deep([class*="panel"]),
+.login-toolbar :deep([class*="popover"]),
+.login-toolbar :deep([class*="content"]) {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.1) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2) !important;
+  color: var(--color-text-primary, #1f2937) !important;
+}
+
+.login-toolbar :deep([class*="dropdown"] *),
+.login-toolbar :deep([class*="menu"] *),
+.login-toolbar :deep([class*="panel"] *) {
+  color: var(--color-text-primary, #1f2937) !important;
+}
+
+.login-toolbar :deep([class*="item"]:hover),
+.login-toolbar :deep([class*="option"]:hover) {
+  background: var(--color-primary-50, #eef2ff) !important;
+}
+
 /* 背景 */
 .bg-gradient {
   position: fixed;
@@ -305,6 +421,17 @@ async function handleSubmit() {
   left: -60px;
   background: var(--color-success-400);
   animation-delay: -10s;
+}
+
+.bg-orb-3 {
+  width: 180px;
+  height: 180px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(135deg, #f472b6, #fb923c);
+  opacity: 0.25;
+  animation-delay: -5s;
 }
 
 @keyframes orb-float {
@@ -355,7 +482,23 @@ async function handleSubmit() {
   border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: var(--color-text-inverse);
-  box-shadow: var(--shadow-md);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: logoBreathe 3s ease-in-out infinite;
+}
+
+.logo:active {
+  transform: scale(0.9);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+@keyframes logoBreathe {
+  0%, 100% {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15), 0 0 0 rgba(255, 255, 255, 0);
+  }
+  50% {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2), 0 0 30px rgba(255, 255, 255, 0.15);
+  }
 }
 
 .logo img {
@@ -409,11 +552,28 @@ async function handleSubmit() {
   background: none;
   border: none;
   cursor: pointer;
-  transition: color 0.3s;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.tab:active {
+  transform: scale(0.95);
 }
 
 .tab.active {
   color: var(--color-text-inverse);
+}
+
+/* Tab 指示器弹性 */
+.tab-bg {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--size-radius-large);
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 /* Form */
@@ -479,8 +639,15 @@ async function handleSubmit() {
 }
 
 .field input:focus {
-  background: rgba(255, 255, 255, 0.15);
-  border-color: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.field:focus-within .field-icon {
+  color: rgba(255, 255, 255, 0.9);
+  transform: scale(1.1);
+  transition: all 0.2s ease;
 }
 
 /* Eye */
@@ -552,6 +719,7 @@ async function handleSubmit() {
 
 /* Submit */
 .submit-btn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -565,12 +733,45 @@ async function handleSubmit() {
   border: none;
   border-radius: var(--size-radius-huge);
   cursor: pointer;
-  transition: all 0.2s;
-  box-shadow: var(--shadow-md);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+
+.btn-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* 涟漪效果 */
+.ripple {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: rgba(99, 102, 241, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: rippleExpand 0.6s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes rippleExpand {
+  0% {
+    width: 0;
+    height: 0;
+    opacity: 0.5;
+  }
+  100% {
+    width: 400px;
+    height: 400px;
+    opacity: 0;
+  }
 }
 
 .submit-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.97);
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.12);
 }
 
 .submit-btn:disabled {
@@ -618,15 +819,33 @@ async function handleSubmit() {
   justify-content: center;
   width: 54px;
   height: 54px;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: var(--size-radius-huge);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
 }
 
+/* 社交按钮弹跳效果 */
 .social-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.85);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.social-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.3) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.social-btn:active::after {
+  opacity: 1;
 }
 
 /* Register */
@@ -641,5 +860,158 @@ async function handleSubmit() {
   color: var(--color-text-inverse);
   font-weight: var(--size-font-weight-medium);
   text-decoration: none;
+  position: relative;
+}
+
+.register a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.3s ease;
+}
+
+.register a:active::after {
+  width: 100%;
+}
+
+/* Tab 过渡动画 */
+.tab-bg {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: calc(50% - 4px);
+  height: calc(100% - 8px);
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: var(--size-radius-large);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* SMS 按钮改进 */
+.sms-btn:not(:disabled):active {
+  transform: scale(0.95);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+/* 验证码图片交互 */
+.captcha-img:active {
+  transform: scale(0.98);
+}
+
+/* 粒子效果增强 */
+.particles {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.particle {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 50%;
+  animation: particle-drift ease-in-out infinite;
+}
+
+@keyframes particle-drift {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  25% {
+    transform: translate(15px, -20px) scale(1.2);
+    opacity: 1;
+  }
+  50% {
+    transform: translate(-10px, 15px) scale(0.8);
+    opacity: 0.4;
+  }
+  75% {
+    transform: translate(20px, 10px) scale(1.1);
+    opacity: 0.8;
+  }
+}
+
+/* 输入框聚焦效果增强 */
+.field input:focus {
+  background: rgba(255, 255, 255, 0.22);
+  border-color: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.15), 0 0 20px rgba(255, 255, 255, 0.1);
+}
+
+/* 按钮光晕效果 */
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  animation: btn-shine 3s ease-in-out infinite;
+}
+
+@keyframes btn-shine {
+  0% {
+    left: -100%;
+  }
+  50%, 100% {
+    left: 100%;
+  }
+}
+
+/* 社交按钮入场动画 */
+.social-btn:nth-child(1) {
+  animation: social-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s backwards;
+}
+
+.social-btn:nth-child(2) {
+  animation: social-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s backwards;
+}
+
+.social-btn:nth-child(3) {
+  animation: social-bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s backwards;
+}
+
+@keyframes social-bounce {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 内容分步入场 */
+.login-content.is-mounted .login-header {
+  animation: content-slide 0.5s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.login-content.is-mounted .login-tabs {
+  animation: content-slide 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+}
+
+.login-content.is-mounted .login-form {
+  animation: content-slide 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
+}
+
+.login-content.is-mounted .social-section {
+  animation: content-slide 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
+}
+
+@keyframes content-slide {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

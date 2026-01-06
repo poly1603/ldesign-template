@@ -71,7 +71,7 @@ function handleCloseSider() {
 
 <template>
   <div class="layout-dual" :class="{ 'is-collapsed': siderCollapsed }">
-    <!-- 图标栏 -->
+<!-- 图标栏（一级菜单） -->
     <aside class="layout-dual__icon-bar" :style="{ width: iconBarWidth + 'px' }">
       <div class="icon-bar-logo">
         <slot name="logo" />
@@ -80,13 +80,28 @@ function handleCloseSider() {
         <slot name="icon-bar" />
       </nav>
       <div class="icon-bar-footer">
-        <slot name="icon-bar-footer" />
+        <slot name="icon-bar-footer">
+          <!-- 默认折叠按钮 -->
+          <button class="icon-bar-collapse-btn" @click="handleToggleSider" :title="siderCollapsed ? '展开侧边栏' : '收起侧边栏'">
+            <svg :class="{ 'is-collapsed': siderCollapsed }" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>
+          </button>
+        </slot>
       </div>
     </aside>
 
-    <!-- 次级侧边栏 -->
-    <aside v-show="!siderCollapsed" class="layout-dual__sider"
-      :style="{ left: iconBarWidth + 'px', width: siderWidth + 'px' }">
+    <!-- 次级侧边栏（二级及以下菜单） -->
+    <aside 
+      class="layout-dual__sider" 
+      :class="{ 'is-collapsed': siderCollapsed }"
+      :style="{ 
+        left: iconBarWidth + 'px', 
+        width: siderCollapsed ? '0px' : siderWidth + 'px',
+        opacity: siderCollapsed ? 0 : 1,
+        transform: siderCollapsed ? 'translateX(-20px)' : 'translateX(0)'
+      }">
       <div class="sider-header">
         <slot name="sider-header">
           <span class="sider-title">Explorer</span>
@@ -266,6 +281,39 @@ function handleCloseSider() {
   gap: 12px;
 }
 
+/* 折叠按钮 */
+.icon-bar-collapse-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  border-radius: 8px;
+  background: var(--icon-bar-hover);
+  color: var(--icon-bar-text);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.icon-bar-collapse-btn:hover {
+  background: var(--icon-bar-active-bg);
+  color: var(--icon-bar-text-active);
+  transform: scale(1.1);
+}
+
+.icon-bar-collapse-btn:active {
+  transform: scale(0.95);
+}
+
+.icon-bar-collapse-btn svg {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.icon-bar-collapse-btn svg.is-collapsed {
+  transform: rotate(180deg);
+}
+
 /* ========== Secondary Sider ========== */
 .layout-dual__sider {
   position: fixed;
@@ -276,8 +324,15 @@ function handleCloseSider() {
   background: var(--color-bg-container);
   border-right: 1px solid var(--color-border);
   z-index: 1020;
-  transition: transform var(--transition-normal);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: var(--shadow-sider);
+  overflow: hidden;
+}
+
+.layout-dual__sider.is-collapsed {
+  border-right: none;
+  box-shadow: none;
+  pointer-events: none;
 }
 
 .sider-header {
@@ -374,13 +429,29 @@ function handleCloseSider() {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(16px);
   }
 
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 图标栏交互增强 */
+.icon-bar-nav :deep(button),
+.icon-bar-nav :deep(a) {
+  transition: all 0.2s ease;
+}
+
+.icon-bar-nav :deep(button:hover),
+.icon-bar-nav :deep(a:hover) {
+  transform: scale(1.1);
+}
+
+.icon-bar-nav :deep(button:active),
+.icon-bar-nav :deep(a:active) {
+  transform: scale(0.95);
 }
 
 /* ========== Footer Status Bar ========== */

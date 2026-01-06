@@ -271,6 +271,76 @@ function handleCloseSider() {
   display: flex;
   align-items: center;
   height: 100%;
+  gap: 4px;
+}
+
+/* 顶部横向菜单样式 */
+.layout-mix__top-menu :deep(.l-menu) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  background: transparent;
+  gap: 4px;
+}
+
+.layout-mix__top-menu :deep(.l-menu-item),
+.layout-mix__top-menu :deep(.l-submenu-title) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--header-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.layout-mix__top-menu :deep(.l-menu-item:hover),
+.layout-mix__top-menu :deep(.l-submenu-title:hover) {
+  color: var(--header-text);
+  background: var(--header-hover);
+  transform: translateY(-1px);
+}
+
+.layout-mix__top-menu :deep(.l-menu-item.is-active),
+.layout-mix__top-menu :deep(.l-menu-item--active),
+.layout-mix__top-menu :deep(.l-submenu.is-active > .l-submenu-title) {
+  color: var(--header-text);
+  background: var(--header-hover);
+  position: relative;
+}
+
+/* 活动指示器 */
+.layout-mix__top-menu :deep(.l-menu-item.is-active)::after,
+.layout-mix__top-menu :deep(.l-menu-item--active)::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: var(--header-text);
+  border-radius: 3px;
+  animation: topMenuIndicator 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes topMenuIndicator {
+  from {
+    transform: translateX(-50%) scaleX(0);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(-50%) scaleX(1);
+    opacity: 1;
+  }
 }
 
 .layout-mix__header-right {
@@ -302,6 +372,9 @@ function handleCloseSider() {
 .layout-mix__sider-title {
   padding: 24px 20px 12px;
   /* border-bottom: 1px solid var(--color-border); */
+  transition: all 0.25s ease;
+  overflow: hidden;
+  white-space: nowrap;
 }
 
 .sider-title-text {
@@ -317,6 +390,40 @@ function handleCloseSider() {
   padding: 12px 8px;
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+/* 菜单项收起时的动画 */
+.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.menu-item-text),
+.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.submenu-title-text),
+.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.l-menu-item-text),
+.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.l-submenu-title-text) {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  transition: opacity 0.2s ease, width 0.25s ease;
+}
+
+.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.l-menu-item),
+.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.l-submenu-title) {
+  justify-content: center;
+  padding: 12px 0 !important;
+}
+
+.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.l-submenu-arrow),
+.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.submenu-arrow) {
+  opacity: 0;
+  width: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* 收起时隐藏标题 */
+.layout-mix.is-collapsed .layout-mix__sider-title {
+  opacity: 0;
+  height: 0;
+  padding: 0;
+  overflow: hidden;
+  transition: all 0.25s ease;
 }
 
 .layout-mix__sider-menu::-webkit-scrollbar {
@@ -352,10 +459,15 @@ function handleCloseSider() {
 .sider-collapse-btn:hover {
   background: var(--color-fill-hover);
   color: var(--color-text-primary);
+  transform: scale(1.05);
+}
+
+.sider-collapse-btn:active {
+  transform: scale(0.95);
 }
 
 .sider-collapse-btn svg {
-  transition: transform 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .sider-collapse-btn svg.is-collapsed {
@@ -397,7 +509,7 @@ function handleCloseSider() {
 @keyframes slideUpFade {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(24px);
   }
 
   to {

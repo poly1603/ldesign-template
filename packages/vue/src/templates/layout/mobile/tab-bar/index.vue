@@ -218,7 +218,7 @@ const tabBarStyle = computed(() => ({
 }
 
 .tab-item:active {
-  transform: scale(0.95);
+  transform: scale(0.92);
 }
 
 .tab-icon {
@@ -233,6 +233,8 @@ const tabBarStyle = computed(() => ({
 
 .tab-item.is-active .tab-icon {
   background: var(--color-primary-lighter);
+  transform: scale(1.05);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .tab-label {
@@ -257,5 +259,187 @@ const tabBarStyle = computed(() => ({
 .dark .tab-item.is-active .tab-icon {
   background: var(--color-primary-light);
   opacity: 0.2;
+}
+
+/* ========== 高级动画优化 ========== */
+
+/* Tab 项点击波纹效果 */
+.tab-item::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  border-radius: 50%;
+  background: var(--color-primary-lighter);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s, height 0.4s, opacity 0.4s;
+  opacity: 0;
+}
+
+.tab-item {
+  position: relative;
+  overflow: hidden;
+}
+
+.tab-item:active::before {
+  width: 100px;
+  height: 100px;
+  opacity: 0.3;
+}
+
+/* 图标跳动动画 */
+.tab-item.is-active .tab-icon {
+  animation: iconBounce 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes iconBounce {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1.05);
+  }
+}
+
+/* 图标光晕效果 */
+.tab-item.is-active .tab-icon::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: inherit;
+  background: var(--color-primary-default);
+  opacity: 0;
+  animation: iconGlow 0.5s ease forwards;
+}
+
+.tab-icon {
+  position: relative;
+}
+
+@keyframes iconGlow {
+  0% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.5);
+  }
+}
+
+/* 底部导航栏美化 */
+.mobile-tab-bar__nav {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+:root[data-theme-mode="dark"] .mobile-tab-bar__nav,
+.dark .mobile-tab-bar__nav {
+  background: rgba(15, 23, 42, 0.95);
+}
+
+/* Tab 标签渐变效果 */
+.tab-item.is-active .tab-label {
+  background: linear-gradient(135deg, var(--color-primary-default), #60a5fa);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* 内容区动画 */
+.content-inner {
+  animation: contentSlideIn 0.4s ease;
+}
+
+@keyframes contentSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 头部标题渐变 */
+.header-title {
+  background: linear-gradient(135deg, var(--color-text-primary), var(--color-primary-default));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: titleShimmer 4s ease-in-out infinite;
+}
+
+@keyframes titleShimmer {
+  0%, 100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 200% center;
+  }
+}
+
+/* 头部边框渐变线 */
+.mobile-tab-bar__header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-primary-default), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.mobile-tab-bar__header {
+  position: relative;
+}
+
+.mobile-tab-bar__header:hover::after {
+  opacity: 0.3;
+}
+
+/* 底部导航上边框渐变线 */
+.mobile-tab-bar__nav::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--color-primary-default), transparent);
+  opacity: 0.3;
+}
+
+.mobile-tab-bar__nav {
+  position: relative;
+}
+
+/* Tab 项点击缩放 */
+.tab-item:active {
+  transform: scale(0.9);
+  transition: transform 0.1s;
+}
+
+/* 图标 SVG 动画 */
+.tab-item svg {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab-item.is-active svg {
+  stroke-width: 2.5;
+}
+
+.tab-item:not(.is-active):hover svg {
+  transform: scale(1.1);
 }
 </style>

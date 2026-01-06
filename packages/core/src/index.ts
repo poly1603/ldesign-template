@@ -56,3 +56,62 @@ export {
   type ExternalI18n as TemplateExternalI18n,
   type LocaleKey,
 } from './locales/manager'
+
+// 导出缓存系统
+export {
+  TemplateCache,
+  createTemplateCache,
+  type CacheStats,
+} from './cache'
+
+// 导出版本管理
+export {
+  VersionManager,
+  createVersionManager,
+  type VersionManagerConfig,
+  type VersionDiff,
+} from './version'
+
+// 导出A/B测试引擎
+export {
+  ExperimentEngine,
+  createExperimentEngine,
+  type ExperimentStatus,
+  type ExperimentEvent,
+  type ExperimentMetrics,
+  type ExperimentResult,
+  type ExperimentEngineConfig,
+} from './experiment'
+
+// 导出错误处理
+export {
+  TemplateError,
+  LoadError,
+  ValidationError,
+  PermissionError,
+  NetworkError,
+  CacheError,
+  TemplateErrorCode,
+  ErrorManager,
+  errorManager,
+  createError,
+  assert,
+  assertDefined,
+  defaultRecoveryStrategy,
+  type ErrorSeverity,
+  type ErrorContext,
+  type ErrorHandler,
+  type RecoveryStrategy,
+} from './errors'
+
+// 导出数据验证
+export {
+  Validator,
+  createValidator,
+  validator,
+  validate,
+  sanitize,
+  detectXSS,
+  type ValidationRuleType,
+  type Schema,
+} from './validation'

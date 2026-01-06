@@ -123,14 +123,14 @@ function handleCloseSider() {
         class="layout-sidebar__header" @toggle-sider="handleToggleSider">
         <template #menuButton>
           <slot name="menu-button">
-            <button class="menu-toggle-btn" @click="handleToggleSider">
+            <div class="menu-toggle-btn">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
                 stroke-linecap="round" stroke-linejoin="round">
                 <line x1="3" y1="12" x2="21" y2="12" />
                 <line x1="3" y1="6" x2="21" y2="6" />
                 <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
-            </button>
+            </div>
           </slot>
         </template>
         <template #left>
@@ -254,7 +254,9 @@ function handleCloseSider() {
   color: var(--sider-text);
   border-right: none;
   box-shadow: var(--shadow-sider);
-  transition: all var(--transition-normal);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1), 
+              transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.35s ease;
   z-index: var(--size-z-fixed, 1030);
 }
 
@@ -269,11 +271,27 @@ function handleCloseSider() {
   overflow: hidden;
   /* Removed border for seamless look */
   border-bottom: none;
+  transition: padding 0.3s ease, justify-content 0.3s ease;
 }
 
 .layout-sidebar__logo.is-collapsed {
   justify-content: center;
   padding: 0;
+}
+
+/* Logo 内容收起时动画 */
+.layout-sidebar__logo :deep(.logo-text),
+.layout-sidebar__logo :deep(.logo-name) {
+  transition: opacity 0.2s ease, width 0.25s ease, margin 0.25s ease;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.layout-sidebar__logo.is-collapsed :deep(.logo-text),
+.layout-sidebar__logo.is-collapsed :deep(.logo-name) {
+  opacity: 0;
+  width: 0;
+  margin: 0;
 }
 
 /* Menu Area */
@@ -298,6 +316,32 @@ function handleCloseSider() {
   --l-menu-hover-text-color: var(--sider-text);
   --l-menu-selected-text-color: var(--sider-text);
   --l-menu-selected-indicator-color: rgba(255, 255, 255, 0.95);
+}
+
+/* 菜单项收起时隐藏文字 */
+.layout-sidebar.is-collapsed .layout-sidebar__menu :deep(.menu-item-text),
+.layout-sidebar.is-collapsed .layout-sidebar__menu :deep(.submenu-title-text),
+.layout-sidebar.is-collapsed .layout-sidebar__menu :deep(.l-menu-item-text),
+.layout-sidebar.is-collapsed .layout-sidebar__menu :deep(.l-submenu-title-text),
+.layout-sidebar.is-collapsed .layout-sidebar__menu :deep(span:not(.menu-icon)) {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+  transition: opacity 0.2s ease, width 0.2s ease;
+}
+
+/* 菜单图标居中 */
+.layout-sidebar.is-collapsed .layout-sidebar__menu :deep(.l-menu-item),
+.layout-sidebar.is-collapsed .layout-sidebar__menu :deep(.l-submenu-title) {
+  justify-content: center;
+  padding: 0 !important;
+}
+
+/* 子菜单箭头隐藏 */
+.layout-sidebar.is-collapsed .layout-sidebar__menu :deep(.l-submenu-arrow),
+.layout-sidebar.is-collapsed .layout-sidebar__menu :deep(.submenu-arrow) {
+  opacity: 0;
+  width: 0;
 }
 
 .layout-sidebar__menu::-webkit-scrollbar {
@@ -337,10 +381,15 @@ function handleCloseSider() {
 .collapse-btn:hover {
   background: var(--sider-hover);
   color: var(--sider-text);
+  transform: scale(1.05);
+}
+
+.collapse-btn:active {
+  transform: scale(0.95);
 }
 
 .collapse-btn svg {
-  transition: transform 0.3s ease;
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .collapse-btn svg.is-collapsed {
@@ -383,6 +432,11 @@ function handleCloseSider() {
 .menu-toggle-btn:hover {
   background: var(--color-fill-hover);
   color: var(--color-text-primary);
+  transform: scale(1.05);
+}
+
+.menu-toggle-btn:active {
+  transform: scale(0.95);
 }
 
 /* ========== Tabs ========== */
@@ -412,7 +466,7 @@ function handleCloseSider() {
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(16px);
   }
 
   to {
@@ -442,5 +496,187 @@ function handleCloseSider() {
   .content-wrapper {
     padding: 16px;
   }
+}
+
+/* ========== 高级动画优化 ========== */
+
+/* 侧边栏悬停光晕效果 */
+.layout-sidebar__sider::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.05) 0%,
+    transparent 50%,
+    rgba(255, 255, 255, 0.02) 100%
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.layout-sidebar__sider:hover::before {
+  opacity: 1;
+}
+
+/* Logo 悬停动画 */
+.layout-sidebar__logo::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.layout-sidebar__logo {
+  position: relative;
+  overflow: hidden;
+}
+
+.layout-sidebar__logo:hover::after {
+  transform: translateX(100%);
+}
+
+/* 折叠按钮光环 */
+.collapse-btn::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.3), transparent);
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+  z-index: -1;
+}
+
+.collapse-btn {
+  position: relative;
+}
+
+.collapse-btn:hover::before {
+  opacity: 1;
+  animation: btnGlow 1.5s ease-in-out infinite;
+}
+
+@keyframes btnGlow {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 1;
+  }
+}
+
+/* 头部边框渐变光线 */
+.layout-sidebar__header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--color-primary) 50%,
+    transparent 100%
+  );
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+
+.layout-sidebar__header {
+  position: relative;
+}
+
+.layout-sidebar__header:hover::after {
+  opacity: 0.5;
+}
+
+/* 菜单按钮旋转动画 */
+.menu-toggle-btn svg {
+  transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.menu-toggle-btn:hover svg {
+  transform: rotate(90deg);
+}
+
+/* 内容区域渐变背景 */
+.content-wrapper {
+  background: linear-gradient(
+    180deg,
+    rgba(248, 250, 252, 0) 0%,
+    rgba(248, 250, 252, 0.5) 100%
+  );
+  border-radius: 12px;
+}
+
+:root[data-theme-mode="dark"] .content-wrapper,
+.dark .content-wrapper {
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0) 0%,
+    rgba(15, 23, 42, 0.5) 100%
+  );
+}
+
+/* 标签栏平滑过渡 */
+.layout-sidebar__tabs {
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* 页脚悬停效果 */
+.footer-content {
+  transition: all 0.3s ease;
+}
+
+.layout-sidebar__footer:hover .footer-content {
+  color: var(--color-text-secondary);
+}
+
+/* 菜单项缩放动画 */
+.layout-sidebar__menu :deep(.l-menu-item),
+.layout-sidebar__menu :deep(.l-submenu-title) {
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.layout-sidebar__menu :deep(.l-menu-item:hover),
+.layout-sidebar__menu :deep(.l-submenu-title:hover) {
+  transform: translateX(4px);
+  background: var(--sider-hover) !important;
+  border-radius: 8px;
+}
+
+/* 侧边栏展开/收起动画优化 */
+.layout-sidebar__sider {
+  will-change: width;
+}
+
+.layout-sidebar__main {
+  will-change: margin-left;
+}
+
+/* 滚动条美化 */
+.layout-sidebar__menu::-webkit-scrollbar {
+  width: 6px;
+}
+
+.layout-sidebar__menu::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.layout-sidebar__menu::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+  transition: background 0.3s;
+}
+
+.layout-sidebar__menu:hover::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
 }
 </style>

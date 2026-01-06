@@ -177,6 +177,7 @@ function closeMenu() {
 .menu-toggle.is-active .bar:nth-child(1) {
   top: 50%;
   transform: translateY(-50%) rotate(45deg);
+  background: var(--color-primary-500, #3b82f6);
 }
 
 .menu-toggle.is-active .bar:nth-child(2) {
@@ -187,6 +188,7 @@ function closeMenu() {
 .menu-toggle.is-active .bar:nth-child(3) {
   bottom: 50%;
   transform: translateY(50%) rotate(-45deg);
+  background: var(--color-primary-500, #3b82f6);
 }
 
 /* 遮罩 */
@@ -241,13 +243,35 @@ function closeMenu() {
 
 .menu-slide-enter-active,
 .menu-slide-leave-active {
-  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.35s ease;
+  transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.4s ease;
 }
 
 .menu-slide-enter-from,
 .menu-slide-leave-to {
-  transform: translateY(-20px);
+  transform: translateY(-24px);
   opacity: 0;
+}
+
+/* 菜单项动画 */
+.menu-nav :deep(> *) {
+  animation: menuItemFade 0.25s ease both;
+}
+
+.menu-nav :deep(> *:nth-child(1)) { animation-delay: 0.05s; }
+.menu-nav :deep(> *:nth-child(2)) { animation-delay: 0.1s; }
+.menu-nav :deep(> *:nth-child(3)) { animation-delay: 0.15s; }
+.menu-nav :deep(> *:nth-child(4)) { animation-delay: 0.2s; }
+.menu-nav :deep(> *:nth-child(5)) { animation-delay: 0.25s; }
+
+@keyframes menuItemFade {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 深色模式 */

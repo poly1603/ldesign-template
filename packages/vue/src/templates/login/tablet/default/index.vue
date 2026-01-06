@@ -2,7 +2,7 @@
 /**
  * 平板端登录模板 - 卡片渐变风格
  */
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 
 interface LoginData {
   loginType: 'username' | 'phone'
@@ -48,13 +48,49 @@ const captchaCode = ref('')
 const smsCountdown = ref(0)
 let smsTimer: ReturnType<typeof setInterval> | null = null
 
+// 鼠标跟随倒斜效果
+const cardRef = ref<HTMLElement | null>(null)
+const cardStyle = ref<{ transform: string }>({ transform: '' })
+
+function handleMouseMove(e: MouseEvent) {
+  if (!cardRef.value) return
+  const rect = cardRef.value.getBoundingClientRect()
+  const x = e.clientX - rect.left
+  const y = e.clientY - rect.top
+  const centerX = rect.width / 2
+  const centerY = rect.height / 2
+  const rotateX = (y - centerY) / 25
+  const rotateY = (centerX - x) / 25
+  cardStyle.value = {
+    transform: `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`
+  }
+}
+
+function handleMouseLeave() {
+  cardStyle.value = { transform: '' }
+}
+
+// 验证码翻转
+const captchaFlipping = ref(false)
+
 onMounted(() => {
   setTimeout(() => mounted.value = true, 100)
   refreshCaptcha()
 })
 
+onUnmounted(() => {
+  if (smsTimer) {
+    clearInterval(smsTimer)
+    smsTimer = null
+  }
+})
+
 function refreshCaptcha() {
-  captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+  captchaFlipping.value = true
+  setTimeout(() => {
+    captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+    captchaFlipping.value = false
+  }, 300)
 }
 
 function sendSmsCode() {
@@ -120,7 +156,14 @@ async function handleSubmit() {
       <span class="header-title">{{ brandTitle }}</span>
     </div>
 
-    <div class="login-card" :class="{ 'is-mounted': mounted }">
+    <div 
+      ref="cardRef"
+      class="login-card" 
+      :class="{ 'is-mounted': mounted }"
+      :style="cardStyle"
+      @mousemove="handleMouseMove"
+      @mouseleave="handleMouseLeave"
+    >
       <!-- 标题 -->
       <div class="card-header">
         <h1 class="card-title">{{ title }}</h1>
@@ -236,7 +279,7 @@ async function handleSubmit() {
                 maxlength="4">
             </div>
           </div>
-          <div class="captcha-img" @click="refreshCaptcha">
+          <div class="captcha-img" :class="{ flipping: captchaFlipping }" @click="refreshCaptcha">
             <svg width="110" height="48" viewBox="0 0 110 48">
               <rect fill="var(--color-fill-tertiary, #f3f4f6)" width="110" height="48" rx="10" />
               <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace"
@@ -312,6 +355,53 @@ async function handleSubmit() {
   gap: 8px;
 }
 
+/* 工具栏按钮样式 */
+.login-toolbar :deep(button),
+.login-toolbar :deep(a),
+.login-toolbar :deep([class*="picker"]),
+.login-toolbar :deep([class*="trigger"]) {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(99, 102, 241, 0.15) !important;
+  color: var(--color-primary-default, #6366f1) !important;
+  border-radius: 12px !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06) !important;
+  transition: all 0.25s ease !important;
+}
+
+.login-toolbar :deep(button:hover),
+.login-toolbar :deep(a:hover) {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: var(--color-primary-200, #c7d2fe) !important;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.15) !important;
+}
+
+/* 工具栏弹窗样式 */
+.login-toolbar :deep([class*="dropdown"]),
+.login-toolbar :deep([class*="menu"]),
+.login-toolbar :deep([class*="panel"]),
+.login-toolbar :deep([class*="popover"]) {
+  background: rgba(255, 255, 255, 0.98) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid var(--color-border, #e5e7eb) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
+  color: var(--color-text-primary, #1f2937) !important;
+}
+
+.login-toolbar :deep([class*="dropdown"] *),
+.login-toolbar :deep([class*="menu"] *),
+.login-toolbar :deep([class*="panel"] *) {
+  color: var(--color-text-primary, #1f2937) !important;
+}
+
+.login-toolbar :deep([class*="item"]:hover),
+.login-toolbar :deep([class*="option"]:hover) {
+  background: var(--color-primary-50, #eef2ff) !important;
+}
+
 /* 背景 */
 .bg-decoration {
   position: fixed;
@@ -325,7 +415,7 @@ async function handleSubmit() {
   border-radius: 50%;
   filter: blur(80px);
   opacity: 0.4;
-  animation: blob-move 25s ease-in-out infinite;
+  animation: blob-move 25s ease-in-out infinite, blobPulse 4s ease-in-out infinite;
 }
 
 .bg-blob-1 {
@@ -355,18 +445,23 @@ async function handleSubmit() {
 }
 
 @keyframes blob-move {
-
-  0%,
-  100% {
+  0%, 100% {
     transform: translate(0, 0) scale(1);
   }
-
   33% {
     transform: translate(30px, -30px) scale(1.1);
   }
-
   66% {
     transform: translate(-20px, 20px) scale(0.9);
+  }
+}
+
+@keyframes blobPulse {
+  0%, 100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.55;
   }
 }
 
@@ -404,12 +499,31 @@ async function handleSubmit() {
   border-radius: 14px;
   color: #fff;
   box-shadow: 0 8px 20px -8px var(--color-primary-400, rgba(99, 102, 241, 0.5));
+  animation: logoFloat 4s ease-in-out infinite;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.header-logo:hover {
+  transform: scale(1.1) rotate(5deg);
+  box-shadow: 0 12px 25px -8px var(--color-primary-400, rgba(99, 102, 241, 0.6));
+}
+
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
 }
 
 .header-title {
   font-size: 24px;
   font-weight: 700;
-  color: var(--color-primary-default, #6366f1);
+  background: linear-gradient(135deg, var(--color-primary-default, #6366f1), var(--color-primary-700, #4338ca));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 /* 卡片 */
@@ -420,16 +534,37 @@ async function handleSubmit() {
   padding: 36px;
   background: var(--color-bg-container, #fff);
   border-radius: 24px;
-  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.12), 0 10px 20px -5px rgba(0, 0, 0, 0.04);
   opacity: 0;
-  transform: translateY(20px);
-  transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  transform: translateY(30px) scale(0.98);
+  transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   transition-delay: 0.1s;
+  transform-style: preserve-3d;
+  will-change: transform;
 }
 
 .login-card.is-mounted {
   opacity: 1;
-  transform: translateY(0);
+  transform: translateY(0) scale(1);
+}
+
+.login-card::before {
+  content: '';
+  position: absolute;
+  inset: -2px;
+  border-radius: 26px;
+  background: linear-gradient(135deg, 
+    var(--color-primary-200, rgba(99, 102, 241, 0.3)),
+    transparent 40%,
+    transparent 60%,
+    var(--color-info-200, rgba(6, 182, 212, 0.3)));
+  opacity: 0;
+  z-index: -1;
+  transition: opacity 0.3s;
+}
+
+.login-card:hover::before {
+  opacity: 1;
 }
 
 /* Header */
@@ -469,8 +604,16 @@ async function handleSubmit() {
   height: calc(100% - 8px);
   background: var(--color-bg-container, #fff);
   border-radius: 10px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab-btn.active {
+  color: var(--color-primary-default, #6366f1);
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--color-text-secondary, #4b5563);
 }
 
 .tab-btn {
@@ -552,7 +695,15 @@ async function handleSubmit() {
 .form-input:focus {
   background: var(--color-bg-container, #fff);
   border-color: var(--color-primary-default, #6366f1);
-  box-shadow: 0 0 0 4px var(--color-primary-100, rgba(99, 102, 241, 0.1));
+  box-shadow: 
+    0 0 0 4px var(--color-primary-100, rgba(99, 102, 241, 0.15)),
+    0 0 20px rgba(99, 102, 241, 0.1);
+}
+
+.input-wrapper:focus-within .input-icon {
+  color: var(--color-primary-default, #6366f1);
+  transform: scale(1.15);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .form-input:focus~.input-icon {
@@ -607,11 +758,28 @@ async function handleSubmit() {
   border-radius: 10px;
   overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform-style: preserve-3d;
 }
 
 .captcha-img:hover {
-  transform: scale(1.02);
+  transform: scale(1.05);
+}
+
+.captcha-img.flipping {
+  animation: captchaFlip 0.6s ease;
+}
+
+@keyframes captchaFlip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(90deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
 }
 
 /* Options */
@@ -643,6 +811,7 @@ async function handleSubmit() {
 
 /* Submit */
 .submit-btn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -656,17 +825,40 @@ async function handleSubmit() {
   border: none;
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 6px 20px -5px var(--color-primary-500, rgba(99, 102, 241, 0.4));
+  overflow: hidden;
+}
+
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.submit-btn:hover:not(:disabled)::before {
+  left: 100%;
 }
 
 .submit-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 25px -10px var(--color-primary-500, rgba(99, 102, 241, 0.5));
+  transform: translateY(-3px);
+  box-shadow: 0 12px 30px -8px var(--color-primary-500, rgba(99, 102, 241, 0.5));
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px -5px var(--color-primary-500, rgba(99, 102, 241, 0.4));
 }
 
 .submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .loader {
@@ -725,12 +917,52 @@ async function handleSubmit() {
   border: 1px solid var(--color-border-secondary, #e5e7eb);
   border-radius: 12px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .social-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.12);
+  transform: translateY(-5px) scale(1.08);
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.18);
+}
+
+/* 品牌色悬停效果 */
+.social-btn:nth-child(1):hover {
+  border-color: #333;
+  background: rgba(51, 51, 51, 0.05);
+}
+
+.social-btn:nth-child(2):hover {
+  border-color: #07C160;
+  background: rgba(7, 193, 96, 0.05);
+}
+
+.social-btn:nth-child(3):hover {
+  border-color: #12B7F5;
+  background: rgba(18, 183, 245, 0.05);
+}
+
+/* 社交按钮交错入场 */
+.social-btn:nth-child(1) {
+  animation: socialFadeIn 0.4s ease backwards 0.1s;
+}
+
+.social-btn:nth-child(2) {
+  animation: socialFadeIn 0.4s ease backwards 0.2s;
+}
+
+.social-btn:nth-child(3) {
+  animation: socialFadeIn 0.4s ease backwards 0.3s;
+}
+
+@keyframes socialFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Register */
@@ -749,5 +981,55 @@ async function handleSubmit() {
 
 .register-hint a:hover {
   text-decoration: underline;
+}
+
+/* 按钮光晕动画 */
+.submit-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, transparent, rgba(255,255,255,0.1), transparent);
+  opacity: 0;
+}
+
+.submit-btn:hover::after {
+  animation: buttonShine 1.5s ease infinite;
+}
+
+@keyframes buttonShine {
+  0% {
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* 标题动画 */
+.card-title {
+  background: linear-gradient(135deg, 
+    var(--color-text-primary, #1f2937) 0%,
+    var(--color-primary-default, #6366f1) 50%,
+    var(--color-text-primary, #1f2937) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: titleGradient 4s ease-in-out infinite;
+}
+
+@keyframes titleGradient {
+  0%, 100% {
+    background-position: 0% center;
+  }
+  50% {
+    background-position: 200% center;
+  }
 }
 </style>

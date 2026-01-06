@@ -2,7 +2,7 @@
 /**
  * 移动端登录模板 - 暗夜极简风格
  */
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 
 interface LoginData {
   loginType: 'username' | 'phone'
@@ -46,13 +46,51 @@ const captchaCode = ref('')
 const smsCountdown = ref(0)
 let smsTimer: ReturnType<typeof setInterval> | null = null
 
+// 星星系统
+interface Star {
+  id: number
+  x: number
+  y: number
+  size: number
+  delay: number
+  duration: number
+}
+const stars = ref<Star[]>([])
+
+// 验证码翻转状态
+const captchaFlipping = ref(false)
+
+// 初始化星星
+function initStars() {
+  stars.value = Array.from({ length: 40 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    y: Math.random() * 100,
+    size: Math.random() * 2 + 1,
+    delay: Math.random() * 3,
+    duration: Math.random() * 2 + 2,
+  }))
+}
+
 onMounted(() => {
   setTimeout(() => mounted.value = true, 50)
   refreshCaptcha()
+  initStars()
+})
+
+onUnmounted(() => {
+  if (smsTimer) {
+    clearInterval(smsTimer)
+    smsTimer = null
+  }
 })
 
 function refreshCaptcha() {
-  captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+  captchaFlipping.value = true
+  setTimeout(() => {
+    captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+    captchaFlipping.value = false
+  }, 300)
 }
 
 function sendSmsCode() {
@@ -100,6 +138,23 @@ async function handleSubmit() {
     <div class="bg-dark">
       <div class="bg-glow bg-glow-1" />
       <div class="bg-glow bg-glow-2" />
+      <div class="bg-glow bg-glow-3" />
+      <!-- 星星 -->
+      <div class="stars">
+        <div
+          v-for="star in stars"
+          :key="star.id"
+          class="star"
+          :style="{
+            left: `${star.x}%`,
+            top: `${star.y}%`,
+            width: `${star.size}px`,
+            height: `${star.size}px`,
+            animationDelay: `${star.delay}s`,
+            animationDuration: `${star.duration}s`,
+          }"
+        />
+      </div>
     </div>
 
     <!-- 内容 -->
@@ -198,7 +253,7 @@ async function handleSubmit() {
             </svg>
             <input v-model="captcha" type="text" placeholder="验证码" :disabled="loading" maxlength="4">
           </div>
-          <div class="captcha-img" @click="refreshCaptcha">
+          <div class="captcha-img" :class="{ flipping: captchaFlipping }" @click="refreshCaptcha">
             <svg width="100" height="50" viewBox="0 0 100 50">
               <rect fill="rgba(139, 92, 246, 0.15)" width="100" height="50" rx="12" />
               <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace"
@@ -272,6 +327,51 @@ async function handleSubmit() {
   gap: 6px;
 }
 
+/* 工具栏按钮样式 */
+.login-toolbar :deep(button),
+.login-toolbar :deep(a),
+.login-toolbar :deep([class*="picker"]),
+.login-toolbar :deep([class*="trigger"]) {
+  background: rgba(255, 255, 255, 0.08) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.12) !important;
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-radius: 12px !important;
+  transition: all 0.25s ease !important;
+}
+
+.login-toolbar :deep(button:active),
+.login-toolbar :deep(a:active) {
+  transform: scale(0.95) !important;
+  background: rgba(255, 255, 255, 0.15) !important;
+}
+
+/* 工具栏弹窗样式 - 深色主题 */
+.login-toolbar :deep([class*="dropdown"]),
+.login-toolbar :deep([class*="menu"]),
+.login-toolbar :deep([class*="panel"]),
+.login-toolbar :deep([class*="popover"]) {
+  background: rgba(15, 15, 25, 0.95) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5) !important;
+  color: rgba(255, 255, 255, 0.9) !important;
+}
+
+.login-toolbar :deep([class*="dropdown"] *),
+.login-toolbar :deep([class*="menu"] *),
+.login-toolbar :deep([class*="panel"] *) {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+.login-toolbar :deep([class*="item"]:hover),
+.login-toolbar :deep([class*="option"]:hover) {
+  background: rgba(139, 92, 246, 0.2) !important;
+}
+
 /* 背景 */
 .bg-dark {
   position: fixed;
@@ -300,6 +400,56 @@ async function handleSubmit() {
   bottom: 20%;
   left: -50px;
   background: var(--color-info-500, #06b6d4);
+  animation: glowPulse 6s ease-in-out infinite 1s;
+}
+
+.bg-glow-3 {
+  width: 200px;
+  height: 200px;
+  bottom: 5%;
+  right: -40px;
+  background: var(--color-warning-500, #f59e0b);
+  opacity: 0.2;
+  animation: glowPulse 5s ease-in-out infinite 2s;
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.4;
+  }
+}
+
+/* 星星系统 */
+.stars {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: starTwinkle ease-in-out infinite;
+  box-shadow: 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+    box-shadow: 0 0 4px rgba(255, 255, 255, 0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.5);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.8), 0 0 16px rgba(139, 92, 246, 0.4);
+  }
 }
 
 /* 内容 */
@@ -336,7 +486,30 @@ async function handleSubmit() {
   background: linear-gradient(135deg, var(--color-primary-500, #8b5cf6), var(--color-primary-700, #6d28d9));
   border-radius: 20px;
   color: #fff;
-  box-shadow: 0 12px 30px -10px var(--color-primary-500, rgba(139, 92, 246, 0.5));
+  box-shadow: 
+    0 12px 30px -10px var(--color-primary-500, rgba(139, 92, 246, 0.5)),
+    0 0 0 0 rgba(139, 92, 246, 0);
+  animation: logoFloat 4s ease-in-out infinite, logoGlow 3s ease-in-out infinite;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.logo:active {
+  animation: none;
+  transform: scale(0.95) rotate(-5deg);
+  box-shadow: 0 8px 20px -5px var(--color-primary-500, rgba(139, 92, 246, 0.6));
+}
+
+@keyframes logoGlow {
+  0%, 100% {
+    box-shadow: 
+      0 12px 30px -10px var(--color-primary-500, rgba(139, 92, 246, 0.5)),
+      0 0 0 0 rgba(139, 92, 246, 0);
+  }
+  50% {
+    box-shadow: 
+      0 18px 35px -10px var(--color-primary-500, rgba(139, 92, 246, 0.6)),
+      0 0 20px 4px rgba(139, 92, 246, 0.15);
+  }
 }
 
 .logo img {
@@ -350,6 +523,20 @@ async function handleSubmit() {
   font-weight: 700;
   color: #fff;
   margin: 0 0 6px;
+  background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.8) 50%, #fff 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: titleShimmer 4s ease-in-out infinite;
+}
+
+@keyframes titleShimmer {
+  0%, 100% {
+    background-position: 200% 50%;
+  }
+  50% {
+    background-position: 0% 50%;
+  }
 }
 
 .subtitle {
@@ -458,8 +645,19 @@ async function handleSubmit() {
 }
 
 .field input:focus {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.1);
   border-color: var(--color-primary-400, #a78bfa);
+  box-shadow: 
+    0 0 0 3px rgba(167, 139, 250, 0.15),
+    0 0 20px rgba(167, 139, 250, 0.1),
+    inset 0 0 10px rgba(167, 139, 250, 0.05);
+}
+
+.field:focus-within .field-icon {
+  color: var(--color-primary-400, #a78bfa);
+  transform: scale(1.15);
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  filter: drop-shadow(0 0 4px rgba(167, 139, 250, 0.5));
 }
 
 /* Eye */
@@ -515,6 +713,28 @@ async function handleSubmit() {
   border-radius: 14px;
   overflow: hidden;
   cursor: pointer;
+  transition: transform 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.captcha-img.flipping {
+  animation: captchaFlip 0.6s ease;
+}
+
+@keyframes captchaFlip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  50% {
+    transform: rotateY(90deg);
+  }
+  100% {
+    transform: rotateY(0deg);
+  }
+}
+
+.captcha-img:active {
+  transform: scale(0.95);
 }
 
 /* Options */
@@ -531,6 +751,7 @@ async function handleSubmit() {
 
 /* Submit */
 .submit-btn {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -540,20 +761,59 @@ async function handleSubmit() {
   font-size: 16px;
   font-weight: 600;
   color: #fff;
-  background: linear-gradient(135deg, var(--color-primary-500, #8b5cf6), var(--color-primary-600, #7c3aed));
+  background: linear-gradient(135deg, 
+    var(--color-primary-400, #a78bfa) 0%,
+    var(--color-primary-500, #8b5cf6) 30%,
+    var(--color-primary-600, #7c3aed) 70%,
+    var(--color-info-500, #06b6d4) 100%);
+  background-size: 300% 100%;
   border: none;
   border-radius: 14px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 6px 20px -4px rgba(139, 92, 246, 0.5);
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+  animation: gradientFlow 4s ease infinite;
+}
+
+@keyframes gradientFlow {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.4s ease, height 0.4s ease;
+}
+
+.submit-btn:active::before {
+  width: 300px;
+  height: 300px;
 }
 
 .submit-btn:active {
-  transform: scale(0.98);
+  transform: scale(0.96);
+  box-shadow: 0 3px 12px -2px rgba(139, 92, 246, 0.4);
+  animation-play-state: paused;
 }
 
 .submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
+  box-shadow: none;
 }
 
 .loader {
@@ -595,15 +855,57 @@ async function handleSubmit() {
   justify-content: center;
   width: 54px;
   height: 54px;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+  overflow: hidden;
+}
+
+.social-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.25) 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s;
 }
 
 .social-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.85);
+  background: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.25);
+}
+
+.social-btn:active::after {
+  opacity: 1;
+}
+
+/* 社交按钮按顺序延迟入场 */
+.social-btn:nth-child(1) {
+  animation: socialBtnIn 0.5s ease backwards 0.1s;
+}
+
+.social-btn:nth-child(2) {
+  animation: socialBtnIn 0.5s ease backwards 0.2s;
+}
+
+.social-btn:nth-child(3) {
+  animation: socialBtnIn 0.5s ease backwards 0.3s;
+}
+
+@keyframes socialBtnIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 /* Register */
@@ -618,5 +920,79 @@ async function handleSubmit() {
   color: var(--color-primary-400, #a78bfa);
   font-weight: 500;
   text-decoration: none;
+  position: relative;
+}
+
+.register a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: currentColor;
+  transition: width 0.3s ease;
+}
+
+.register a:active::after {
+  width: 100%;
+}
+
+/* Tab 动画增强 */
+.tab-bg {
+  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+}
+
+.tab.active {
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* SMS 按钮交互 */
+.sms-btn:not(:disabled):active {
+  transform: scale(0.95);
+  background: var(--color-primary-600, #7c3aed);
+}
+
+/* Logo 动画 */
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+/* 内容入场动画 */
+.login-content.is-mounted .login-header {
+  animation: headerSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) backwards;
+}
+
+.login-content.is-mounted .login-tabs {
+  animation: headerSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.1s backwards;
+}
+
+.login-content.is-mounted .login-form {
+  animation: headerSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.2s backwards;
+}
+
+.login-content.is-mounted .social-section {
+  animation: headerSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.3s backwards;
+}
+
+.login-content.is-mounted .register {
+  animation: headerSlideIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) 0.4s backwards;
+}
+
+@keyframes headerSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>

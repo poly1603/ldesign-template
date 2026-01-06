@@ -109,13 +109,24 @@ const contentTopOffset = computed(() =>
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(16px);
   }
 
   to {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* 导航栏悬停效果 */
+.header-nav :deep(a),
+.header-nav :deep(button) {
+  transition: all 0.2s ease;
+}
+
+.header-nav :deep(a:hover),
+.header-nav :deep(button:hover) {
+  transform: translateY(-2px);
 }
 
 /* 页脚 */
