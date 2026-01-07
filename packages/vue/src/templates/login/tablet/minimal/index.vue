@@ -2,7 +2,7 @@
 /**
  * 平板端登录模板 - 极简毛玻璃风格
  */
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 
 interface LoginData {
   loginType: 'username' | 'phone'
@@ -17,6 +17,10 @@ interface Props {
   title?: string
   subtitle?: string
   logo?: string
+  /** 外部验证码图片 URL（如果提供则使用真实验证码） */
+  captchaUrl?: string
+  /** 刷新验证码回调 */
+  onRefreshCaptcha?: () => string | void
   onSubmit?: (data: LoginData) => void
   onForgotPassword?: () => void
   onRegister?: () => void
@@ -42,8 +46,16 @@ const loading = ref(false)
 const mounted = ref(false)
 
 const captchaCode = ref('')
+const captchaImgUrl = ref('')
 const smsCountdown = ref(0)
 let smsTimer: ReturnType<typeof setInterval> | null = null
+
+// 监听外部验证码 URL 变化
+watch(() => props.captchaUrl, (url) => {
+  if (url) {
+    captchaImgUrl.value = url
+  }
+}, { immediate: true })
 
 // 鼠标跟随倒斜效果
 const cardRef = ref<HTMLElement | null>(null)
@@ -104,7 +116,16 @@ onUnmounted(() => {
 function refreshCaptcha() {
   captchaFlipping.value = true
   setTimeout(() => {
-    captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+    // 如果有外部刷新回调，调用它
+    if (props.onRefreshCaptcha) {
+      const newUrl = props.onRefreshCaptcha()
+      if (newUrl) {
+        captchaImgUrl.value = newUrl
+      }
+    } else {
+      // 否则使用本地生成的假验证码
+      captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+    }
     captchaFlipping.value = false
   }, 300)
 }
@@ -266,7 +287,9 @@ async function handleSubmit() {
             <input v-model="captcha" type="text" class="form-input" placeholder="验证码" :disabled="loading" maxlength="4">
           </div>
           <div class="captcha-img" :class="{ flipping: captchaFlipping }" @click="refreshCaptcha">
-            <svg width="110" height="48" viewBox="0 0 110 48">
+            <!-- 使用外部验证码图片或本地生成的文字验证码 -->
+            <img v-if="captchaImgUrl" :src="captchaImgUrl" alt="验证码" class="captcha-image" />
+            <svg v-else width="110" height="48" viewBox="0 0 110 48">
               <rect fill="rgba(255,255,255,0.1)" width="110" height="48" rx="10" />
               <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace"
                 font-size="20" font-weight="bold" fill="var(--color-primary-400, #a78bfa)">{{ captchaCode }}</text>
@@ -790,6 +813,19 @@ async function handleSubmit() {
   100% {
     transform: rotateY(0deg);
   }
+}
+
+.captcha-image {
+  width: 110px;
+  height: 48px;
+  border-radius: 12px;
+  object-fit: cover;
+  user-select: none;
+  transition: all 0.25s ease;
+}
+
+.captcha-image:hover {
+  transform: scale(1.05);
 }
 
 /* Submit */

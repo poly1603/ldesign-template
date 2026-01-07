@@ -3,7 +3,7 @@
  * 桌面端登录模板 - 极简毛玻璃风格
  * 深度优化版: 彩虹光斑、噪点纹理、3D卡片、翻转验证码
  */
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
 
 interface LoginData {
   loginType: 'username' | 'phone'
@@ -18,6 +18,10 @@ interface Props {
   title?: string
   subtitle?: string
   logo?: string
+  /** 外部验证码图片 URL（如果提供则使用真实验证码） */
+  captchaUrl?: string
+  /** 刷新验证码回调 */
+  onRefreshCaptcha?: () => string | void
   onSubmit?: (data: LoginData) => void
   onForgotPassword?: () => void
   onRegister?: () => void
@@ -67,8 +71,16 @@ function handleCardMouseLeave() {
 const captchaFlipped = ref(false)
 
 const captchaCode = ref('')
+const captchaImgUrl = ref('')
 const smsCountdown = ref(0)
 let smsTimer: ReturnType<typeof setInterval> | null = null
+
+// 监听外部验证码 URL 变化
+watch(() => props.captchaUrl, (url) => {
+  if (url) {
+    captchaImgUrl.value = url
+  }
+}, { immediate: true })
 
 // 星点动画
 const stars = ref<{ id: number; x: number; y: number; size: number; delay: number }[]>([])
@@ -96,7 +108,16 @@ onUnmounted(() => {
 function refreshCaptcha() {
   captchaFlipped.value = true
   setTimeout(() => {
-    captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+    // 如果有外部刷新回调，调用它
+    if (props.onRefreshCaptcha) {
+      const newUrl = props.onRefreshCaptcha()
+      if (newUrl) {
+        captchaImgUrl.value = newUrl
+      }
+    } else {
+      // 否则使用本地生成的假验证码
+      captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+    }
     captchaFlipped.value = false
   }, 300)
 }
@@ -249,7 +270,9 @@ function handleSocialLogin(provider: string) {
             <input v-model="captcha" type="text" class="field-input" placeholder="验证码" :disabled="loading" maxlength="4" />
           </div>
           <div class="captcha-img" :class="{ 'is-flipped': captchaFlipped }" @click="refreshCaptcha">
-            <div class="captcha-inner">
+            <!-- 使用外部验证码图片或本地生成的文字验证码 -->
+            <img v-if="captchaImgUrl" :src="captchaImgUrl" alt="验证码" class="captcha-image" />
+            <div v-else class="captcha-inner">
               <div class="captcha-front">
                 <svg width="100" height="48" viewBox="0 0 100 48">
                   <rect fill="rgba(255,255,255,0.1)" width="100" height="48" rx="10" />
@@ -985,6 +1008,20 @@ function handleSocialLogin(provider: string) {
 .captcha-img:hover .captcha-back {
   border-color: rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.08);
+}
+
+.captcha-image {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  user-select: none;
+  transition: all 0.25s ease;
+}
+
+.captcha-image:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(139, 92, 246, 0.25);
 }
 
 /* Submit Button */

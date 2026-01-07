@@ -2,7 +2,7 @@
 /**
  * 移动端登录模板 - 暗夜极简风格
  */
-import { ref, onMounted, onUnmounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed, watch } from 'vue'
 
 interface LoginData {
   loginType: 'username' | 'phone'
@@ -17,6 +17,10 @@ interface Props {
   title?: string
   subtitle?: string
   logo?: string
+  /** 外部验证码图片 URL（如果提供则使用真实验证码） */
+  captchaUrl?: string
+  /** 刷新验证码回调 */
+  onRefreshCaptcha?: () => string | void
   onSubmit?: (data: LoginData) => void
   onForgotPassword?: () => void
   onRegister?: () => void
@@ -43,8 +47,16 @@ const loading = ref(false)
 const mounted = ref(false)
 
 const captchaCode = ref('')
+const captchaImgUrl = ref('')
 const smsCountdown = ref(0)
 let smsTimer: ReturnType<typeof setInterval> | null = null
+
+// 监听外部验证码 URL 变化
+watch(() => props.captchaUrl, (url) => {
+  if (url) {
+    captchaImgUrl.value = url
+  }
+}, { immediate: true })
 
 // 星星系统
 interface Star {
@@ -88,7 +100,16 @@ onUnmounted(() => {
 function refreshCaptcha() {
   captchaFlipping.value = true
   setTimeout(() => {
-    captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+    // 如果有外部刷新回调，调用它
+    if (props.onRefreshCaptcha) {
+      const newUrl = props.onRefreshCaptcha()
+      if (newUrl) {
+        captchaImgUrl.value = newUrl
+      }
+    } else {
+      // 否则使用本地生成的假验证码
+      captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+    }
     captchaFlipping.value = false
   }, 300)
 }
@@ -254,7 +275,9 @@ async function handleSubmit() {
             <input v-model="captcha" type="text" placeholder="验证码" :disabled="loading" maxlength="4">
           </div>
           <div class="captcha-img" :class="{ flipping: captchaFlipping }" @click="refreshCaptcha">
-            <svg width="100" height="50" viewBox="0 0 100 50">
+            <!-- 使用外部验证码图片或本地生成的文字验证码 -->
+            <img v-if="captchaImgUrl" :src="captchaImgUrl" alt="验证码" class="captcha-image" />
+            <svg v-else width="100" height="50" viewBox="0 0 100 50">
               <rect fill="rgba(139, 92, 246, 0.15)" width="100" height="50" rx="12" />
               <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace"
                 font-size="20" font-weight="bold" fill="var(--color-primary-400, #a78bfa)">{{ captchaCode }}</text>
@@ -734,6 +757,19 @@ async function handleSubmit() {
 }
 
 .captcha-img:active {
+  transform: scale(0.95);
+}
+
+.captcha-image {
+  width: 100px;
+  height: 50px;
+  border-radius: 12px;
+  object-fit: cover;
+  user-select: none;
+  transition: all 0.25s ease;
+}
+
+.captcha-image:active {
   transform: scale(0.95);
 }
 
