@@ -3,7 +3,7 @@
  * 桌面端登录模板 - 经典双栏风格
  * 深度优化版: 粒子背景、3D效果、弹性动画
  */
-import { ref, onMounted, computed, onUnmounted } from 'vue'
+import { ref, onMounted, computed, onUnmounted, watch } from 'vue'
 
 interface LoginData {
   loginType: 'username' | 'phone'
@@ -20,6 +20,10 @@ interface Props {
   logo?: string
   brandTitle?: string
   brandSlogan?: string
+  /** 外部验证码图片 URL（如果提供则使用真实验证码） */
+  captchaUrl?: string
+  /** 刷新验证码回调 */
+  onRefreshCaptcha?: () => string | void
   onSubmit?: (data: LoginData) => void
   onForgotPassword?: () => void
   onRegister?: () => void
@@ -67,8 +71,16 @@ function handleCardMouseLeave() {
 }
 
 const captchaCode = ref('')
+const captchaImgUrl = ref('')
 const smsCountdown = ref(0)
 let smsTimer: ReturnType<typeof setInterval> | null = null
+
+// 监听外部验证码 URL 变化
+watch(() => props.captchaUrl, (url) => {
+  if (url) {
+    captchaImgUrl.value = url
+  }
+}, { immediate: true })
 
 // 粒子系统
 const particles = ref<{ id: number; x: number; y: number; size: number; duration: number; delay: number }[]>([])
@@ -95,7 +107,16 @@ onUnmounted(() => {
 })
 
 function refreshCaptcha() {
-  captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+  // 如果有外部刷新回调，调用它
+  if (props.onRefreshCaptcha) {
+    const newUrl = props.onRefreshCaptcha()
+    if (newUrl) {
+      captchaImgUrl.value = newUrl
+    }
+  } else {
+    // 否则使用本地生成的假验证码
+    captchaCode.value = Math.random().toString(36).substring(2, 6).toUpperCase()
+  }
 }
 
 function sendSmsCode() {
@@ -341,7 +362,9 @@ function handleSocialLogin(provider: string) {
               :disabled="loading"
             />
             <div class="captcha-img" @click="refreshCaptcha">
-              <span class="captcha-text">{{ captchaCode }}</span>
+              <!-- 使用外部验证码图片或本地生成的文字验证码 -->
+              <img v-if="captchaImgUrl" :src="captchaImgUrl" alt="验证码" class="captcha-image" />
+              <span v-else class="captcha-text">{{ captchaCode }}</span>
             </div>
           </div>
 
@@ -1327,6 +1350,20 @@ function handleSocialLogin(provider: string) {
 }
 
 .captcha-text:hover {
+  transform: scale(1.02);
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+}
+
+.captcha-image {
+  height: 52px;
+  min-width: 120px;
+  border-radius: 12px;
+  object-fit: cover;
+  user-select: none;
+  transition: all 0.25s ease;
+}
+
+.captcha-image:hover {
   transform: scale(1.02);
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
 }
