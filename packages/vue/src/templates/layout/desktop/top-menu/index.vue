@@ -2,118 +2,172 @@
 /**
  * TopMenu 顶部菜单布局模板
  * 现代化宽屏布局，顶部水平导航
+ * 优化：Grid/Flex 布局、多种滚动模式、自动隐藏头部
  */
-import { computed } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { LayoutHeader, LayoutContent, LayoutFooter } from '../../../../components/layout'
 import { ChromeTabs } from '@ldesign/bookmark-vue'
 
 interface Props {
   headerHeight?: number
   tabsHeight?: number
+  breadcrumbHeight?: number
   showTabs?: boolean
-  fixedHeader?: boolean
+  showBreadcrumb?: boolean
   showFooter?: boolean
   footerHeight?: number
   maxContentWidth?: number
+  
+  // 布局行为
+  fixedHeader?: boolean
+  fixedTabs?: boolean
+  fixedBreadcrumb?: boolean
+  
+  // 滚动行为
+  autoHideHeader?: boolean
+  scrollMode?: 'wrapper' | 'body'
 }
 
 const props = withDefaults(defineProps<Props>(), {
   headerHeight: 60,
   tabsHeight: 44,
+  breadcrumbHeight: 40,
   showTabs: true,
+  showBreadcrumb: false,
   fixedHeader: true,
+  fixedTabs: true,
+  fixedBreadcrumb: false,
   showFooter: true,
   footerHeight: 48,
   maxContentWidth: 0,
+  autoHideHeader: false,
+  scrollMode: 'wrapper',
 })
 
-const contentTopOffset = computed(() => {
-  let offset = props.fixedHeader ? props.headerHeight : 0
-  if (props.showTabs) offset += props.tabsHeight
-  return offset
+// 滚动相关
+const headerVisible = ref(true)
+const lastScrollTop = ref(0)
+
+// 自动隐藏 Header 逻辑
+function handleScroll(e: Event) {
+  if (!props.autoHideHeader) return
+  
+  const target = props.scrollMode === 'wrapper' ? (e.target as HTMLElement) : document.documentElement
+  const scrollTop = target.scrollTop
+  const threshold = 100
+
+  if (scrollTop > threshold) {
+    headerVisible.value = scrollTop < lastScrollTop.value
+  } else {
+    headerVisible.value = true
+  }
+  
+  lastScrollTop.value = scrollTop
+}
+
+onMounted(() => {
+  if (props.scrollMode === 'body') {
+    window.addEventListener('scroll', () => handleScroll({ target: document.documentElement } as any))
+  }
 })
 
-const contentStyle = computed(() => ({
-  paddingTop: `${contentTopOffset.value}px`,
-  maxWidth: props.maxContentWidth > 0 ? `${props.maxContentWidth}px` : undefined,
-  margin: props.maxContentWidth > 0 ? '0 auto' : undefined,
+onUnmounted(() => {
+  if (props.scrollMode === 'body') {
+    window.removeEventListener('scroll', () => handleScroll({ target: document.documentElement } as any))
+  }
+})
+
+const cssVars = computed(() => ({
+  '--header-height': `${props.headerHeight}px`,
+  '--tabs-height': `${props.tabsHeight}px`,
+  '--breadcrumb-height': `${props.breadcrumbHeight}px`,
+  '--footer-height': `${props.footerHeight}px`,
+  '--max-content-width': props.maxContentWidth > 0 ? `${props.maxContentWidth}px` : '100%',
 }))
 </script>
 
 <template>
-  <div class="layout-top-menu">
-    <!-- 顶栏 -->
-    <LayoutHeader :height="headerHeight" :fixed="fixedHeader" class="layout-top-menu__header">
-      <template #left>
-        <div class="header-left">
-          <div class="header-logo">
-            <slot name="logo" />
+  <div class="layout-top-menu" :class="[`mode-${scrollMode}`]" :style="cssVars">
+    
+    <!-- 头部区域组 -->
+    <header class="layout-header-group" :class="[
+      { 'is-hidden': !headerVisible, 'is-fixed': fixedHeader },
+      fixedHeader ? 'sticky-top' : ''
+    ]">
+      <!-- 顶栏 -->
+      <LayoutHeader :height="headerHeight" :fixed="false" class="layout-top-menu__header">
+        <template #left>
+          <div class="header-left">
+            <div class="header-logo">
+              <slot name="logo" />
+            </div>
+            <nav class="header-menu">
+              <slot name="menu" />
+            </nav>
           </div>
-          <nav class="header-menu">
-            <slot name="menu" />
-          </nav>
-        </div>
-      </template>
-      <template #center>
-        <div class="header-center">
-          <slot name="header-center" />
-        </div>
-      </template>
-      <template #right>
-        <div class="header-right">
-          <slot name="header-right" :variant="'primary'" />
-        </div>
-      </template>
-    </LayoutHeader>
+        </template>
+        <template #center>
+          <div class="header-center">
+            <slot name="header-center" />
+          </div>
+        </template>
+        <template #right>
+          <div class="header-right">
+            <slot name="header-right" :variant="'primary'" />
+          </div>
+        </template>
+      </LayoutHeader>
 
-    <!-- 标签栏 -->
-    <div v-if="showTabs" class="layout-top-menu__tabs" :style="{ top: fixedHeader ? `${headerHeight}px` : undefined }">
-      <slot name="tabs">
-        <ChromeTabs :height="tabsHeight" />
-      </slot>
-    </div>
-
-    <!-- 内容区 -->
-    <LayoutContent class="layout-top-menu__content" :style="contentStyle">
-      <div class="content-wrapper">
-        <slot />
+      <!-- 标签栏 -->
+      <div v-if="showTabs" class="layout-tabs-wrapper" :class="{ 'is-fixed': fixedTabs }">
+        <slot name="tabs">
+          <ChromeTabs :height="tabsHeight" />
+        </slot>
       </div>
-    </LayoutContent>
 
-    <!-- 页脚 -->
-    <LayoutFooter v-if="showFooter" :height="footerHeight" class="layout-top-menu__footer">
-      <slot name="footer">
-        <div class="footer-content">
-          <span>© 2024 LDesign. All rights reserved.</span>
+      <!-- 面包屑 -->
+      <div v-if="showBreadcrumb" class="layout-breadcrumb-wrapper" :class="{ 'is-fixed': fixedBreadcrumb }">
+         <slot name="breadcrumb"></slot>
+      </div>
+    </header>
+
+    <!-- 内容滚动区 -->
+    <LayoutContent 
+      class="layout-content-scroll" 
+      :class="{ 'scroll-wrapper': scrollMode === 'wrapper' }"
+      @scroll="scrollMode === 'wrapper' ? handleScroll($event) : undefined"
+    >
+      <div class="content-container">
+        <div class="content-wrapper">
+          <slot />
         </div>
-      </slot>
-    </LayoutFooter>
+      </div>
+
+      <!-- 页脚 -->
+      <LayoutFooter v-if="showFooter" :height="footerHeight" class="layout-top-menu__footer">
+        <slot name="footer">
+          <div class="footer-content">
+            <span>© 2024 LDesign. All rights reserved.</span>
+          </div>
+        </slot>
+      </LayoutFooter>
+    </LayoutContent>
   </div>
 </template>
 
 <style scoped>
-/* ========== CSS Variables Mapping ========== */
 .layout-top-menu {
   /* Colors - Modern Theme */
   --color-bg-layout: #f8fafc;
-  /* Slate-50 */
   --color-bg-container: #ffffff;
-
   --color-border: rgba(226, 232, 240, 0.8);
-  /* Slate-200 */
-
   --color-text-primary: #0f172a;
-  /* Slate-900 */
   --color-text-secondary: #475569;
-  /* Slate-600 */
   --color-text-tertiary: #94a3b8;
-  /* Slate-400 */
-
-  /* Use System Primary Color */
   --color-primary: var(--color-primary-500, #3b82f6);
   --color-primary-active: #2563eb;
 
-  /* Header Specific (Primary Color) */
+  /* Header Specific */
   --header-bg: var(--color-primary);
   --header-text: #ffffff;
   --header-text-secondary: rgba(255, 255, 255, 0.8);
@@ -124,282 +178,162 @@ const contentStyle = computed(() => ({
   --shadow-header: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --shadow-tabs: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 
-  /* Sizes */
-  --header-height: v-bind('props.headerHeight + "px"');
-  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Dark Mode Overrides */
-:root[data-theme-mode="dark"] .layout-top-menu,
-.dark .layout-top-menu {
-  --color-bg-layout: #020617;
-  /* Slate-950 */
-  --color-bg-container: #0f172a;
-  /* Slate-900 */
-
-  --color-border: #1e293b;
-  /* Slate-800 */
-
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #cbd5e1;
-  --color-text-tertiary: #64748b;
-
-  /* Dark Header */
-  --header-bg: #0f172a;
-  --header-text: #f8fafc;
-  --header-border: #1e293b;
-  --header-hover: #1e293b;
-
-  --shadow-header: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  --shadow-tabs: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-}
-
-/* ========== Main Layout Container ========== */
-.layout-top-menu {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
+  width: 100%;
   background: var(--color-bg-layout);
-  color: var(--color-text-primary);
   font-family: var(--size-font-family, system-ui, -apple-system, sans-serif);
 }
 
-/* ========== Header ========== */
+/* Scroll Modes */
+.layout-top-menu.mode-wrapper {
+  height: 100vh;
+  overflow: hidden;
+}
+
+.layout-top-menu.mode-body {
+  min-height: 100vh;
+}
+
+/* Header Group */
+.layout-header-group {
+  z-index: 1020;
+  background: var(--color-bg-layout);
+  transition: transform 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-header-group.sticky-top {
+  position: sticky;
+  top: 0;
+}
+
+.layout-header-group.is-hidden {
+  transform: translateY(-100%);
+}
+
 .layout-top-menu__header {
   background: var(--header-bg);
   border-bottom: 1px solid var(--header-border);
   box-shadow: var(--shadow-header);
   color: var(--header-text);
-  z-index: 1020;
-  /* Override menu colors for primary header */
+  /* Override menu colors */
   --color-text-primary: var(--header-text);
   --color-text-secondary: var(--header-text-secondary);
   --color-fill-hover: var(--header-hover);
-  /* 为统一的头部变量赋值，便于全局样式自适配 */
   --layout-header-bg: var(--header-bg);
   --layout-header-color: var(--header-text);
 }
 
-.header-left {
-  display: flex;
-  align-items: center;
-  gap: 32px;
-  height: 100%;
-  padding-left: 24px;
-}
-
-.header-logo {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  color: var(--header-text);
-}
-
-.header-menu {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  margin-left: 16px;
-  gap: 4px;
-}
-
-/* 横向菜单项样式 */
-.header-menu :deep(.l-menu) {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 100%;
-  background: transparent;
-  gap: 4px;
-}
-
-.header-menu :deep(.l-menu-item),
-.header-menu :deep(.l-submenu-title) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  height: 36px;
-  border-radius: 8px;
-  color: var(--header-text-secondary);
-  font-size: 14px;
-  font-weight: 500;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.header-menu :deep(.l-menu-item:hover),
-.header-menu :deep(.l-submenu-title:hover) {
-  color: var(--header-text);
-  background: var(--header-hover);
-  transform: translateY(-1px);
-}
-
-.header-menu :deep(.l-menu-item.is-active),
-.header-menu :deep(.l-menu-item--active),
-.header-menu :deep(.l-submenu.is-active > .l-submenu-title) {
-  color: var(--header-text);
-  background: var(--header-hover);
-  position: relative;
-}
-
-/* 活动指示器 */
-.header-menu :deep(.l-menu-item.is-active)::after,
-.header-menu :deep(.l-menu-item--active)::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 20px;
-  height: 3px;
-  background: var(--header-text);
-  border-radius: 3px;
-  animation: indicatorSlideIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes indicatorSlideIn {
-  from {
-    transform: translateX(-50%) scaleX(0);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(-50%) scaleX(1);
-    opacity: 1;
-  }
-}
-
-/* 子菜单箭头 */
-.header-menu :deep(.l-submenu-arrow) {
-  transition: transform 0.25s ease;
-  margin-left: 4px;
-}
-
-.header-menu :deep(.l-submenu.is-open > .l-submenu-title .l-submenu-arrow) {
-  transform: rotate(180deg);
-}
-
-/* 子菜单弹出层 */
-.header-menu :deep(.l-submenu__popup) {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  min-width: 180px;
-  background: var(--color-bg-container);
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
-  padding: 8px;
-  margin-top: 8px;
-  animation: menuDropdown 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 1050;
-}
-
-@keyframes menuDropdown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px) scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.header-menu :deep(.l-submenu__popup .l-menu-item) {
-  color: var(--color-text-primary);
-  padding: 10px 14px;
-  height: auto;
-  border-radius: 8px;
-}
-
-.header-menu :deep(.l-submenu__popup .l-menu-item:hover) {
-  background: var(--color-fill-hover);
-  transform: none;
-}
-
-.header-center {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.header-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding-right: 24px;
-}
-
-/* ========== Tabs ========== */
-.layout-top-menu__tabs {
-  position: fixed;
-  left: 0;
-  right: 0;
-  z-index: 1010;
+.layout-tabs-wrapper {
   background: var(--color-bg-container);
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-tabs);
-  transition: top var(--transition-normal);
 }
 
-/* ========== Content ========== */
-.layout-top-menu__content {
-  flex: 1;
-  background: var(--color-bg-layout);
-  transition: padding-top var(--transition-normal);
-}
-
-.content-wrapper {
-  padding: 24px;
-  min-height: calc(100vh - 200px);
-  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+.layout-breadcrumb-wrapper {
+  padding: 8px 16px;
+  max-width: var(--max-content-width);
+  margin: 0 auto;
   width: 100%;
 }
 
-@keyframes slideUpFade {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+/* Content Area */
+.layout-content-scroll {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
+.layout-content-scroll.scroll-wrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
+}
 
-/* ========== Footer ========== */
+.content-container {
+  flex: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.content-wrapper {
+  flex: 1;
+  padding: 24px;
+  max-width: var(--max-content-width);
+  min-height: calc(100vh - 200px);
+  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Header Inner Elements */
+.header-left {
+  display: flex; align-items: center; gap: 32px; height: 100%; padding-left: 24px;
+}
+.header-logo {
+  display: flex; align-items: center; height: 100%; color: var(--header-text);
+}
+.header-menu {
+  display: flex; align-items: center; height: 100%; margin-left: 16px; gap: 4px;
+}
+.header-center {
+  display: flex; align-items: center; justify-content: center;
+}
+.header-right {
+  display: flex; align-items: center; gap: 16px; padding-right: 24px;
+}
+
+/* Footer */
 .layout-top-menu__footer {
   background: var(--color-bg-container);
   border-top: 1px solid var(--color-border);
 }
-
 .footer-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  font-size: 13px;
-  color: var(--color-text-tertiary);
+  display: flex; align-items: center; justify-content: center;
+  height: 100%; font-size: 13px; color: var(--color-text-tertiary);
 }
 
-/* ========== Responsive ========== */
+/* Dark Mode */
+:root[data-theme-mode="dark"] .layout-top-menu,
+.dark .layout-top-menu {
+  --color-bg-layout: #020617;
+  --color-bg-container: #0f172a;
+  --color-border: #1e293b;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --header-bg: #0f172a;
+  --header-text: #f8fafc;
+  --header-border: #1e293b;
+  --header-hover: #1e293b;
+}
+
+/* Responsive */
 @media (max-width: 768px) {
-  .header-left {
-    gap: 16px;
-    padding-left: 16px;
-  }
+  .header-left { gap: 16px; padding-left: 16px; }
+  .header-right { padding-right: 16px; }
+  .content-wrapper { padding: 16px; }
+}
 
-  .header-right {
-    padding-right: 16px;
-  }
-
-  .content-wrapper {
-    padding: 16px;
-  }
+/* 保持原有的菜单样式 (省略部分以节省空间，但应保留关键样式) */
+.header-menu :deep(.l-menu) { display: flex; flex-direction: row; align-items: center; height: 100%; background: transparent; gap: 4px; }
+.header-menu :deep(.l-menu-item), .header-menu :deep(.l-submenu-title) {
+  display: flex; align-items: center; gap: 8px; padding: 8px 16px; height: 36px; border-radius: 8px;
+  color: var(--header-text-secondary); font-size: 14px; font-weight: 500; background: transparent;
+  border: none; cursor: pointer; white-space: nowrap; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.header-menu :deep(.l-menu-item:hover), .header-menu :deep(.l-submenu-title:hover) {
+  color: var(--header-text); background: var(--header-hover); transform: translateY(-1px);
+}
+.header-menu :deep(.l-menu-item.is-active), .header-menu :deep(.l-menu-item--active) {
+  color: var(--header-text); background: var(--header-hover); position: relative;
+}
+.header-menu :deep(.l-menu-item.is-active)::after {
+  content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+  width: 20px; height: 3px; background: var(--header-text); border-radius: 3px;
 }
 </style>

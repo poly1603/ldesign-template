@@ -3,8 +3,9 @@
  * Mix 混合布局模板
  * 顶部一级导航 + 左侧二级导航 + 内容区
  * 现代化设计，适用于大型后台系统
+ * 优化：Grid 布局、多种滚动模式、自动隐藏头部
  */
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { LayoutHeader, LayoutSider, LayoutContent, LayoutFooter } from '../../../../components/layout'
 import { ChromeTabs } from '@ldesign/bookmark-vue'
 import { useAutoDevice } from '../../../../composables/useAutoDevice'
@@ -14,12 +15,20 @@ interface Props {
   siderCollapsedWidth?: number
   headerHeight?: number
   tabsHeight?: number
+  breadcrumbHeight?: number
   showTabs?: boolean
+  showBreadcrumb?: boolean
   fixedHeader?: boolean
+  fixedTabs?: boolean
+  fixedBreadcrumb?: boolean
   fixedSider?: boolean
   defaultCollapsed?: boolean
   showFooter?: boolean
   footerHeight?: number
+  
+  // 滚动行为
+  autoHideHeader?: boolean
+  scrollMode?: 'wrapper' | 'body'
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -27,12 +36,18 @@ const props = withDefaults(defineProps<Props>(), {
   siderCollapsedWidth: 56,
   headerHeight: 56,
   tabsHeight: 44,
+  breadcrumbHeight: 40,
   showTabs: true,
+  showBreadcrumb: false,
   fixedHeader: true,
+  fixedTabs: true,
+  fixedBreadcrumb: false,
   fixedSider: true,
   defaultCollapsed: false,
   showFooter: true,
   footerHeight: 48,
+  autoHideHeader: false,
+  scrollMode: 'wrapper',
 })
 
 const emit = defineEmits<{
@@ -43,20 +58,13 @@ const { isMobile } = useAutoDevice()
 const siderCollapsed = ref(props.defaultCollapsed)
 const siderVisible = ref(false)
 
+// 滚动相关
+const headerVisible = ref(true)
+const lastScrollTop = ref(0)
+
 const actualSiderWidth = computed(() =>
   siderCollapsed.value ? props.siderCollapsedWidth : props.siderWidth,
 )
-
-const contentOffset = computed(() => {
-  if (isMobile.value) return 0
-  return props.fixedSider ? actualSiderWidth.value : 0
-})
-
-const contentTopOffset = computed(() => {
-  let offset = props.fixedHeader ? props.headerHeight : 0
-  if (props.showTabs) offset += props.tabsHeight
-  return offset
-})
 
 watch(isMobile, (mobile) => {
   if (mobile) {
@@ -77,109 +85,164 @@ function handleToggleSider() {
 function handleCloseSider() {
   siderVisible.value = false
 }
+
+// 自动隐藏 Header 逻辑
+function handleScroll(e: Event) {
+  if (!props.autoHideHeader) return
+  
+  const target = props.scrollMode === 'wrapper' ? (e.target as HTMLElement) : document.documentElement
+  const scrollTop = target.scrollTop
+  const threshold = 100
+
+  if (scrollTop > threshold) {
+    headerVisible.value = scrollTop < lastScrollTop.value
+  } else {
+    headerVisible.value = true
+  }
+  
+  lastScrollTop.value = scrollTop
+}
+
+onMounted(() => {
+  if (props.scrollMode === 'body') {
+    window.addEventListener('scroll', () => handleScroll({ target: document.documentElement } as any))
+  }
+})
+
+onUnmounted(() => {
+  if (props.scrollMode === 'body') {
+    window.removeEventListener('scroll', () => handleScroll({ target: document.documentElement } as any))
+  }
+})
+
+const cssVars = computed(() => ({
+  '--header-height': `${props.headerHeight}px`,
+  '--tabs-height': `${props.tabsHeight}px`,
+  '--breadcrumb-height': `${props.breadcrumbHeight}px`,
+  '--sider-width': `${props.siderWidth}px`,
+  '--sider-collapsed-width': `${props.siderCollapsedWidth}px`,
+  '--footer-height': `${props.footerHeight}px`,
+}))
 </script>
 
 <template>
-  <div class="layout-mix" :class="{ 'is-collapsed': siderCollapsed }">
-    <!-- 顶栏（包含一级导航） -->
-    <LayoutHeader :height="headerHeight" :fixed="fixedHeader" class="layout-mix__header">
-      <template #left>
-        <div class="layout-mix__brand">
-          <div class="layout-mix__logo">
-            <slot name="logo" />
+  <div class="layout-mix" :class="[
+    `mode-${scrollMode}`,
+    { 'is-collapsed': siderCollapsed, 'is-mobile': isMobile }
+  ]" :style="cssVars">
+    
+    <!-- 头部区域 (Grid: Header) -->
+    <header class="layout-area-header" :class="[
+      { 'is-hidden': !headerVisible, 'is-fixed': fixedHeader },
+      fixedHeader ? 'sticky-top' : ''
+    ]">
+      <LayoutHeader :height="headerHeight" :fixed="false" class="layout-mix__header">
+        <template #left>
+          <div class="layout-mix__brand">
+            <div class="layout-mix__logo">
+              <slot name="logo" />
+            </div>
+            <nav class="layout-mix__top-menu">
+              <slot name="top-menu" />
+            </nav>
           </div>
-          <nav class="layout-mix__top-menu">
-            <slot name="top-menu" />
-          </nav>
-        </div>
-      </template>
-      <template #right>
-        <div class="layout-mix__header-right">
-          <slot name="header-right" :variant="'primary'" />
-        </div>
-      </template>
-    </LayoutHeader>
+        </template>
+        <template #right>
+          <div class="layout-mix__header-right">
+            <slot name="header-right" :variant="'primary'" />
+          </div>
+        </template>
+      </LayoutHeader>
+    </header>
 
-    <!-- 侧边栏（二级导航） -->
-    <LayoutSider v-model:collapsed="siderCollapsed" v-model:visible="siderVisible" :width="siderWidth"
-      :collapsed-width="siderCollapsedWidth" :fixed="fixedSider" :drawer="isMobile" :top-offset="headerHeight"
-      class="layout-mix__sider" @mask-click="handleCloseSider">
-      <div class="layout-mix__sider-title" v-if="!siderCollapsed">
-        <slot name="sider-title">
-          <span class="sider-title-text">导航菜单</span>
-        </slot>
-      </div>
-      <div class="layout-mix__sider-menu">
-        <slot name="sider" :collapsed="siderCollapsed" />
-      </div>
-      <template #footer>
-        <div class="layout-mix__sider-footer">
-          <button class="sider-collapse-btn" @click="handleToggleSider" :title="siderCollapsed ? '展开菜单' : '收起菜单'">
-            <svg :class="{ 'is-collapsed': siderCollapsed }" width="18" height="18" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M11 17l-5-5 5-5" />
-              <path d="M18 17l-5-5 5-5" />
-            </svg>
-          </button>
+    <!-- 侧边栏 (Grid: Sider) -->
+    <aside class="layout-area-sider" :class="[
+      { 'fixed-sider': fixedSider },
+      { 'header-hidden': !headerVisible }
+    ]">
+      <LayoutSider v-model:collapsed="siderCollapsed" v-model:visible="siderVisible" :width="siderWidth"
+        :collapsed-width="siderCollapsedWidth" :fixed="false" :drawer="isMobile" :top-offset="0"
+        class="layout-mix__sider" @mask-click="handleCloseSider">
+        <div class="layout-mix__sider-title" v-if="!siderCollapsed">
+          <slot name="sider-title">
+            <span class="sider-title-text">导航菜单</span>
+          </slot>
         </div>
-      </template>
-    </LayoutSider>
+        <div class="layout-mix__sider-menu">
+          <slot name="sider" :collapsed="siderCollapsed" />
+        </div>
+        <template #footer>
+          <div class="layout-mix__sider-footer">
+            <button class="sider-collapse-btn" @click="handleToggleSider" :title="siderCollapsed ? '展开菜单' : '收起菜单'">
+              <svg :class="{ 'is-collapsed': siderCollapsed }" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M11 17l-5-5 5-5" />
+                <path d="M18 17l-5-5 5-5" />
+              </svg>
+            </button>
+          </div>
+        </template>
+      </LayoutSider>
+    </aside>
 
-    <!-- 主区域 -->
-    <div class="layout-mix__main" :style="{ marginLeft: `${contentOffset}px`, paddingTop: `${contentTopOffset}px` }">
-      <!-- 标签栏 -->
-      <div v-if="showTabs" class="layout-mix__tabs"
-        :style="{ top: fixedHeader ? `${headerHeight}px` : undefined, left: `${contentOffset}px` }">
-        <slot name="tabs">
-          <ChromeTabs :height="tabsHeight" />
-        </slot>
+    <!-- 主区域 (Grid: Main) -->
+    <main class="layout-area-main">
+      
+      <!-- 顶部锚点区域 (Tabs + Breadcrumb) -->
+      <div class="layout-anchor-group" :class="[
+        { 'is-hidden': !headerVisible && autoHideHeader },
+        { 'is-fixed': fixedTabs || fixedBreadcrumb }
+      ]">
+        <!-- 标签栏 -->
+        <div v-if="showTabs" class="layout-tabs-wrapper" :class="{ 'is-fixed': fixedTabs }">
+          <slot name="tabs">
+            <ChromeTabs :height="tabsHeight" />
+          </slot>
+        </div>
+        
+        <!-- 面包屑 -->
+        <div v-if="showBreadcrumb" class="layout-breadcrumb-wrapper" :class="{ 'is-fixed': fixedBreadcrumb }">
+           <slot name="breadcrumb"></slot>
+        </div>
       </div>
 
-      <!-- 内容区 -->
-      <LayoutContent class="layout-mix__content">
+      <!-- 内容滚动区 -->
+      <LayoutContent 
+        class="layout-content-scroll" 
+        :class="{ 'scroll-wrapper': scrollMode === 'wrapper' }"
+        @scroll="scrollMode === 'wrapper' ? handleScroll($event) : undefined"
+      >
         <div class="content-inner">
           <slot />
         </div>
+        
+        <!-- 页脚 -->
+        <LayoutFooter v-if="showFooter" :height="footerHeight" class="layout-mix__footer">
+          <slot name="footer">
+            <div class="footer-inner">© 2024 LDesign. All rights reserved.</div>
+          </slot>
+        </LayoutFooter>
       </LayoutContent>
-
-      <!-- 页脚 -->
-      <LayoutFooter v-if="showFooter" :height="footerHeight" class="layout-mix__footer">
-        <slot name="footer">
-          <div class="footer-inner">© 2024 LDesign. All rights reserved.</div>
-        </slot>
-      </LayoutFooter>
-    </div>
+    </main>
   </div>
 </template>
 
 <style scoped>
 /* ========== CSS Variables Mapping ========== */
 .layout-mix {
-  /* Colors - Modern Theme */
+  /* Colors */
   --color-bg-layout: #f8fafc;
-  /* Slate-50 */
   --color-bg-container: #ffffff;
-
   --color-border: rgba(226, 232, 240, 0.8);
-  /* Slate-200 */
-
   --color-text-primary: #0f172a;
-  /* Slate-900 */
   --color-text-secondary: #475569;
-  /* Slate-600 */
   --color-text-tertiary: #94a3b8;
-  /* Slate-400 */
   --color-text-quaternary: #cbd5e1;
-  /* Slate-300 */
-
-  /* Use System Primary Color */
   --color-primary: var(--color-primary-500, #3b82f6);
   --color-primary-active: #2563eb;
-
   --color-fill-hover: #f1f5f9;
-  /* Slate-100 */
 
-  /* Header Specific (Primary Color) */
+  /* Header */
   --header-bg: var(--color-primary);
   --header-text: #ffffff;
   --header-text-secondary: rgba(255, 255, 255, 0.8);
@@ -191,361 +254,220 @@ function handleCloseSider() {
   --shadow-sider: 4px 0 24px 0 rgba(0, 0, 0, 0.05);
   --shadow-tabs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
 
-  /* Sizes */
-  --header-height: v-bind('props.headerHeight + "px"');
-  --sider-width: v-bind('props.siderWidth + "px"');
-  --transition-normal: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Dark Mode Overrides */
-:root[data-theme-mode="dark"] .layout-mix,
-.dark .layout-mix {
-  --color-bg-layout: #020617;
-  /* Slate-950 */
-  --color-bg-container: #0f172a;
-  /* Slate-900 */
-
-  --color-border: #1e293b;
-  /* Slate-800 */
-
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #cbd5e1;
-  --color-text-tertiary: #64748b;
-  --color-text-quaternary: #475569;
-
-  --color-fill-hover: #1e293b;
-
-  /* Dark Header */
-  --header-bg: #0f172a;
-  --header-text: #f8fafc;
-  --header-border: #1e293b;
-  --header-hover: #1e293b;
-
-  --shadow-header: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-  --shadow-sider: 4px 0 24px 0 rgba(0, 0, 0, 0.3);
-}
-
-/* ========== Main Layout Container ========== */
-.layout-mix {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+  display: grid;
+  width: 100%;
   background: var(--color-bg-layout);
-  color: var(--color-text-primary);
-  font-family: var(--size-font-family, system-ui, -apple-system, sans-serif);
+  transition: all 0.3s ease;
 }
 
-/* ========== Header ========== */
-.layout-mix__header {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
+/* Grid Definitions */
+.layout-mix.mode-wrapper {
+  height: 100vh;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto 1fr;
+  overflow: hidden;
+}
+
+.layout-mix.mode-body {
+  min-height: 100vh;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
+}
+
+.layout-mix.is-mobile {
+  grid-template-columns: 1fr;
+  grid-template-rows: auto 1fr;
+}
+
+/* ========== Header Area ========== */
+.layout-area-header {
+  grid-column: 1 / -1;
+  grid-row: 1;
   z-index: 1020;
+  transition: transform 0.3s ease;
+}
+
+.layout-area-header.sticky-top {
+  position: sticky;
+  top: 0;
+}
+
+.layout-area-header.is-hidden {
+  transform: translateY(-100%);
+}
+
+.layout-mix__header {
   background: var(--header-bg);
   color: var(--header-text);
   border-bottom: 1px solid var(--header-border);
   box-shadow: var(--shadow-header);
-  /* Override menu colors for primary header */
+  /* Override menu colors */
   --color-text-primary: var(--header-text);
   --color-text-secondary: var(--header-text-secondary);
   --color-fill-hover: var(--header-hover);
 }
 
-.layout-mix__brand {
-  display: flex;
-  align-items: center;
-  gap: 48px;
-  height: 100%;
-}
-
-.layout-mix__logo {
-  display: flex;
-  align-items: center;
-  padding-left: 24px;
-  min-width: 200px;
-  color: var(--header-text);
-}
-
-.layout-mix__top-menu {
-  display: flex;
-  align-items: center;
-  height: 100%;
-  gap: 4px;
-}
-
-/* 顶部横向菜单样式 */
-.layout-mix__top-menu :deep(.l-menu) {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: 100%;
-  background: transparent;
-  gap: 4px;
-}
-
-.layout-mix__top-menu :deep(.l-menu-item),
-.layout-mix__top-menu :deep(.l-submenu-title) {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
-  height: 36px;
-  border-radius: 8px;
-  color: var(--header-text-secondary);
-  font-size: 14px;
-  font-weight: 500;
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  white-space: nowrap;
-  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.layout-mix__top-menu :deep(.l-menu-item:hover),
-.layout-mix__top-menu :deep(.l-submenu-title:hover) {
-  color: var(--header-text);
-  background: var(--header-hover);
-  transform: translateY(-1px);
-}
-
-.layout-mix__top-menu :deep(.l-menu-item.is-active),
-.layout-mix__top-menu :deep(.l-menu-item--active),
-.layout-mix__top-menu :deep(.l-submenu.is-active > .l-submenu-title) {
-  color: var(--header-text);
-  background: var(--header-hover);
-  position: relative;
-}
-
-/* 活动指示器 */
-.layout-mix__top-menu :deep(.l-menu-item.is-active)::after,
-.layout-mix__top-menu :deep(.l-menu-item--active)::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 20px;
-  height: 3px;
-  background: var(--header-text);
-  border-radius: 3px;
-  animation: topMenuIndicator 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes topMenuIndicator {
-  from {
-    transform: translateX(-50%) scaleX(0);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(-50%) scaleX(1);
-    opacity: 1;
-  }
-}
-
-.layout-mix__header-right {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding-right: 24px;
-}
-
-/* ========== Sider ========== */
-.layout-mix__sider {
-  background: var(--color-bg-container) !important;
-  border-right: 1px solid var(--color-border);
-  box-shadow: var(--shadow-sider);
+/* ========== Sider Area ========== */
+.layout-area-sider {
+  grid-column: 1;
+  grid-row: 2;
+  width: var(--sider-width);
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1010;
-  /* Reset text colors for white background sidebar */
-  --color-text-primary: #0f172a;
-  --color-text-secondary: #475569;
-  --color-fill-hover: #f1f5f9;
+  background: var(--color-bg-container);
+  border-right: 1px solid var(--color-border);
+  height: 100%; /* Force full height */
 }
 
-:root[data-theme-mode="dark"] .layout-mix__sider,
-.dark .layout-mix__sider {
-  --color-text-primary: #f8fafc;
-  --color-text-secondary: #cbd5e1;
-  --color-fill-hover: #1e293b;
+.layout-mix.is-collapsed .layout-area-sider {
+  width: var(--sider-collapsed-width);
 }
 
-.layout-mix__sider-title {
-  padding: 24px 20px 12px;
-  /* border-bottom: 1px solid var(--color-border); */
-  transition: all 0.25s ease;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
-.sider-title-text {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--color-text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.layout-mix__sider-menu {
-  flex: 1;
-  padding: 12px 8px;
-  overflow-y: auto;
-  overflow-x: hidden;
-}
-
-/* 菜单项收起时的动画 */
-.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.menu-item-text),
-.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.submenu-title-text),
-.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.l-menu-item-text),
-.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.l-submenu-title-text) {
-  opacity: 0;
+.layout-mix.is-mobile .layout-area-sider {
   width: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  transition: opacity 0.2s ease, width 0.25s ease;
 }
 
-.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.l-menu-item),
-.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.l-submenu-title) {
-  justify-content: center;
-  padding: 12px 0 !important;
+/* Sticky Sider in Body Mode */
+.layout-mix.mode-body .layout-area-sider.fixed-sider {
+  position: sticky;
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  transition: top 0.3s ease, height 0.3s ease;
 }
 
-.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.l-submenu-arrow),
-.layout-mix.is-collapsed .layout-mix__sider-menu :deep(.submenu-arrow) {
-  opacity: 0;
-  width: 0;
-  transition: opacity 0.15s ease;
+/* Adjust sticky top when header is hidden */
+.layout-mix.mode-body .layout-area-sider.fixed-sider.header-hidden {
+  top: 0;
+  height: 100vh;
 }
 
-/* 收起时隐藏标题 */
-.layout-mix.is-collapsed .layout-mix__sider-title {
-  opacity: 0;
-  height: 0;
-  padding: 0;
-  overflow: hidden;
-  transition: all 0.25s ease;
+.layout-mix__sider {
+  height: 100%;
+  background: transparent !important;
 }
 
-.layout-mix__sider-menu::-webkit-scrollbar {
-  width: 4px;
-}
-
-.layout-mix__sider-menu::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 4px;
-}
-
-.layout-mix__sider-footer {
-  display: flex;
-  justify-content: center;
-  padding: 12px;
-  border-top: 1px solid var(--color-border);
-}
-
-.sider-collapse-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  border: none;
-  border-radius: 6px;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.sider-collapse-btn:hover {
-  background: var(--color-fill-hover);
-  color: var(--color-text-primary);
-  transform: scale(1.05);
-}
-
-.sider-collapse-btn:active {
-  transform: scale(0.95);
-}
-
-.sider-collapse-btn svg {
-  transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.sider-collapse-btn svg.is-collapsed {
-  transform: rotate(180deg);
-}
-
-/* ========== Main Content Area ========== */
-.layout-mix__main {
+/* ========== Main Area ========== */
+.layout-area-main {
+  grid-column: 2;
+  grid-row: 2;
   display: flex;
   flex-direction: column;
-  flex: 1;
   min-width: 0;
-  transition: all var(--transition-normal);
 }
 
-/* ========== Tabs ========== */
-.layout-mix__tabs {
-  position: fixed;
-  right: 0;
+.layout-mix.is-mobile .layout-area-main {
+  grid-column: 1;
+}
+
+/* Anchor Group (Tabs/Breadcrumb) */
+.layout-anchor-group {
   z-index: 1005;
+  background: var(--color-bg-layout);
+  transition: transform 0.3s ease;
+}
+
+.layout-anchor-group.is-fixed {
+  position: sticky;
+  top: 0; /* Relative to Main Area or Window depending on context */
+}
+
+/* If body scroll, sticky relies on window scroll */
+.layout-mix.mode-body .layout-anchor-group.is-fixed {
+  top: var(--header-height);
+}
+
+.layout-mix.mode-body .layout-area-header.is-hidden ~ .layout-area-main .layout-anchor-group.is-fixed {
+  top: 0;
+}
+
+.layout-tabs-wrapper {
   background: var(--color-bg-container);
   border-bottom: 1px solid var(--color-border);
   box-shadow: var(--shadow-tabs);
-  transition: left var(--transition-normal);
 }
 
-/* ========== Content ========== */
-.layout-mix__content {
+.layout-breadcrumb-wrapper {
+  padding: 8px 16px;
+}
+
+/* Content */
+.layout-content-scroll {
   flex: 1;
-  background: var(--color-bg-layout);
+  display: flex;
+  flex-direction: column;
+}
+
+.layout-content-scroll.scroll-wrapper {
+  overflow-y: auto;
+  overflow-x: hidden;
+  height: 0;
 }
 
 .content-inner {
+  flex: 1;
   padding: 24px;
   min-height: calc(100vh - 200px);
-  animation: slideUpFade 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: slideUpFade 0.5s ease-out;
 }
 
 @keyframes slideUpFade {
-  from {
-    opacity: 0;
-    transform: translateY(24px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(24px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* ========== Footer ========== */
+/* Footer */
 .layout-mix__footer {
   background: var(--color-bg-container);
   border-top: 1px solid var(--color-border);
 }
 
-.footer-inner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  font-size: 13px;
-  color: var(--color-text-tertiary);
+/* Internal Components */
+.layout-mix__brand { display: flex; align-items: center; gap: 48px; height: 100%; }
+.layout-mix__logo { display: flex; align-items: center; padding-left: 24px; min-width: 200px; color: var(--header-text); }
+.layout-mix__top-menu { display: flex; align-items: center; height: 100%; gap: 4px; }
+.layout-mix__header-right { display: flex; align-items: center; gap: 16px; padding-right: 24px; }
+.layout-mix__sider-title { padding: 24px 20px 12px; transition: all 0.25s ease; overflow: hidden; white-space: nowrap; }
+.sider-title-text { font-size: 12px; font-weight: 600; color: var(--color-text-tertiary); text-transform: uppercase; letter-spacing: 0.5px; }
+.layout-mix__sider-menu { flex: 1; padding: 12px 8px; overflow-y: auto; overflow-x: hidden; }
+.layout-mix__sider-footer { display: flex; justify-content: center; padding: 12px; border-top: 1px solid var(--color-border); }
+.sider-collapse-btn { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: transparent; border: none; border-radius: 6px; color: var(--color-text-tertiary); cursor: pointer; transition: all 0.2s; }
+.sider-collapse-btn:hover { background: var(--color-fill-hover); color: var(--color-text-primary); transform: scale(1.05); }
+.sider-collapse-btn svg.is-collapsed { transform: rotate(180deg); }
+.footer-inner { display: flex; align-items: center; justify-content: center; height: 100%; font-size: 13px; color: var(--color-text-tertiary); }
+
+/* Dark Mode */
+:root[data-theme-mode="dark"] .layout-mix,
+.dark .layout-mix {
+  --color-bg-layout: #020617;
+  --color-bg-container: #0f172a;
+  --color-border: #1e293b;
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #cbd5e1;
+  --header-bg: #0f172a;
+  --header-text: #f8fafc;
+  --header-border: #1e293b;
+  --header-hover: #1e293b;
 }
 
-/* ========== Responsive ========== */
+/* Responsive */
 @media (max-width: 768px) {
-  .content-inner {
-    padding: 16px;
-  }
+  .content-inner { padding: 16px; }
+  .layout-mix__brand { gap: 16px; }
+  .layout-mix__logo { min-width: auto; padding-left: 16px; }
+}
 
-  .layout-mix__brand {
-    gap: 16px;
-  }
-
-  .layout-mix__logo {
-    min-width: auto;
-    padding-left: 16px;
-  }
+/* Top Menu Styles (Retained) */
+.layout-mix__top-menu :deep(.l-menu) { display: flex; flex-direction: row; align-items: center; height: 100%; background: transparent; gap: 4px; }
+.layout-mix__top-menu :deep(.l-menu-item), .layout-mix__top-menu :deep(.l-submenu-title) {
+  display: flex; align-items: center; gap: 8px; padding: 8px 16px; height: 36px; border-radius: 8px;
+  color: var(--header-text-secondary); font-size: 14px; font-weight: 500; background: transparent; border: none;
+  cursor: pointer; white-space: nowrap; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.layout-mix__top-menu :deep(.l-menu-item:hover), .layout-mix__top-menu :deep(.l-submenu-title:hover) {
+  color: var(--header-text); background: var(--header-hover); transform: translateY(-1px);
+}
+.layout-mix__top-menu :deep(.l-menu-item.is-active)::after {
+  content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
+  width: 20px; height: 3px; background: var(--header-text); border-radius: 3px;
 }
 </style>
