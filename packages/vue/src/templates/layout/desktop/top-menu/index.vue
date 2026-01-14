@@ -17,12 +17,12 @@ interface Props {
   showFooter?: boolean
   footerHeight?: number
   maxContentWidth?: number
-  
+
   // 布局行为
   fixedHeader?: boolean
   fixedTabs?: boolean
   fixedBreadcrumb?: boolean
-  
+
   // 滚动行为
   autoHideHeader?: boolean
   scrollMode?: 'wrapper' | 'body'
@@ -51,7 +51,7 @@ const lastScrollTop = ref(0)
 // 自动隐藏 Header 逻辑
 function handleScroll(e: Event) {
   if (!props.autoHideHeader) return
-  
+
   const target = props.scrollMode === 'wrapper' ? (e.target as HTMLElement) : document.documentElement
   const scrollTop = target.scrollTop
   const threshold = 100
@@ -61,7 +61,7 @@ function handleScroll(e: Event) {
   } else {
     headerVisible.value = true
   }
-  
+
   lastScrollTop.value = scrollTop
 }
 
@@ -88,7 +88,7 @@ const cssVars = computed(() => ({
 
 <template>
   <div class="layout-top-menu" :class="[`mode-${scrollMode}`]" :style="cssVars">
-    
+
     <!-- 头部区域组 -->
     <header class="layout-header-group" :class="[
       { 'is-hidden': !headerVisible, 'is-fixed': fixedHeader },
@@ -127,16 +127,13 @@ const cssVars = computed(() => ({
 
       <!-- 面包屑 -->
       <div v-if="showBreadcrumb" class="layout-breadcrumb-wrapper" :class="{ 'is-fixed': fixedBreadcrumb }">
-         <slot name="breadcrumb"></slot>
+        <slot name="breadcrumb"></slot>
       </div>
     </header>
 
     <!-- 内容滚动区 -->
-    <LayoutContent 
-      class="layout-content-scroll" 
-      :class="{ 'scroll-wrapper': scrollMode === 'wrapper' }"
-      @scroll="scrollMode === 'wrapper' ? handleScroll($event) : undefined"
-    >
+    <LayoutContent class="layout-content-scroll" :class="scrollMode === 'wrapper' ? 'scroll-wrapper' : ''"
+      @scroll="scrollMode === 'wrapper' ? handleScroll($event) : undefined">
       <div class="content-container">
         <div class="content-wrapper">
           <slot />
@@ -267,25 +264,57 @@ const cssVars = computed(() => ({
 }
 
 @keyframes slideUpFade {
-  from { opacity: 0; transform: translateY(24px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Header Inner Elements */
 .header-left {
-  display: flex; align-items: center; gap: 32px; height: 100%; padding-left: 24px;
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  height: 100%;
+  padding-left: 24px;
+  flex: 1;
+  min-width: 0;
 }
+
 .header-logo {
-  display: flex; align-items: center; height: 100%; color: var(--header-text);
+  display: flex;
+  align-items: center;
+  height: 100%;
+  color: var(--header-text);
 }
+
 .header-menu {
-  display: flex; align-items: center; height: 100%; margin-left: 16px; gap: 4px;
+  display: flex;
+  align-items: center;
+  height: 100%;
+  margin-left: 16px;
+  gap: 4px;
+  flex: 1;
+  min-width: 0;
 }
+
 .header-center {
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
+
 .header-right {
-  display: flex; align-items: center; gap: 16px; padding-right: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-right: 24px;
+  flex: 0 0 auto;
 }
 
 /* Footer */
@@ -293,9 +322,14 @@ const cssVars = computed(() => ({
   background: var(--color-bg-container);
   border-top: 1px solid var(--color-border);
 }
+
 .footer-content {
-  display: flex; align-items: center; justify-content: center;
-  height: 100%; font-size: 13px; color: var(--color-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 13px;
+  color: var(--color-text-tertiary);
 }
 
 /* Dark Mode */
@@ -314,26 +348,85 @@ const cssVars = computed(() => ({
 
 /* Responsive */
 @media (max-width: 768px) {
-  .header-left { gap: 16px; padding-left: 16px; }
-  .header-right { padding-right: 16px; }
-  .content-wrapper { padding: 16px; }
+  .header-left {
+    gap: 16px;
+    padding-left: 16px;
+  }
+
+  .header-right {
+    padding-right: 16px;
+  }
+
+  .content-wrapper {
+    padding: 16px;
+  }
 }
 
 /* 保持原有的菜单样式 (省略部分以节省空间，但应保留关键样式) */
-.header-menu :deep(.l-menu) { display: flex; flex-direction: row; align-items: center; height: 100%; background: transparent; gap: 4px; }
-.header-menu :deep(.l-menu-item), .header-menu :deep(.l-submenu-title) {
-  display: flex; align-items: center; gap: 8px; padding: 8px 16px; height: 36px; border-radius: 8px;
-  color: var(--header-text-secondary); font-size: 14px; font-weight: 500; background: transparent;
-  border: none; cursor: pointer; white-space: nowrap; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+.header-menu :deep(.l-menu) {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 100%;
+  background: transparent;
+  gap: 4px;
 }
-.header-menu :deep(.l-menu-item:hover), .header-menu :deep(.l-submenu-title:hover) {
-  color: var(--header-text); background: var(--header-hover); transform: translateY(-1px);
+
+.header-menu :deep(.l-menu-item),
+.header-menu :deep(.l-submenu__title) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  height: 36px;
+  border-radius: 8px;
+  color: var(--header-text-secondary);
+  font-size: 14px;
+  font-weight: 500;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.header-menu :deep(.l-menu-item.is-active), .header-menu :deep(.l-menu-item--active) {
-  color: var(--header-text); background: var(--header-hover); position: relative;
+
+.header-menu :deep(.l-menu__more-label) {
+  display: none;
 }
+
+.header-menu :deep(.l-menu__more .l-submenu__title) {
+  justify-content: center;
+  width: 36px;
+  padding: 0;
+}
+
+.header-menu :deep(.l-menu__more .l-submenu__arrow) {
+  padding-left: 0;
+}
+
+.header-menu :deep(.l-menu-item:hover),
+.header-menu :deep(.l-submenu__title:hover) {
+  color: var(--header-text);
+  background: var(--header-hover);
+  transform: translateY(-1px);
+}
+
+.header-menu :deep(.l-menu-item.is-active),
+.header-menu :deep(.l-menu-item--active) {
+  color: var(--header-text);
+  background: var(--header-hover);
+  position: relative;
+}
+
 .header-menu :deep(.l-menu-item.is-active)::after {
-  content: ''; position: absolute; bottom: -2px; left: 50%; transform: translateX(-50%);
-  width: 20px; height: 3px; background: var(--header-text); border-radius: 3px;
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 3px;
+  background: var(--header-text);
+  border-radius: 3px;
 }
 </style>

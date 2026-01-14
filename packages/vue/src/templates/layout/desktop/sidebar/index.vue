@@ -20,13 +20,13 @@ interface Props {
   showBreadcrumb?: boolean
   footerHeight?: number
   defaultCollapsed?: boolean
-  
+
   // 布局行为控制
   fixedHeader?: boolean
   fixedTabs?: boolean
   fixedBreadcrumb?: boolean
   fixedSider?: boolean
-  
+
   // 滚动行为
   autoHideHeader?: boolean
   scrollMode?: 'wrapper' | 'body' // 'wrapper': 内容区滚动(类似App), 'body': 整体滚动(类似Web)
@@ -95,7 +95,7 @@ function handleCloseSider() {
 // 自动隐藏 Header 逻辑
 function handleScroll(e: Event) {
   if (!props.autoHideHeader) return
-  
+
   const target = props.scrollMode === 'wrapper' ? (e.target as HTMLElement) : document.documentElement
   const scrollTop = target.scrollTop
   const threshold = 100 // 滚动多少距离后开始生效
@@ -107,7 +107,7 @@ function handleScroll(e: Event) {
     // 顶部总是显示
     headerVisible.value = true
   }
-  
+
   lastScrollTop.value = scrollTop
 }
 
@@ -140,21 +140,12 @@ const cssVars = computed(() => ({
     `mode-${scrollMode}`,
     { 'is-collapsed': siderCollapsed, 'is-mobile': isMobile }
   ]" :style="cssVars">
-    
+
     <!-- 侧边栏 (Grid Area: sider) -->
     <div class="layout-area-sider" :class="{ 'fixed-sider': fixedSider }">
-      <LayoutSider 
-        v-model:collapsed="siderCollapsed" 
-        v-model:visible="siderVisible" 
-        :width="siderWidth"
-        :collapsed-width="siderCollapsedWidth" 
-        :fixed="false" 
-        :drawer="isMobile" 
-        class="layout-sider-component" 
-        @mask-click="handleCloseSider" 
-        @mouseenter="isHovering = true"
-        @mouseleave="isHovering = false"
-      >
+      <LayoutSider v-model:collapsed="siderCollapsed" v-model:visible="siderVisible" :width="siderWidth"
+        :collapsed-width="siderCollapsedWidth" :fixed="false" :drawer="isMobile" class="layout-sider-component"
+        @mask-click="handleCloseSider" @mouseenter="isHovering = true" @mouseleave="isHovering = false">
         <template #logo>
           <div class="layout-sidebar__logo" :class="{ 'is-collapsed': siderCollapsed }">
             <slot name="logo" :collapsed="siderCollapsed" />
@@ -182,15 +173,16 @@ const cssVars = computed(() => ({
 
     <!-- 主区域 (Grid Area: main) -->
     <main class="layout-area-main">
-      
+
       <!-- 头部区域组 (Header + Tabs + Breadcrumb) -->
       <div class="layout-header-group" :class="[
         { 'is-hidden': !headerVisible, 'is-fixed': fixedHeader },
         fixedHeader ? 'sticky-top' : ''
       ]">
-        
+
         <!-- 顶栏 -->
-        <LayoutHeader :height="headerHeight" :fixed="false" class="layout-header-component" @toggle-sider="handleToggleSider">
+        <LayoutHeader :height="headerHeight" :fixed="false" class="layout-header-component"
+          @toggle-sider="handleToggleSider">
           <template #menuButton>
             <slot name="menu-button">
               <div class="menu-toggle-btn">
@@ -203,9 +195,15 @@ const cssVars = computed(() => ({
               </div>
             </slot>
           </template>
-          <template #left><slot name="header-left" /></template>
-          <template #center><slot name="header-center" /></template>
-          <template #right><slot name="header-right" :variant="'light'" /></template>
+          <template #left>
+            <slot name="header-left" />
+          </template>
+          <template #center>
+            <slot name="header-center" />
+          </template>
+          <template #right>
+            <slot name="header-right" :variant="'light'" />
+          </template>
         </LayoutHeader>
 
         <!-- 标签栏 -->
@@ -217,20 +215,17 @@ const cssVars = computed(() => ({
 
         <!-- 面包屑 -->
         <div v-if="showBreadcrumb" class="layout-breadcrumb-wrapper" :class="{ 'is-fixed': fixedBreadcrumb }">
-           <slot name="breadcrumb"></slot>
+          <slot name="breadcrumb"></slot>
         </div>
       </div>
 
       <!-- 内容滚动区 -->
-      <LayoutContent 
-        class="layout-content-scroll" 
-        :class="{ 'scroll-wrapper': scrollMode === 'wrapper' }"
-        @scroll="scrollMode === 'wrapper' ? handleScroll($event) : undefined"
-      >
+      <LayoutContent class="layout-content-scroll" :class="scrollMode === 'wrapper' ? 'scroll-wrapper' : ''"
+        @scroll="scrollMode === 'wrapper' ? handleScroll($event) : undefined">
         <div class="content-wrapper">
           <slot />
         </div>
-        
+
         <!-- 页脚 -->
         <LayoutFooter v-if="showFooter" :height="footerHeight" class="layout-sidebar__footer">
           <slot name="footer">
@@ -255,14 +250,14 @@ const cssVars = computed(() => ({
   --color-text-secondary: #475569;
   --color-text-tertiary: #94a3b8;
   --color-primary: var(--color-primary-500, #3b82f6);
-  
+
   /* Sider Specific */
-  --sider-bg: var(--color-primary);
+  --sider-bg: var(--color-primary-700, var(--color-primary));
   --sider-text: #ffffff;
   --sider-text-secondary: rgba(255, 255, 255, 0.85);
   --sider-hover: rgba(255, 255, 255, 0.15);
   --sider-active: rgba(255, 255, 255, 0.25);
-  
+
   /* Shadows */
   --shadow-header: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-sider: 4px 0 24px 0 rgba(0, 0, 0, 0.1);
@@ -270,7 +265,8 @@ const cssVars = computed(() => ({
 
   display: grid;
   width: 100%;
-  min-height: 100vh; /* Ensure full viewport height */
+  min-height: 100vh;
+  /* Ensure full viewport height */
   background: var(--color-bg-layout);
   transition: all 0.3s ease;
 }
@@ -293,7 +289,8 @@ const cssVars = computed(() => ({
 
 /* Mobile */
 .layout-sidebar.is-mobile {
-  grid-template-columns: 1fr; /* Sider becomes drawer */
+  grid-template-columns: 1fr;
+  /* Sider becomes drawer */
 }
 
 /* ========== Sider Area ========== */
@@ -303,8 +300,10 @@ const cssVars = computed(() => ({
   width: var(--sider-width);
   transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 100;
-  background: var(--sider-bg); /* Ensure background covers full height */
-  height: 100%; /* Force fill grid cell */
+  background: var(--sider-bg);
+  /* Ensure background covers full height */
+  height: 100%;
+  /* Force fill grid cell */
 }
 
 .layout-sidebar.is-collapsed .layout-area-sider {
@@ -312,7 +311,8 @@ const cssVars = computed(() => ({
 }
 
 .layout-sidebar.is-mobile .layout-area-sider {
-  width: 0; /* Hidden in grid, handled by fixed drawer */
+  width: 0;
+  /* Hidden in grid, handled by fixed drawer */
 }
 
 /* Sider Component Styling */
@@ -332,11 +332,13 @@ const cssVars = computed(() => ({
 
 /* ========== Main Area ========== */
 .layout-area-main {
-  grid-column: 2; /* 默认在第二列 */
+  grid-column: 2;
+  /* 默认在第二列 */
   grid-row: 1 / -1;
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Prevent flex child overflow */
+  min-width: 0;
+  /* Prevent flex child overflow */
 }
 
 .layout-sidebar.is-mobile .layout-area-main {
@@ -387,7 +389,8 @@ const cssVars = computed(() => ({
 .layout-content-scroll.scroll-wrapper {
   overflow-y: auto;
   overflow-x: hidden;
-  height: 0; /* Force flex item to respect container height */
+  height: 0;
+  /* Force flex item to respect container height */
 }
 
 .content-wrapper {
@@ -397,13 +400,22 @@ const cssVars = computed(() => ({
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Mobile tweaks */
 @media (max-width: 768px) {
-  .content-wrapper { padding: 16px; }
+  .content-wrapper {
+    padding: 16px;
+  }
 }
 
 /* Dark Mode Overrides */
@@ -428,39 +440,43 @@ const cssVars = computed(() => ({
   color: var(--sider-text);
   transition: padding 0.3s ease, justify-content 0.3s ease;
 }
-.layout-sidebar__logo.is-collapsed { justify-content: center; padding: 0; }
+
+.layout-sidebar__logo.is-collapsed {
+  justify-content: center;
+  padding: 0;
+}
 
 .layout-sidebar__menu {
   flex: 1;
   padding: 12px;
   overflow-y: auto;
   overflow-x: hidden;
-  
+
   /* Menu variable overrides for dark/colored sidebar */
   --l-menu-bg-color: transparent;
   --l-menu-hover-bg-color: rgba(255, 255, 255, 0.1);
   --l-menu-active-bg-color: rgba(255, 255, 255, 0.15);
   --l-menu-selected-bg-color: rgba(255, 255, 255, 0.2);
-  
+
   /* Text Colors */
-  --l-menu-text-color: rgba(255, 255, 255, 0.85);
-  --l-menu-hover-text-color: #ffffff;
-  --l-menu-active-text-color: #ffffff;
-  --l-menu-selected-text-color: #ffffff;
-  
+  --l-menu-text-color: var(--sider-text-secondary);
+  --l-menu-hover-text-color: var(--sider-text);
+  --l-menu-active-text-color: var(--sider-text);
+  --l-menu-selected-text-color: var(--sider-text);
+
   /* Indicator */
-  --l-menu-selected-indicator-color: #ffffff;
+  --l-menu-selected-indicator-color: var(--sider-text);
 }
 
 /* Force menu item background transparency and text color */
 .layout-sidebar__menu :deep(.l-menu-item),
-.layout-sidebar__menu :deep(.l-submenu-title) {
+.layout-sidebar__menu :deep(.l-submenu__title) {
   background-color: transparent !important;
   color: var(--l-menu-text-color) !important;
 }
 
 .layout-sidebar__menu :deep(.l-menu-item:hover),
-.layout-sidebar__menu :deep(.l-submenu-title:hover) {
+.layout-sidebar__menu :deep(.l-submenu__title:hover) {
   background-color: var(--l-menu-hover-bg-color) !important;
   color: var(--l-menu-hover-text-color) !important;
 }
@@ -484,30 +500,52 @@ const cssVars = computed(() => ({
 }
 
 .collapse-btn {
-  width: 32px; height: 32px;
-  display: flex; align-items: center; justify-content: center;
-  border: none; background: transparent;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
   color: var(--sider-text-secondary);
-  border-radius: 6px; cursor: pointer;
+  border-radius: 6px;
+  cursor: pointer;
   transition: all 0.2s;
 }
-.collapse-btn:hover { background: var(--sider-hover); color: var(--sider-text); }
-.collapse-btn svg.is-collapsed { transform: rotate(180deg); }
+
+.collapse-btn:hover {
+  background: var(--sider-hover);
+  color: var(--sider-text);
+}
+
+.collapse-btn svg.is-collapsed {
+  transform: rotate(180deg);
+}
 
 .menu-toggle-btn {
-  display: flex; align-items: center; justify-content: center;
-  width: 32px; height: 32px;
-  border: none; background: transparent;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: transparent;
   color: var(--color-text-secondary);
   cursor: pointer;
 }
+
 .layout-sidebar__footer {
   background: var(--color-bg-container);
   border-top: 1px solid var(--color-border);
   padding: 0 24px;
 }
+
 .footer-content {
-  display: flex; align-items: center; justify-content: center;
-  height: 100%; font-size: 13px; color: var(--color-text-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 13px;
+  color: var(--color-text-tertiary);
 }
 </style>

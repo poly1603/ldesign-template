@@ -19,7 +19,7 @@ interface Props {
   fixedBreadcrumb?: boolean
   showFooter?: boolean
   footerHeight?: number
-  
+
   // 滚动行为
   autoHideHeader?: boolean
   scrollMode?: 'wrapper' | 'body'
@@ -47,7 +47,7 @@ const lastScrollTop = ref(0)
 // 自动隐藏 Header 逻辑
 function handleScroll(e: Event) {
   if (!props.autoHideHeader) return
-  
+
   const target = props.scrollMode === 'wrapper' ? (e.target as HTMLElement) : document.documentElement
   const scrollTop = target.scrollTop
   const threshold = 60
@@ -57,7 +57,7 @@ function handleScroll(e: Event) {
   } else {
     headerVisible.value = true
   }
-  
+
   lastScrollTop.value = scrollTop
 }
 
@@ -83,7 +83,7 @@ const cssVars = computed(() => ({
 
 <template>
   <div class="tablet-top-menu" :class="[`mode-${scrollMode}`]" :style="cssVars">
-    
+
     <!-- 头部区域 (Header + Tabs + Breadcrumb) -->
     <header class="layout-header-group" :class="[
       { 'is-hidden': !headerVisible, 'is-fixed': fixedHeader },
@@ -117,20 +117,17 @@ const cssVars = computed(() => ({
 
       <!-- 面包屑 -->
       <div v-if="showBreadcrumb" class="layout-breadcrumb-wrapper" :class="{ 'is-fixed': fixedBreadcrumb }">
-         <slot name="breadcrumb"></slot>
+        <slot name="breadcrumb"></slot>
       </div>
     </header>
 
     <!-- 内容滚动区 -->
-    <LayoutContent 
-      class="layout-content-scroll" 
-      :class="{ 'scroll-wrapper': scrollMode === 'wrapper' }"
-      @scroll="scrollMode === 'wrapper' ? handleScroll($event) : undefined"
-    >
+    <LayoutContent class="layout-content-scroll" :class="scrollMode === 'wrapper' ? 'scroll-wrapper' : ''"
+      @scroll="scrollMode === 'wrapper' ? handleScroll($event) : undefined">
       <div class="content-inner">
         <slot />
       </div>
-      
+
       <!-- 页脚 -->
       <LayoutFooter v-if="showFooter" :height="footerHeight" class="tablet-top-menu__footer">
         <slot name="footer" />
@@ -197,9 +194,28 @@ const cssVars = computed(() => ({
   color: white;
 }
 
-.header-brand { display: flex; align-items: center; padding-left: 20px; }
-.header-nav { display: flex; align-items: center; justify-content: center; height: 100%; }
-.header-actions { display: flex; align-items: center; gap: 8px; padding-right: 20px; }
+.header-brand {
+  display: flex;
+  align-items: center;
+  padding-left: 20px;
+}
+
+.header-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-right: 20px;
+  flex: 0 0 auto;
+}
 
 .layout-tabs-wrapper {
   background: var(--color-bg-container);
@@ -232,8 +248,15 @@ const cssVars = computed(() => ({
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* ========== Footer ========== */
@@ -247,6 +270,20 @@ const cssVars = computed(() => ({
 .header-nav :deep(button) {
   transition: all 0.2s ease;
   color: rgba(255, 255, 255, 0.8);
+}
+
+.header-nav :deep(.l-menu__more-label) {
+  display: none;
+}
+
+.header-nav :deep(.l-menu__more .l-submenu__title) {
+  justify-content: center;
+  width: 36px;
+  padding: 0;
+}
+
+.header-nav :deep(.l-menu__more .l-submenu__arrow) {
+  padding-left: 0;
 }
 
 .header-nav :deep(a:hover),

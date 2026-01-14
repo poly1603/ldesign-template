@@ -195,7 +195,7 @@ const cssVars = computed(() => ({
       <!-- 内容滚动区 -->
       <LayoutContent 
         class="layout-content-scroll" 
-        :class="{ 'scroll-wrapper': scrollMode === 'wrapper' }"
+        :class="scrollMode === 'wrapper' ? 'scroll-wrapper' : ''"
         @scroll="scrollMode === 'wrapper' ? handleScroll($event) : undefined"
       >
         <div class="content-inner">

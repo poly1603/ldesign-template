@@ -42,6 +42,16 @@ function toggleDrawer() {
   }
 }
 
+function handleDrawerMenuClick(event: MouseEvent) {
+  const target = event.target as HTMLElement | null
+  if (!target) return
+
+  if (target.closest('.l-submenu__title')) return
+  if (target.closest('.l-menu-item__content')) {
+    closeDrawer()
+  }
+}
+
 defineExpose({ openDrawer, closeDrawer, toggleDrawer })
 </script>
 
@@ -69,7 +79,9 @@ defineExpose({ openDrawer, closeDrawer, toggleDrawer })
             </button>
           </div>
           <div class="drawer-body">
-            <slot name="drawer" />
+            <div class="drawer-menu" @click="handleDrawerMenuClick">
+              <slot name="drawer" />
+            </div>
           </div>
           <div class="drawer-footer" :style="{ paddingBottom: safeArea ? 'env(safe-area-inset-bottom)' : undefined }">
             <slot name="drawer-footer" />

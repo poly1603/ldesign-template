@@ -37,6 +37,16 @@ function closeMenu() {
   menuExpanded.value = false
   document.body.style.overflow = ''
 }
+
+function handleMenuNavClick(event: MouseEvent) {
+  const target = event.target as HTMLElement | null
+  if (!target) return
+
+  if (target.closest('.l-submenu__title')) return
+  if (target.closest('.l-menu-item__content')) {
+    closeMenu()
+  }
+}
 </script>
 
 <template>
@@ -74,7 +84,7 @@ function closeMenu() {
       </Transition>
       <Transition name="menu-slide">
         <div v-if="menuExpanded" class="menu-dropdown" :style="{ top: `${headerHeight}px` }">
-          <nav class="menu-nav" @click="closeMenu">
+          <nav class="menu-nav" @click="handleMenuNavClick">
             <slot name="menu" />
           </nav>
         </div>
@@ -205,7 +215,7 @@ function closeMenu() {
   position: fixed;
   left: 0;
   right: 0;
-  max-height: 70vh;
+  max-height: min(80vh, calc(100dvh - 56px));
   background: var(--color-bg-container, #fff);
   border-radius: 0 0 20px 20px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
@@ -215,7 +225,16 @@ function closeMenu() {
 }
 
 .menu-nav {
-  padding: 12px 16px 24px;
+  padding: 12px 12px 24px;
+  overflow: hidden;
+}
+
+.menu-nav :deep(.l-menu) {
+  width: 100%;
+}
+
+.menu-nav :deep(.l-submenu__content) {
+  padding-left: 10px;
 }
 
 /* 内容区 */
@@ -257,17 +276,32 @@ function closeMenu() {
   animation: menuItemFade 0.25s ease both;
 }
 
-.menu-nav :deep(> *:nth-child(1)) { animation-delay: 0.05s; }
-.menu-nav :deep(> *:nth-child(2)) { animation-delay: 0.1s; }
-.menu-nav :deep(> *:nth-child(3)) { animation-delay: 0.15s; }
-.menu-nav :deep(> *:nth-child(4)) { animation-delay: 0.2s; }
-.menu-nav :deep(> *:nth-child(5)) { animation-delay: 0.25s; }
+.menu-nav :deep(> *:nth-child(1)) {
+  animation-delay: 0.05s;
+}
+
+.menu-nav :deep(> *:nth-child(2)) {
+  animation-delay: 0.1s;
+}
+
+.menu-nav :deep(> *:nth-child(3)) {
+  animation-delay: 0.15s;
+}
+
+.menu-nav :deep(> *:nth-child(4)) {
+  animation-delay: 0.2s;
+}
+
+.menu-nav :deep(> *:nth-child(5)) {
+  animation-delay: 0.25s;
+}
 
 @keyframes menuItemFade {
   from {
     opacity: 0;
     transform: translateY(-8px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
